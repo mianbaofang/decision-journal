@@ -23,6 +23,7 @@ REQUIRED_FILES = (
     "scripts/choice_assistant.py",
 )
 FORBIDDEN_DIRS = {"__pycache__", ".pytest_cache", "tests", "docs", "dist", "mp4", "reports", "evals"}
+REQUIRED_TARGETS = {"openai", "claude", "generic", "agent-skills", "vscode"}
 
 
 def iter_files() -> list[Path]:
@@ -83,6 +84,20 @@ def validate() -> list[str]:
                 failures.append("manifest name must match choice-assistant")
             if manifest.get("canonical_path") != "skills/choice-assistant":
                 failures.append("manifest canonical_path must be skills/choice-assistant")
+            targets = manifest.get("target_platforms")
+            if not isinstance(targets, list) or set(targets) != REQUIRED_TARGETS:
+                failures.append("manifest target_platforms must declare openai, claude, generic, agent-skills, and vscode")
+
+    interface_path = PACKAGE / "agents" / "interface.yaml"
+    if interface_path.is_file():
+        interface_text = interface_path.read_text(encoding="utf-8")
+        for target in sorted(REQUIRED_TARGETS):
+            bullet = rf'^\s*-\s*["\']?{re.escape(target)}["\']?\s*$'
+            degradation = rf'^\s*{re.escape(target)}:\s*\S'
+            if not re.search(bullet, interface_text, re.MULTILINE):
+                failures.append(f"interface adapter_targets missing: {target}")
+            if not re.search(degradation, interface_text, re.MULTILINE):
+                failures.append(f"interface degradation missing: {target}")
 
     for path in files:
         rel = path.relative_to(PACKAGE)

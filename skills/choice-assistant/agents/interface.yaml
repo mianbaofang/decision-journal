@@ -8,7 +8,8 @@ compatibility:
     - "openai"
     - "claude"
     - "generic"
-    - "agent-skills-compatible"
+    - "agent-skills"
+    - "vscode"
   activation:
     mode: "manual"
     paths: []
@@ -23,4 +24,5 @@ compatibility:
     openai: "metadata-adapter"
     claude: "neutral-source"
     generic: "neutral-source"
-    agent-skills-compatible: "neutral-source"
+    agent-skills: "neutral-source"
+    vscode: "canonical-source"

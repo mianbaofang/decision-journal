@@ -10,6 +10,13 @@
   "maturity_tier": "production",
   "lifecycle_stage": "production",
   "review_cadence": "per-release",
+  "target_platforms": [
+    "openai",
+    "claude",
+    "generic",
+    "agent-skills",
+    "vscode"
+  ],
   "canonical_path": "skills/choice-assistant",
   "package_scope": "The installable boundary contains SKILL.md, the CLI, FastAPI backend, bundled frontend, dependencies, interface metadata, license, and disclaimer. Repository README files, tests, Pages assets, screenshots, animations, reports, local databases, and evaluation evidence remain source-repository materials.",
   "factory_components": [
