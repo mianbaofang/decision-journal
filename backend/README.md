@@ -1,6 +1,6 @@
 # 别纠结后端 (FastAPI)
 
-独立 FastAPI 后端，为 `choice-assistant` Skill 提供聊天、档案、统计和设置等 REST 接口。
+独立 FastAPI 后端，为《别纠结》（Decision Brief）Skill 提供聊天、档案、统计和设置等 REST 接口。
 
 ## 依赖
 
@@ -59,7 +59,7 @@ backend/
 
 ## Agent 集成
 
-本后端为 `choice-assistant` Skill 提供 API 服务，Agent 通过 CLI 脚本调用：
+本后端为《别纠结》（Decision Brief）Skill 提供 API 服务，Agent 通过 CLI 脚本调用：
 
 1. 先启动后端（见上方「启动」章节）
 2. Agent 加载 `SKILL.md` 中的 Skill 定义

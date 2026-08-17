@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.1 - 2026-08-17
+
+### Changed
+
+- Consolidated the installable Agent Skill under `skills/choice-assistant/` and removed the duplicate repository-root entry.
+- Added a deterministic Skill package builder and validator, with a versioned ZIP and SHA-256 checksum as release assets.
+- Aligned the README navigation, release status, Pages JSON-LD, sitemap, and `llms.txt` with the `v0.9.1` identity.
+- Split backend tests from the Playwright desktop job; CI now starts the backend and installs Chromium before UI checks.
+
 ## v0.9.0 - 2026-07-26
 
 ### Added

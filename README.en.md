@@ -5,13 +5,9 @@
   Text, voice, or photo — you name the choice. We turn anxiety into evidence, risks, and a next step you can act on.
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/version-v0.9.0-blue" alt="version">
-  <img src="https://img.shields.io/badge/python-3.9%2B-blue" alt="python">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
-  <img src="https://img.shields.io/badge/i18n-6%20langs-orange" alt="i18n">
-  <img src="https://img.shields.io/badge/multimodal-vision-purple" alt="multimodal">
-</p>
+<table align="center"><tr><td><a href="https://github.com/mianbaofang/decision-brief/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-brief?style=flat-square&label=release" alt="Latest public release"></a></td><td><a href="https://github.com/mianbaofang/decision-brief/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-brief/ci.yml?branch=master&style=flat-square&label=tests" alt="Continuous integration test status"></a></td><td><a href="https://github.com/mianbaofang/decision-brief/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-brief?style=flat-square&label=license" alt="MIT license"></a></td><td><a href="https://github.com/mianbaofang/decision-brief/stargazers"><img src="https://img.shields.io/github/stars/mianbaofang/decision-brief?style=flat-square&label=stars" alt="GitHub stars"></a></td></tr></table>
+
+<p align="center"><img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square" alt="Python 3.9 or newer"> <img src="https://img.shields.io/badge/FastAPI-API-009688?style=flat-square" alt="FastAPI backend"> <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square" alt="SQLite WAL local storage"> <img src="https://img.shields.io/badge/6%20languages-i18n-6A5ACD?style=flat-square" alt="Six interface languages"> <img src="https://img.shields.io/badge/multimodal-text%20voice%20image-C05A7A?style=flat-square" alt="Text, voice, and image input"></p>
 
 <p align="center">
   <a href="https://mianbaofang.github.io/decision-brief/index-en.html">
@@ -22,18 +18,32 @@
 <p align="center">
   <a href="README.md">中文</a>
   ·
-  <a href="DISCLAIMER.md">Disclaimer</a>
-  ·
-  <a href="ACKNOWLEDGEMENTS.md">Acknowledgements</a>
-  ·
-  <a href="https://github.com/mianbaofang/decision-brief/issues/new/choose">Feedback</a>
-  ·
-  <a href="docs/releases/v0.9.0.md">v0.9.0 Release Notes</a>
+  <a href="skills/choice-assistant/SKILL.md">Installable Skill</a>
   ·
   <a href="https://mianbaofang.github.io/decision-brief/">Chinese Intro</a>
   ·
   <a href="https://mianbaofang.github.io/decision-brief/index-en.html">English Intro</a>
+  ·
+  <a href="DISCLAIMER.md">Disclaimer</a>
+  ·
+  <a href="ACKNOWLEDGEMENTS.md">Acknowledgements</a>
+  ·
+  <a href="docs/releases/v0.9.1.md">v0.9.1 Release Notes</a>
+  ·
+  <a href="SECURITY.md">Security</a>
+  ·
+  <a href="https://github.com/mianbaofang/decision-brief/issues/new/choose">Feedback</a>
 </p>
+
+## Quick Start
+
+```bash
+pip install -e ".[dev]"
+cd backend
+python main.py
+```
+
+Open <http://127.0.0.1:8010/>. Without an LLM key, explicitly choose Demo mode in the UI first. Real analysis and image understanding require your own OpenAI-compatible endpoint and vision model.
 
 ## Why I Built This
 
@@ -63,7 +73,7 @@ The current design offers several entry points: Rational looks at benefits, risk
 
 The boundary I care about most: it can only assist your choice; it cannot bear the choice for you. Especially with life decisions, what really matters isn't whether the answer "looks right," but whether you've thought through why you're choosing it. If it can move someone from "I don't know what to do" to "I know what first step I can take," it has done its job.
 
-**Decision Brief (别纠结)** is a local-first AI decision assistant and decision-support tool with a Web UI, CLI, and Codex Skill. It runs on FastAPI + SQLite and connects to OpenAI-compatible APIs. It does not decide for you; it separates a dilemma into evidence, risks, and a next step.
+**Decision Brief (别纠结)** is a local-first AI decision assistant, decision-support tool, and choice assistant with a Web UI, CLI, and Codex Skill. It runs on FastAPI + SQLite and connects to OpenAI-compatible APIs. It does not decide for you; it separates a dilemma into evidence, risks, and a next step.
 
 > Read [Disclaimer](DISCLAIMER.md) before use. This project is decision support only; it is not legal, medical, financial, psychological, or other professional advice.
 
@@ -123,7 +133,7 @@ flowchart TD
     DB --> ARCHIVE["Details / executed and regret flags / statistics"]
 ```
 
-## Quick Start
+## Run Details
 
 ```bash
 # 1. Install dependencies
@@ -161,16 +171,13 @@ Without an LLM key, the page asks you to configure one or explicitly start Demo 
 
 ## Screenshots
 
-<p align="center">
-  <img src="docs/images/auto-en.png" width="45%" />
-  <img src="docs/images/rational-en.png" width="45%" />
-  <img src="docs/images/nature-en.png" width="45%" />
-  <img src="docs/images/dialogue-en.png" width="45%" />
-  <img src="docs/images/fengshui-en.png" width="45%" />
-  <img src="docs/images/archive-en.png" width="45%" />
-  <img src="docs/images/stats-en.png" width="45%" />
-  <img src="docs/images/settings-en.png" width="45%" />
-</p>
+<table align="center"><tr><td><img src="docs/images/auto-en.png" width="100%" alt="Auto mode interface"></td><td><img src="docs/images/rational-en.png" width="100%" alt="Rational analysis interface"></td></tr></table>
+
+<table align="center"><tr><td><img src="docs/images/nature-en.png" width="100%" alt="Nature perspective interface"></td><td><img src="docs/images/dialogue-en.png" width="100%" alt="Guided dialogue interface"></td></tr></table>
+
+<table align="center"><tr><td><img src="docs/images/fengshui-en.png" width="100%" alt="Traditional Culture interface"></td><td><img src="docs/images/archive-en.png" width="100%" alt="Decision archive interface"></td></tr></table>
+
+<table align="center"><tr><td><img src="docs/images/stats-en.png" width="100%" alt="Statistics review interface"></td><td><img src="docs/images/settings-en.png" width="100%" alt="Settings interface"></td></tr></table>
 
 ## Highlights
 
@@ -245,17 +252,7 @@ python scripts/choice_assistant.py --action decision --id <id>
 python scripts/choice_assistant.py --action decision --id <id> --delete
 ```
 
-See [SKILL.md](SKILL.md) for the full parameter list.
-
-## Safety And Boundaries
-
-- This is a decision-support tool. It does not take responsibility for legal, medical, financial, education, employment, or relationship decisions.
-- The app is local-first: decision archives are stored in local SQLite unless the user chooses to call a third-party LLM.
-- Image inputs are sent to the configured vision model. Think carefully before uploading IDs, medical records, contracts, child photos, or other sensitive images.
-- Traditional Culture and Nature lenses are for perspective and entertainment; they should not be the sole basis for serious decisions.
-- `.env`, local databases, real API keys, and personal decision records should not be committed to GitHub.
-
-Read [DISCLAIMER.md](DISCLAIMER.md) for the full disclaimer.
+See the [installable Skill entry](skills/choice-assistant/SKILL.md) for the full parameter list. The consolidated repository keeps this as the only canonical Skill entry so GitHub discovery does not expose duplicates.
 
 ## Tech Stack
 
@@ -269,6 +266,31 @@ Read [DISCLAIMER.md](DISCLAIMER.md) for the full disclaimer.
 | STT | Browser-native Web Speech API (free) |
 | Weather | Amap Web API (bring your own key, Base URL, and city; simulated weather when not configured) |
 | Tests | pytest + Playwright (UI automation) |
+
+## Safety And Boundaries
+
+- This is a decision-support tool. It does not take responsibility for legal, medical, financial, education, employment, or relationship decisions.
+- The app is local-first: decision archives are stored in local SQLite unless the user chooses to call a third-party LLM.
+- Image inputs are sent to the configured vision model. Think carefully before uploading IDs, medical records, contracts, child photos, or other sensitive images.
+- Traditional Culture and Nature lenses are for perspective and entertainment; they should not be the sole basis for serious decisions.
+- `.env`, local databases, real API keys, and personal decision records should not be committed to GitHub.
+
+Read [DISCLAIMER.md](DISCLAIMER.md) for the full disclaimer.
+
+## Open Source And Acknowledgements
+
+- **License**: MIT, see [LICENSE](LICENSE)
+- **Open-source dependencies**: FastAPI, Uvicorn, HTTPX, Pydantic, SQLite, pytest, and Playwright.
+- **Thanks to**:
+  - BaZi engine inspired by [jinchenma94/bazi-skill](https://github.com/jinchenma94/bazi-skill) (MIT)
+  - De-AI-ification style inspired by [op7418/humanizer-zh](https://github.com/op7418/humanizer-zh)
+- **External services**:
+  - LLM: any OpenAI-compatible endpoint (bring your own key; vision models for images)
+  - TTS: Microsoft Edge TTS (built-in, free)
+  - STT: browser Web Speech API (free)
+  - Weather: Amap Open Platform (bring your own key)
+
+See [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md) for the full attribution list.
 
 ## Project Structure
 
@@ -333,7 +355,8 @@ decision-brief/
 │   ├── test_desktop_ui.py          # Playwright desktop interactions and effect checks
 │   └── test_integration.py         # Optional running-service integration tests
 ├── docs/                            # GitHub Pages, screenshots, demos, and release notes
-├── SKILL.md                         # Skill parameters, response shapes, and examples
+├── skills/choice-assistant/         # Canonical installable Skill package
+│   └── SKILL.md                     # Skill parameters, response shapes, and examples
 ├── CHANGELOG.md                     # Version history
 ├── README.md                        # Chinese documentation
 └── README.en.md                     # This file
@@ -341,24 +364,19 @@ decision-brief/
 
 The browser starts at `frontend/index.html`; the command-line entry is `scripts/choice_assistant.py`. Both call the same FastAPI routes. `routes/chat.py` delegates each request to the matching service, `services/` performs calculations and external calls, and `db.py` stores the result. On the frontend, `brief.js` renders results but does not make backend decisions.
 
-## Open Source And Acknowledgements
-
-- **License**: MIT, see [LICENSE](LICENSE)
-- **Open-source dependencies**: FastAPI, Uvicorn, HTTPX, Pydantic, SQLite, pytest, and Playwright.
-- **Thanks to**:
-  - BaZi engine inspired by [jinchenma94/bazi-skill](https://github.com/jinchenma94/bazi-skill) (MIT)
-  - De-AI-ification style inspired by [op7418/humanizer-zh](https://github.com/op7418/humanizer-zh)
-- **External services**:
-  - LLM: any OpenAI-compatible endpoint (bring your own key; vision models for images)
-  - TTS: Microsoft Edge TTS (built-in, free)
-  - STT: browser Web Speech API (free)
-  - Weather: Amap Open Platform (bring your own key)
-
-See [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md) for the full attribution list.
-
 ## Status
 
-Current version: `v0.9.0`. This release adds four interface styles, six random effects, richer Nature evidence, saved dialogue answers, and complete user-managed Amap settings. LLM and Amap credentials are supplied by the user; Demo and simulated weather are clearly labeled in the UI.
+Current version: [`v0.9.1`](docs/releases/v0.9.1.md). The public product is **Decision Brief (别纠结)**; `choice-assistant` is the retained identifier for existing CLI commands and Skill installation discovery. This patch keeps one installable Skill at `skills/choice-assistant/`, removes the duplicate root entry, and publishes a versioned Skill ZIP with a SHA-256 checksum; product behavior and safety boundaries are unchanged.
+
+## Author And Contact
+
+Author: [@mianbaofang](https://github.com/mianbaofang).
+
+Please use [GitHub Issues](https://github.com/mianbaofang/decision-brief/issues) for feature requests and usage questions. Report security concerns according to [SECURITY.md](SECURITY.md).
+
+## License
+
+MIT, see [LICENSE](LICENSE).
 
 ---
 

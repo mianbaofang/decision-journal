@@ -5,13 +5,9 @@
   你说选择——文字、语音、图片皆可——我负责把焦虑拆成可判断的证据、风险和下一步动作。
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/version-v0.9.0-blue" alt="version">
-  <img src="https://img.shields.io/badge/python-3.9%2B-blue" alt="python">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
-  <img src="https://img.shields.io/badge/i18n-6%20langs-orange" alt="i18n">
-  <img src="https://img.shields.io/badge/multimodal-vision-purple" alt="multimodal">
-</p>
+<table align="center"><tr><td><a href="https://github.com/mianbaofang/decision-brief/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-brief?style=flat-square&label=release" alt="最新公开版本"></a></td><td><a href="https://github.com/mianbaofang/decision-brief/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-brief/ci.yml?branch=master&style=flat-square&label=tests" alt="持续集成测试状态"></a></td><td><a href="https://github.com/mianbaofang/decision-brief/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-brief?style=flat-square&label=license" alt="MIT 开源协议"></a></td><td><a href="https://github.com/mianbaofang/decision-brief/stargazers"><img src="https://img.shields.io/github/stars/mianbaofang/decision-brief?style=flat-square&label=stars" alt="GitHub Stars"></a></td></tr></table>
+
+<p align="center"><img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square" alt="Python 3.9 或更高版本"> <img src="https://img.shields.io/badge/FastAPI-API-009688?style=flat-square" alt="FastAPI 后端"> <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square" alt="SQLite WAL 本地存储"> <img src="https://img.shields.io/badge/6%20languages-i18n-6A5ACD?style=flat-square" alt="支持六种界面语言"> <img src="https://img.shields.io/badge/multimodal-text%20voice%20image-C05A7A?style=flat-square" alt="支持文字语音图片输入"></p>
 
 <p align="center">
   <a href="https://mianbaofang.github.io/decision-brief/">
@@ -22,18 +18,32 @@
 <p align="center">
   <a href="README.en.md">English</a>
   ·
+  <a href="skills/choice-assistant/SKILL.md">可安装 Skill</a>
+  ·
+  <a href="https://mianbaofang.github.io/decision-brief/">中文介绍</a>
+  ·
+  <a href="https://mianbaofang.github.io/decision-brief/index-en.html">English Intro</a>
+  ·
   <a href="DISCLAIMER.md">免责声明</a>
   ·
   <a href="ACKNOWLEDGEMENTS.md">致谢</a>
   ·
+  <a href="docs/releases/v0.9.1.md">v0.9.1 发布说明</a>
+  ·
+  <a href="SECURITY.md">安全报告</a>
+  ·
   <a href="https://github.com/mianbaofang/decision-brief/issues/new/choose">使用反馈</a>
-  ·
-  <a href="docs/releases/v0.9.0.md">v0.9.0 发布说明</a>
-  ·
-  <a href="https://mianbaofang.github.io/decision-brief/">中文介绍动画</a>
-  ·
-  <a href="https://mianbaofang.github.io/decision-brief/index-en.html">English Intro</a>
 </p>
+
+## 快速开始
+
+```bash
+pip install -e ".[dev]"
+cd backend
+python main.py
+```
+
+打开 <http://127.0.0.1:8010/>。没有 LLM Key 时，先在界面中明确选择 Demo 模式；真实分析和图片理解需要你自己的 OpenAI 兼容接口与视觉模型。
 
 ## 为什么做这个工具
 
@@ -63,7 +73,7 @@
 
 我最在意的边界是：它只能辅助选择，不能替人承担选择。尤其是很多生活里的决定，真正重要的不是"答案看起来对不对"，而是用户有没有想明白自己为什么这样选。如果能让一个人从"我不知道怎么办"变成"我知道可以先做哪一步"，它就有价值了。
 
-**别纠结**是一个本地优先的 AI 决策助手（decision support）。它提供 Web 桌面界面、CLI 和 Codex Skill，用 FastAPI + SQLite 运行，可以连接 OpenAI 兼容接口。它不替你做决定，只把纠结拆成证据、风险和下一步。
+**别纠结**是一个本地优先的 AI 决策助手（AI decision assistant / decision support），也可以作为 decision support Skill 或 choice assistant 使用。它提供 Web 桌面界面、CLI 和 Codex Skill，用 FastAPI + SQLite 运行，可以连接 OpenAI 兼容接口。它不替你做决定，只把纠结拆成证据、风险和下一步。
 
 > 使用前请阅读 [免责声明](DISCLAIMER.md)。本项目只提供决策辅助，不替代法律、医疗、金融、心理等专业建议，也不替用户承担最终选择。
 
@@ -123,7 +133,7 @@ flowchart TD
     DB --> ARCHIVE["档案详情 / 执行与后悔标记 / 统计"]
 ```
 
-## 快速开始
+## 运行细节
 
 ```bash
 # 1. 安装依赖
@@ -159,18 +169,15 @@ python main.py
 | **对话引导** | 问 | 心里已有答案但不敢面对 | 三到五轮追问，帮你听见自己的声音 |
 | **国学参考** | 局 | 想从传统文化角度换一种看法 | 八字排盘 + 五行喜用 + 处事参考 |
 
-## 界面预览
+## 效果预览
 
-<p align="center">
-  <img src="docs/images/auto-zh.png" width="45%" />
-  <img src="docs/images/rational-zh.png" width="45%" />
-  <img src="docs/images/nature-zh.png" width="45%" />
-  <img src="docs/images/dialogue-zh.png" width="45%" />
-  <img src="docs/images/fengshui-zh.png" width="45%" />
-  <img src="docs/images/archive-zh.png" width="45%" />
-  <img src="docs/images/stats-zh.png" width="45%" />
-  <img src="docs/images/settings-zh.png" width="45%" />
-</p>
+<table align="center"><tr><td><img src="docs/images/auto-zh.png" width="100%" alt="自动模式界面"></td><td><img src="docs/images/rational-zh.png" width="100%" alt="理性分析界面"></td></tr></table>
+
+<table align="center"><tr><td><img src="docs/images/nature-zh.png" width="100%" alt="自然启示界面"></td><td><img src="docs/images/dialogue-zh.png" width="100%" alt="对话引导界面"></td></tr></table>
+
+<table align="center"><tr><td><img src="docs/images/fengshui-zh.png" width="100%" alt="国学参考界面"></td><td><img src="docs/images/archive-zh.png" width="100%" alt="决策档案界面"></td></tr></table>
+
+<table align="center"><tr><td><img src="docs/images/stats-zh.png" width="100%" alt="统计复盘界面"></td><td><img src="docs/images/settings-zh.png" width="100%" alt="设置界面"></td></tr></table>
 
 ## 核心特性
 
@@ -245,17 +252,7 @@ python scripts/choice_assistant.py --action decision --id <id>
 python scripts/choice_assistant.py --action decision --id <id> --delete
 ```
 
-完整参数见 [SKILL.md](SKILL.md)。
-
-## 安全和边界
-
-- 本项目是决策辅助工具，不替用户承担法律、医疗、投资、升学、就业或家庭关系等高风险决定。
-- 默认本地优先：决策档案保存在本机 SQLite；用户自行决定是否配置第三方 LLM。
-- 图片输入会发送给用户配置的视觉模型；上传身份证件、病历、合同、孩子照片等敏感图片前请自行评估风险。
-- 国学参考和自然启示只作为视角切换与娱乐参考，不应作为严肃决策的唯一依据。
-- `.env`、本地数据库、真实 API Key 和个人决策记录不应提交到 GitHub。
-
-完整免责声明见 [DISCLAIMER.md](DISCLAIMER.md)。
+完整参数见 [可安装 Skill 入口](skills/choice-assistant/SKILL.md)。合并后的仓库只保留这一处 canonical Skill 入口，避免 GitHub 自动发现重复条目。
 
 ## 技术栈
 
@@ -269,6 +266,31 @@ python scripts/choice_assistant.py --action decision --id <id> --delete
 | STT | 浏览器原生 Web Speech API（免 Key） |
 | 天气 | 高德开放平台 Web API（用户自配 Key、Base URL 和城市；未配置时使用模拟天气） |
 | 测试 | pytest + Playwright（UI 自动化） |
+
+## 安全和边界
+
+- 本项目是决策辅助工具，不替用户承担法律、医疗、投资、升学、就业或家庭关系等高风险决定。
+- 默认本地优先：决策档案保存在本机 SQLite；用户自行决定是否配置第三方 LLM。
+- 图片输入会发送给用户配置的视觉模型；上传身份证件、病历、合同、孩子照片等敏感图片前请自行评估风险。
+- 国学参考和自然启示只作为视角切换与娱乐参考，不应作为严肃决策的唯一依据。
+- `.env`、本地数据库、真实 API Key 和个人决策记录不应提交到 GitHub。
+
+完整免责声明见 [DISCLAIMER.md](DISCLAIMER.md)。
+
+## 开源与致谢
+
+- **License**：MIT，详见 [LICENSE](LICENSE)
+- **开源依赖**：FastAPI、Uvicorn、HTTPX、Pydantic、SQLite、pytest、Playwright。
+- **致谢**：
+  - 八字排盘参考 [jinchenma94/bazi-skill](https://github.com/jinchenma94/bazi-skill)（MIT）。
+  - 中文去 AI 腔表达参考 [op7418/humanizer-zh](https://github.com/op7418/humanizer-zh)。
+- **外部服务**：
+  - LLM：任意 OpenAI 兼容接口（用户自配 Key；多模态图片需视觉模型）
+  - TTS：Microsoft Edge TTS（内置、免费）
+  - STT：浏览器原生 Web Speech API（免费）
+  - 天气：高德开放平台（用户自配 Key）
+
+完整引用与感谢清单见 [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md)。
 
 ## 项目结构
 
@@ -333,7 +355,8 @@ decision-brief/
 │   ├── test_desktop_ui.py          # Playwright 桌面交互与动画验收
 │   └── test_integration.py         # 可选的运行中服务集成测试
 ├── docs/                            # GitHub Pages、截图、演示和版本说明
-├── SKILL.md                         # Skill 参数、返回结构和调用示例
+├── skills/choice-assistant/         # 唯一可安装 Skill 包与规范入口
+│   └── SKILL.md                     # Skill 参数、返回结构和调用示例
 ├── CHANGELOG.md                     # 版本变化记录
 ├── README.md                        # 中文说明
 └── README.en.md                     # English documentation
@@ -341,25 +364,20 @@ decision-brief/
 
 几个入口各管一件事：浏览器从 `frontend/index.html` 启动，命令行从 `scripts/choice_assistant.py` 启动，两边最后都调用同一套 FastAPI 路由。`routes/chat.py` 负责把请求交给对应服务，`services/` 负责计算和外部调用，`db.py` 负责保存。前端的 `brief.js` 只处理结果怎么显示，不参与后端判断。
 
-## 开源与致谢
-
-- **License**：MIT，详见 [LICENSE](LICENSE)
-- **开源依赖**：FastAPI、Uvicorn、HTTPX、Pydantic、SQLite、pytest、Playwright。
-- **致谢**：
-  - 八字排盘参考 [jinchenma94/bazi-skill](https://github.com/jinchenma94/bazi-skill)（MIT）。
-  - 中文去 AI 腔表达参考 [op7418/humanizer-zh](https://github.com/op7418/humanizer-zh)。
-- **外部服务**：
-  - LLM：任意 OpenAI 兼容接口（用户自配 Key；多模态图片需视觉模型）
-  - TTS：Microsoft Edge TTS（内置、免费）
-  - STT：浏览器原生 Web Speech API（免费）
-  - 天气：高德开放平台（用户自配 Key）
-
-完整引用与感谢清单见 [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md)。
-
 ## 状态
 
-当前版本：`v0.9.0`。这一版加入四套界面样式、六种随机动画、自然模式参考值、对话回答存档和完整的高德天气配置。LLM 与高德天气都由用户自己填写；Demo 和模拟天气会在界面中明确标注。
+当前版本：[`v0.9.1`](docs/releases/v0.9.1.md)。仓库产品名是 **Decision Brief（别纠结）**；`choice-assistant` 是为既有 CLI 命令和 Skill 安装发现保留的标识。这一补丁将唯一可安装 Skill 固定到 `skills/choice-assistant/`，移除根目录重复入口，并提供带 SHA-256 的版本化安装 ZIP；产品功能与使用边界保持不变。
+
+## 作者与联系
+
+作者：[@mianbaofang](https://github.com/mianbaofang)。
+
+功能建议和使用问题请提交 [GitHub Issues](https://github.com/mianbaofang/decision-brief/issues)；安全问题请按 [SECURITY.md](SECURITY.md) 的方式报告。
+
+## 许可证
+
+MIT，详见 [LICENSE](LICENSE)。
 
 ---
 
-<p align="center">让选择不再内耗。<br>Made with ❤️ for people who overthink.</p>
+<p align="center">让选择不再困难。<br>Made with ❤️ for people who overthink.</p>

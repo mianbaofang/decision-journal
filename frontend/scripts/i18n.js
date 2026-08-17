@@ -8,7 +8,7 @@ const I18N = (() => {
   const DICT = {
     'zh-CN': {
       'app.title': '别纠结',
-      'app.subtitle': '让选择不再内耗',
+      'app.subtitle': '让选择不再困难',
       'hero.title': '先把问题压成一句话。',
       'hero.copy': '你说选择，我负责把焦虑拆成可判断的证据、风险和下一步动作。',
       'tab.chat': '决策',

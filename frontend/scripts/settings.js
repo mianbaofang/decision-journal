@@ -348,7 +348,7 @@ const Settings = (() => {
       '<div class="about-logo" aria-hidden="true"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5,7 C14,2 8,14 18,22 C14,28 18,33 20,35" stroke="rgba(244,245,239,0.35)" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M10,5 C2,12 20,16 10,24 C6,30 14,33 20,35" stroke="rgba(244,245,239,0.45)" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M16,6 C8,10 28,18 12,26 C10,30 16,33 20,35" stroke="rgba(244,245,239,0.55)" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M24,6 C32,10 12,18 28,26 C30,30 24,33 20,35" stroke="rgba(244,245,239,0.55)" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M30,5 C38,12 20,16 30,24 C34,30 26,33 20,35" stroke="rgba(244,245,239,0.45)" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M35,7 C26,2 32,14 22,22 C26,28 22,33 20,35" stroke="rgba(244,245,239,0.35)" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M20,5 C20,14 20,24 20,35" stroke="rgba(244,245,239,0.95)" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="20" cy="35" r="1.5" fill="rgba(244,245,239,0.95)"/></svg></div>' +
       '<div class="about-title">' + Brief.esc(I18N.t('app.title')) + '</div>' +
       '<div class="about-sub">' + Brief.esc(I18N.t('app.subtitle')) + '</div>' +
-      '<div class="about-ver">v0.9.0 · MIT</div>';
+      '<div class="about-ver">v0.9.1 · MIT</div>';
     wrap.appendChild(head);
 
     // 5 段内容
