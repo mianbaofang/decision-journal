@@ -127,15 +127,29 @@ def cmd_stop_backend(base_url: str) -> int:
 
     killed = False
     if os.name == "nt":
+        # Get-NetTCPConnection 是 Windows 上最可靠的监听进程来源；netstat 仅作后备
+        ps_cmd = (
+            "Get-NetTCPConnection -LocalPort {port} -State Listen -ErrorAction SilentlyContinue "
+            "| Select-Object -ExpandProperty OwningProcess -Unique"
+        ).format(port=port)
         try:
-            out = subprocess.run(["netstat", "-ano"], capture_output=True, text=True, timeout=15).stdout
+            out = subprocess.run(
+                ["powershell", "-NoProfile", "-Command", ps_cmd],
+                capture_output=True, text=True, timeout=20,
+            ).stdout
         except (OSError, subprocess.TimeoutExpired):
             out = ""
-        pids = {
-            line.split()[-1]
-            for line in out.splitlines()
-            if f":{port}" in line and "LISTENING" in line.upper() and line.split()
-        }
+        pids = {line.strip() for line in out.splitlines() if line.strip().isdigit()}
+        if not pids:
+            try:
+                out = subprocess.run(["netstat", "-ano"], capture_output=True, text=True, timeout=15).stdout
+            except (OSError, subprocess.TimeoutExpired):
+                out = ""
+            pids = {
+                line.split()[-1]
+                for line in out.splitlines()
+                if f":{port}" in line and "LISTENING" in line.upper() and line.split()
+            }
         for pid in pids:
             result = subprocess.run(["taskkill", "/PID", pid, "/F"], capture_output=True, text=True)
             killed = killed or result.returncode == 0

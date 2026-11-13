@@ -33,7 +33,7 @@ init_db()
 app = FastAPI(
     title="别纠结决策辅助 API",
     description="辅助人做选择，不替代人做决定",
-    version="0.9.1",
+    version="0.10.0",
 )
 
 # ─── API 路由 ───────────────────────────────────────────────────
@@ -52,7 +52,7 @@ app.include_router(tts.router)
 @app.get("/api/health")
 def health() -> dict:
     """健康检查。"""
-    return {"name": "别纠结 API", "status": "ok", "version": "0.9.1"}
+    return {"name": "别纠结 API", "status": "ok", "version": "0.10.0"}
 
 
 # ─── 前端静态资源 ──────────────────────────────────────────────
