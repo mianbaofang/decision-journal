@@ -1,19 +1,46 @@
 """
 桌面端布局测试 — 验证二区域结构与抽屉交互。
-依赖：后端服务在 http://127.0.0.1:8010 运行。
+后端未运行时自动拉起（测试结束关闭）；也可用 DECISION_JOURNAL_TEST_URL 指向已运行实例。
 用 sync_playwright 直接启动，不依赖 pytest-playwright fixture。
 """
 import json
 import os
+import subprocess
+import sys
+import time
+import urllib.request
+from pathlib import Path
 
 import pytest
 from playwright.sync_api import sync_playwright
 
 BASE_URL = os.environ.get("DECISION_JOURNAL_TEST_URL", "http://127.0.0.1:8010")
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _health_ok(url: str, timeout: float = 1.0) -> bool:
+    try:
+        with urllib.request.urlopen(url.rstrip("/") + "/api/health", timeout=timeout) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
 
 
 @pytest.fixture(scope="module")
 def page():
+    # 后端未运行时自动拉起一个临时实例（等价于手动启动），结束后关闭
+    backend = None
+    if not _health_ok(BASE_URL):
+        backend = subprocess.Popen(
+            [sys.executable, "backend/main.py"],
+            cwd=str(REPO_ROOT),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        for _ in range(50):
+            if _health_ok(BASE_URL):
+                break
+            time.sleep(0.4)
     p = sync_playwright().start()
     b = p.chromium.launch()
     pg = b.new_page(viewport={"width": 1280, "height": 800})
@@ -21,6 +48,12 @@ def page():
     pg.close()
     b.close()
     p.stop()
+    if backend is not None:
+        backend.terminate()
+        try:
+            backend.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            backend.kill()
 
 
 def test_app_shell_two_pane_layout(page):
