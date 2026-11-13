@@ -109,59 +109,117 @@ def ensure_backend(base_url: str, enabled: bool = True, timeout: float = BACKEND
     return False
 
 
-def cmd_stop_backend(base_url: str) -> int:
-    """停止 base_url 端口上监听的本地后端进程（--action stop）。
+def _parse_local_port(base_url: str) -> Optional[int]:
+    """解析 base_url 的端口；仅接受本机 loopback 目标，避免误伤其他主机/进程。"""
+    from urllib.parse import urlsplit
 
-    Windows 用 netstat 找到 LISTENING 进程后 taskkill；
-    POSIX 用 pkill 匹配 backend/main.py 命令行。
-    """
+    parts = urlsplit(base_url)
+    if parts.scheme not in ("http", "https"):
+        return None
+    host = (parts.hostname or "").lower()
+    if host not in ("127.0.0.1", "localhost", "::1"):
+        return None
     try:
-        port = base_url.rsplit(":", 1)[-1].split("/")[0]
-    except Exception:
-        print(f"无法从 base_url 解析端口：{base_url}", file=sys.stderr)
+        return parts.port or (443 if parts.scheme == "https" else 80)
+    except ValueError:
+        return None
+
+
+def _find_backend_pids_windows(port: int) -> list:
+    """Windows：找出持有端口、且命令行确实是本项目 backend/main.py 的 python 进程。"""
+    ps_cmd = (
+        "$conns = Get-NetTCPConnection -LocalPort " + str(port) + " -ErrorAction SilentlyContinue; "
+        "$pids = $conns | Select-Object -ExpandProperty OwningProcess -Unique; "
+        "$out = @(); "
+        "foreach ($p in $pids) { "
+        "  $proc = Get-CimInstance Win32_Process -Filter \"ProcessId = $p\" -ErrorAction SilentlyContinue; "
+        "  if ($proc -and $proc.CommandLine) { "
+        "    $cl = $proc.CommandLine.ToLower(); "
+        "    if ($cl.Contains('main.py') -and $cl.Contains('backend') -and $proc.ProcessName.ToLower().Contains('python')) "
+        "    { $out += $p } "
+        "  } "
+        "} "
+        "$out -join \"`n\""
+    )
+    try:
+        out = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps_cmd],
+            capture_output=True, text=True, timeout=25,
+        ).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    return [int(line.strip()) for line in out.splitlines() if line.strip().isdigit()]
+
+
+def _find_backend_pids_posix(port: int) -> list:
+    """POSIX：遍历 ps，命令行含 backend/main.py 且由 python 启动的进程才认。"""
+    try:
+        out = subprocess.run(["ps", "-axo", "pid=,args="], capture_output=True, text=True, timeout=15).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    pids: list = []
+    for line in out.splitlines():
+        parts = line.strip().split(None, 1)
+        if len(parts) < 2 or not parts[0].isdigit():
+            continue
+        argv = parts[1].split()
+        if len(argv) < 2:
+            continue
+        is_python = "python" in argv[0].lower()
+        runs_backend = any(a.endswith("backend/main.py") for a in argv[1:])
+        if is_python and runs_backend:
+            pids.append(int(parts[0]))
+    return pids
+
+
+def _find_backend_pids(port: int) -> list:
+    if os.name == "nt":
+        return _find_backend_pids_windows(port)
+    return _find_backend_pids_posix(port)
+
+
+def _kill_pids(pids: list) -> None:
+    for pid in pids:
+        try:
+            if os.name == "nt":
+                subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True, text=True, timeout=15)
+            else:
+                os.kill(pid, 15)  # SIGTERM，给后端优雅退出机会
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+    if os.name != "nt":
+        time.sleep(1.0)
+        for pid in pids:  # 未退出的补 SIGKILL
+            try:
+                os.kill(pid, 9)
+            except (OSError, ProcessLookupError):
+                pass
+
+
+def cmd_stop_backend(base_url: str) -> int:
+    """停止本机 base_url 端口上的后端进程（--action stop）。
+
+    安全边界：
+    - 仅接受 loopback 地址；不对远程主机做任何操作；
+    - 命中进程必须同时满足"持有该端口"和"命令行确实是本项目的 backend/main.py"，
+      避免误杀同端口的其他 Python 服务、或恰好打开同名文件的编辑器；
+    - 健康检查只作辅助提示：后端卡死/启动中时同样可以停止。
+    """
+    port = _parse_local_port(base_url)
+    if port is None:
+        print(f"仅支持停止本机 loopback 地址的后端，无法处理：{base_url}", file=sys.stderr)
         return 2
 
-    if not _health_ok(base_url):
-        print(f"后端未在运行（{base_url} 无健康响应），无需停止。")
+    pids = _find_backend_pids(port)
+    if not pids:
+        if _health_ok(base_url):
+            print(f"端口 {port} 被其他进程占用且不是本项目的 backend/main.py，未做操作。", file=sys.stderr)
+            return 3
+        print(f"后端未在运行（{base_url}）。")
         return 0
 
-    killed = False
-    if os.name == "nt":
-        # Windows：按端口找持有进程，且只杀 python 进程（uvicorn 套接字在 netstat 里可能不显示 Listen 状态）
-        ps_cmd = (
-            "$pids = Get-NetTCPConnection -LocalPort {port} -ErrorAction SilentlyContinue "
-            "| Select-Object -ExpandProperty OwningProcess -Unique; "
-            "foreach ($p in $pids) {{ "
-            "  $proc = Get-Process -Id $p -ErrorAction SilentlyContinue; "
-            "  if ($proc -and $proc.ProcessName -like '*python*') {{ Stop-Process -Id $p -Force; Write-Output $p }} "
-            "}}"
-        ).format(port=port)
-        try:
-            out = subprocess.run(
-                ["powershell", "-NoProfile", "-Command", ps_cmd],
-                capture_output=True, text=True, timeout=25,
-            ).stdout
-        except (OSError, subprocess.TimeoutExpired):
-            out = ""
-        killed = bool(out.strip())
-        if not killed:
-            # 后备：pkill 思路，按命令行匹配 backend/main.py
-            try:
-                result = subprocess.run(
-                    ["powershell", "-NoProfile", "-Command",
-                     "Get-CimInstance Win32_Process -ErrorAction SilentlyContinue "
-                     "| Where-Object {{ $_.CommandLine -like '*backend/main.py*' }} "
-                     "| ForEach-Object {{ Stop-Process -Id $_.ProcessId -Force; Write-Output $_.ProcessId }}"],
-                    capture_output=True, text=True, timeout=25,
-                )
-                killed = bool(result.stdout.strip())
-            except (OSError, subprocess.TimeoutExpired):
-                killed = False
-    else:
-        result = subprocess.run(["pkill", "-f", "backend/main.py"], capture_output=True, text=True)
-        killed = result.returncode == 0
-
-    if killed:
+    _kill_pids(pids)
+    if not _find_backend_pids(port):
         print(f"已停止本地后端（{base_url}）。")
         return 0
     print(f"未能停止后端；请手动关闭监听 {base_url} 的进程。", file=sys.stderr)
