@@ -384,3 +384,17 @@ html[data-skin="console"] .brief-head { background: var(--ink); }
 @media (prefers-reduced-motion: reduce) {
   html[data-skin] * { transition-duration: 0.01ms !important; }
 }
+
+/* 高对比度偏好：加强次要文字、分隔线与键盘焦点可见性 */
+@media (prefers-contrast: more) {
+  html,
+  html[data-skin],
+  html[data-skin][data-theme] {
+    --text-secondary: var(--ink) !important;
+    --ink-soft: var(--ink) !important;
+    --ink-faint: var(--ink) !important;
+    --line: var(--line-strong) !important;
+    --border-soft: var(--line-strong) !important;
+  }
+  :focus-visible { outline-width: 3px !important; }
+}

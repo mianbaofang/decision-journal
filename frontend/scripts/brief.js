@@ -62,6 +62,13 @@ const Brief = (() => {
       const percentText = new Intl.NumberFormat(I18N.getLocale(), { style: 'percent', maximumFractionDigits: 0 }).format(o.percent / 100);
       typeBar.appendChild(el('span', '', I18N.t('brief.confidence') + ' ' + percentText));
     }
+    if (o.source === 'real' || o.source === 'mock') {
+      typeBar.appendChild(el(
+        'span',
+        'brief-source brief-source--' + o.source,
+        I18N.t('brief.source.' + o.source)
+      ));
+    }
     meta.appendChild(typeBar);
     if (o.title) meta.appendChild(el('div', 'brief-title', o.title));
     head.appendChild(meta);
@@ -749,7 +756,7 @@ const Brief = (() => {
       wheelResult: result.wheelResult,
       weather: result.weather,
       poem: result.poem,
-      source: result.source || brief.source,
+      source: result.source || result._source || brief.source,
       isReal: result.isReal,
       city: result.city,
       temperature: result.temperature,
@@ -792,7 +799,7 @@ const Brief = (() => {
       wheelResult: result.wheelResult,
       weather: result.weather,
       poem: result.poem,
-      source: result.source || brief.source,
+      source: result.source || result._source || brief.source,
       isReal: result.isReal,
       city: result.city,
       temperature: result.temperature,

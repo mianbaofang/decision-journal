@@ -1,10 +1,13 @@
 """
 桌面端布局测试 — 验证二区域结构与抽屉交互。
-后端未运行时自动拉起（测试结束关闭）；也可用 DECISION_JOURNAL_TEST_URL 指向已运行实例。
+默认在随机空闲端口拉起临时后端（独立临时 DB + config），结束后关闭；
+只有显式设置 DECISION_JOURNAL_TEST_URL 时才复用外部实例。
 用 sync_playwright 直接启动，不依赖 pytest-playwright fixture。
 """
 import json
 import os
+import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -15,7 +18,7 @@ from pathlib import Path
 import pytest
 from playwright.sync_api import sync_playwright
 
-BASE_URL = os.environ.get("DECISION_JOURNAL_TEST_URL", "http://127.0.0.1:8010")
+BASE_URL = os.environ.get("DECISION_JOURNAL_TEST_URL", "")
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -27,18 +30,53 @@ def _health_ok(url: str, timeout: float = 1.0) -> bool:
         return False
 
 
+def _free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return int(sock.getsockname()[1])
+
+
+def _isolated_backend_env(db_file: Path, config_file: Path) -> dict:
+    """清掉父进程里真实用户的 Key/DB/URL，再写入临时隔离路径。"""
+    env = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith("DECISION_JOURNAL_")
+    }
+    env.update(
+        {
+            "DECISION_JOURNAL_DB_PATH": str(db_file),
+            "DECISION_JOURNAL_CONFIG_FILE": str(config_file),
+            "PYTHONUNBUFFERED": "1",
+        }
+    )
+    return env
+
+
 @pytest.fixture(scope="module")
 def page():
-    # 后端未运行时自动拉起一个临时实例（独立临时 DB，不碰真实数据），结束后关闭；
-    # setup 任一步失败也会在 finally 里回收子进程
+    global BASE_URL
     backend = None
     pg = b = p = None
+    temp_dir = None
     try:
-        if not _health_ok(BASE_URL):
-            db_file = Path(tempfile.mkstemp(suffix=".db")[1])
-            env = {**os.environ, "DECISION_JOURNAL_DB_PATH": str(db_file)}
+        if BASE_URL:
+            if not _health_ok(BASE_URL):
+                pytest.skip(f"DECISION_JOURNAL_TEST_URL 未运行：{BASE_URL}")
+        else:
+            port = _free_port()
+            BASE_URL = f"http://127.0.0.1:{port}"
+            temp_dir = Path(tempfile.mkdtemp(prefix="decision-journal-ui-"))
+            env = _isolated_backend_env(temp_dir / "test.db", temp_dir / "config.json")
             backend = subprocess.Popen(
-                [sys.executable, "backend/main.py"],
+                [
+                    sys.executable,
+                    str(REPO_ROOT / "backend" / "main.py"),
+                    "--host",
+                    "127.0.0.1",
+                    "--port",
+                    str(port),
+                ],
                 cwd=str(REPO_ROOT),
                 env=env,
                 stdout=subprocess.DEVNULL,
@@ -48,6 +86,8 @@ def page():
                 if _health_ok(BASE_URL):
                     break
                 time.sleep(0.4)
+            if not _health_ok(BASE_URL):
+                raise RuntimeError(f"临时后端未能在 {BASE_URL} 启动")
         p = sync_playwright().start()
         b = p.chromium.launch()
         pg = b.new_page(viewport={"width": 1280, "height": 800})
@@ -65,6 +105,9 @@ def page():
                 backend.wait(timeout=10)
             except subprocess.TimeoutExpired:
                 backend.kill()
+                backend.wait(timeout=5)
+        if temp_dir is not None:
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 def test_app_shell_two_pane_layout(page):
@@ -573,3 +616,96 @@ def test_dialogue_choice_is_saved_to_history(page):
     finally:
         page.unroute("**/api/chat", handle_chat)
         page.unroute("**/api/decision/dialogue-save-test", handle_patch)
+
+
+def test_sidebar_recent_items_are_keyboard_activatable(page):
+    """最近决策必须是原生 button：可聚焦，Enter 可打开档案抽屉。"""
+    record = {
+        "id": "recent-keyboard-test",
+        "question": "键盘可达性测试",
+        "mode": "rational",
+        "result": {},
+        "brief": None,
+        "createdAt": "2026-11-13T10:00:00",
+        "executed": False,
+        "regret": False,
+    }
+
+    def handle_archive(route):
+        route.fulfill(
+            status=200,
+            content_type="application/json",
+            body=json.dumps({"ok": True, "list": [record], "total": 1, "page": 1, "pageSize": 6}),
+        )
+
+    page.route("**/api/archive*", handle_archive)
+    try:
+        page.goto(BASE_URL)
+        item = page.locator("#sidebarRecent .recent-item").first
+        item.wait_for(timeout=10000)
+        assert item.evaluate("node => node.tagName") == "BUTTON"
+        item.focus()
+        page.keyboard.press("Enter")
+        page.wait_for_timeout(300)
+        assert "open" in (page.locator("#drawer").get_attribute("class") or "")
+    finally:
+        page.unroute("**/api/archive*", handle_archive)
+
+
+def test_hero_sample_translates_in_all_six_languages(page):
+    """首页示例卡在六种语言下都有翻译，不残留中文文案。"""
+    state = {"language": "zh-CN"}
+    expected = {
+        "zh-CN": "决策简报 · 该不该换工作",
+        "yue": "決策簡報 · 應唔應該換工",
+        "en": "Decision brief · Should I change jobs?",
+        "fr": "Brief de décision · Changer de travail ?",
+        "ja": "意思決定ブリーフ · 転職すべき？",
+        "es": "Informe de decisión · ¿Cambiar de trabajo?",
+    }
+
+    def handle_preferences(route):
+        route.fulfill(
+            status=200,
+            content_type="application/json",
+            body=json.dumps({"language": state["language"], "theme": "light"}),
+        )
+
+    page.route("**/api/preferences", handle_preferences)
+    try:
+        for language, title in expected.items():
+            state["language"] = language
+            page.goto(BASE_URL)
+            page.wait_for_function(
+                """expected => {
+                    const node = document.querySelector('[data-i18n="sample.title"]');
+                    return node && node.textContent.trim() === expected;
+                }""",
+                arg=title,
+                timeout=10000,
+            )
+    finally:
+        page.unroute("**/api/preferences", handle_preferences)
+
+
+def test_dark_and_high_contrast_tokens(page):
+    """深色模式可切换；prefers-contrast: more 时次要文字提升为正文色。"""
+    page.emulate_media(color_scheme="dark", contrast="more")
+    page.goto(BASE_URL)
+    html = page.locator("html")
+    page.wait_for_timeout(500)
+    assert html.get_attribute("data-theme") == "dark"
+    tokens = page.evaluate(
+        """() => {
+            const style = getComputedStyle(document.documentElement);
+            return {
+                ink: style.getPropertyValue('--ink').trim(),
+                soft: style.getPropertyValue('--ink-soft').trim(),
+                faint: style.getPropertyValue('--ink-faint').trim(),
+            };
+        }"""
+    )
+    assert tokens["ink"]
+    assert tokens["soft"] == tokens["ink"]
+    assert tokens["faint"] == tokens["ink"]
+    page.emulate_media(color_scheme="light", contrast="no-preference")

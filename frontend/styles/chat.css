@@ -258,10 +258,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 6px;
   font-size: 9px;
   letter-spacing: 0.08em;
   opacity: 0.85;
 }
+.brief-source {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: rgba(0,0,0,0.16);
+}
+.brief-source--mock { background: rgba(255,255,255,0.22); }
+.brief-source--real { background: rgba(0,0,0,0.22); }
 .brief-title {
   margin-top: 6px;
   font-family: var(--font-display);

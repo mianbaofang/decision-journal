@@ -244,7 +244,9 @@ const App = (() => {
       }
       const modeColors = { auto: '#317d78', rational: '#365385', random: '#317d78', nature: '#486a55', dialogue: '#69526f', fengshui: '#b45a42' };
       list.forEach(d => {
-        const item = document.createElement('div');
+        // 用 button 而非 div：原生支持 Tab 聚焦与 Enter/Space 激活。
+        const item = document.createElement('button');
+        item.type = 'button';
         item.className = 'recent-item';
         const dot = document.createElement('span');
         dot.className = 'recent-dot';
