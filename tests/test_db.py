@@ -138,3 +138,105 @@ def test_config_crud():
     # delete 后再 get 返回默认
     db.delete_config_value("llm_api_key")
     assert db.get_config_value("llm_api_key", default="<deleted>") == "<deleted>"
+
+
+# ─── 旧库迁移 _migrate_legacy_db（v0.10.0 更名）─────────────────────────────
+
+import json  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+
+def _make_legacy_db(path: Path, decisions: int = 2, with_config: bool = False) -> None:
+    """构造与旧版 choice.db 同构的库：decisions 若干行 + 可选 config。"""
+    conn = sqlite3.connect(str(path))
+    conn.execute(
+        """CREATE TABLE decisions (
+            id TEXT PRIMARY KEY, question TEXT NOT NULL, mode TEXT NOT NULL,
+            result TEXT NOT NULL, brief TEXT, created_at TEXT NOT NULL,
+            executed INTEGER DEFAULT 0, regret INTEGER DEFAULT 0, dialogue_history TEXT)"""
+    )
+    conn.execute("CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+    for i in range(decisions):
+        conn.execute(
+            "INSERT INTO decisions VALUES (?, ?, 'rational', ?, NULL, ?, 0, 0, NULL)",
+            (f"legacy_{i}", f"旧库问题{i}", json.dumps({"type": "rational"}), f"2024-01-0{i + 1}T00:00:00"),
+        )
+    if with_config:
+        conn.execute("INSERT INTO config VALUES ('llm_api_key', ?)", (json.dumps("sk-legacy"),))
+    conn.commit()
+    conn.close()
+
+
+def _legacy_path() -> Path:
+    """旧库路径与 _migrate_legacy_db 的探测逻辑一致：DB_PATH 同目录 choice.db。"""
+    return db.DB_PATH.parent / "choice.db"
+
+
+def test_migration_adopts_legacy_when_new_db_missing(tmp_path, monkeypatch):
+    """场景a：新库文件不存在 → 整体接管旧库（含 config），旧库标记为 migrated。"""
+    target = tmp_path / "decision_journal.db"
+    monkeypatch.setattr(db, "DB_PATH", target)
+    _make_legacy_db(_legacy_path(), decisions=2, with_config=True)
+
+    db._migrate_legacy_db()
+
+    assert db.count_decisions() == 2
+    assert db.get_config_value("llm_api_key") == "sk-legacy"
+    assert not _legacy_path().exists()
+    assert (tmp_path / "choice.db.migrated").exists()
+
+
+def test_migration_skips_when_new_db_has_decisions(tmp_path, monkeypatch):
+    """场景b：新库已有决策 → 不覆盖、不动旧库、不打标记。"""
+    monkeypatch.setattr(db, "DB_PATH", tmp_path / "decision_journal.db")
+    db.init_db()
+    mine = db.save_decision(_make_decision(question="新库自己的决策"))
+    _make_legacy_db(_legacy_path(), decisions=2)
+
+    db._migrate_legacy_db()
+
+    assert db.count_decisions() == 1
+    assert db.get_decision(mine["id"])["question"] == "新库自己的决策"
+    assert _legacy_path().exists()
+    assert not (tmp_path / "choice.db.migrated").exists()
+
+
+def test_migration_skips_when_only_config_has_data(tmp_path, monkeypatch):
+    """场景c：新库 decisions 为空但 config 已有 Key → 不迁移，保住用户配置。"""
+    monkeypatch.setattr(db, "DB_PATH", tmp_path / "decision_journal.db")
+    db.init_db()
+    db.set_config_value("llm_api_key", "sk-keep-me")
+    _make_legacy_db(_legacy_path(), decisions=2, with_config=True)
+
+    db._migrate_legacy_db()
+
+    assert db.count_decisions() == 0
+    assert db.get_config_value("llm_api_key") == "sk-keep-me"
+    assert _legacy_path().exists()
+
+
+def test_migration_noop_without_legacy(tmp_path, monkeypatch):
+    """场景d：没有旧库 → 什么都不发生，新库照常可用。"""
+    monkeypatch.setattr(db, "DB_PATH", tmp_path / "decision_journal.db")
+    db.init_db()
+    assert not _legacy_path().exists()
+
+    db._migrate_legacy_db()
+
+    assert db.count_decisions() == 0
+    assert not (tmp_path / "choice.db.migrated").exists()
+    db.save_decision(_make_decision(question="迁移后照常写入"))
+    assert db.count_decisions() == 1
+
+
+def test_migration_does_not_repeat_after_marker(tmp_path, monkeypatch):
+    """场景e：迁移成功后旧库已改名，重复调用不再有副作用。"""
+    target = tmp_path / "decision_journal.db"
+    monkeypatch.setattr(db, "DB_PATH", target)
+    _make_legacy_db(_legacy_path(), decisions=1)
+
+    db._migrate_legacy_db()
+    db._migrate_legacy_db()  # 第二次：旧库已改名，应直接跳过
+
+    assert db.count_decisions() == 1
+    assert not _legacy_path().exists()

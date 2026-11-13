@@ -9,14 +9,15 @@
 """
 
 import json
-import shutil
+import os
 import sqlite3
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
 # SQLite 数据库文件路径（与 backend/ 同级，gitignore 已忽略 *.db）
-DB_PATH = Path(__file__).parent / "decision_journal.db"
+# 可用环境变量 DECISION_JOURNAL_DB_PATH 覆盖（测试/多实例隔离用）
+DB_PATH = Path(os.environ.get("DECISION_JOURNAL_DB_PATH") or (Path(__file__).parent / "decision_journal.db"))
 
 
 def get_conn() -> sqlite3.Connection:
@@ -29,34 +30,51 @@ def get_conn() -> sqlite3.Connection:
 
 
 def _migrate_legacy_db() -> None:
-    """v0.10.0 更名迁移：旧 choice.db 有数据而新库还是空表时，整体接管旧库。
+    """v0.10.0 更名迁移：把旧 choice.db 的数据整体接管到 decision_journal.db。
 
-    失败不阻塞启动；用户也可手动把 choice.db 改名为 decision_journal.db。
+    安全边界：
+    - 仅当旧库存在、未标记 migrated、且新库"文件不存在或 decisions/config 皆空"时执行，
+      绝不覆盖新库里已有的决策或配置（API Key、偏好）；
+    - 用 sqlite3 backup API 复制（连同未 checkpoint 的 -wal 数据），不做裸文件拷贝；
+    - 成功后把旧库改名为 choice.db.migrated，避免反复迁移；
+    - 任何失败都静默跳过，不阻塞启动；用户也可手动把 choice.db 改名为 decision_journal.db。
     """
     legacy = DB_PATH.parent / "choice.db"  # 跟随 DB_PATH 所在目录（测试隔离时指向临时目录）
-    if not legacy.exists():
+    marker = DB_PATH.parent / "choice.db.migrated"
+    if not legacy.exists() or marker.exists():
         return
+    legacy_conn = None
+    new_conn = None
     try:
-        conn = get_conn()
-        try:
+        legacy_conn = sqlite3.connect(str(legacy))
+        new_conn = sqlite3.connect(str(DB_PATH))
+        new_empty = True
+        for table in ("decisions", "config"):
             try:
-                row = conn.execute("SELECT COUNT(*) AS n FROM decisions").fetchone()
-                empty = row is None or row["n"] == 0
+                row = new_conn.execute(f"SELECT COUNT(*) AS n FROM {table}").fetchone()
+                if row and row[0] > 0:
+                    new_empty = False
+                    break
             except sqlite3.OperationalError:
-                empty = True  # 新库还没建表：视作空库，直接接管旧库
-        finally:
-            conn.close()
-        if empty:
-            shutil.copy2(legacy, DB_PATH)
-            for suffix in ("-wal", "-shm"):
-                stale = Path(str(DB_PATH) + suffix)
-                if stale.exists():
-                    try:
-                        stale.unlink()
-                    except OSError:
-                        pass
+                pass  # 表还不存在：视作空
+        if new_empty:
+            legacy_conn.backup(new_conn)
+            new_conn.commit()
+            legacy_conn.close()
+            legacy_conn = None
+            try:
+                legacy.rename(marker)
+            except OSError:
+                pass  # 改名失败不影响迁移结果；新库已有数据，不会重复接管
     except Exception:
-        pass
+        pass  # 迁移失败不阻塞启动
+    finally:
+        for conn in (legacy_conn, new_conn):
+            if conn is not None:
+                try:
+                    conn.close()
+                except sqlite3.Error:
+                    pass
 
 
 def init_db() -> None:
