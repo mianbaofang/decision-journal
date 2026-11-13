@@ -295,9 +295,9 @@ python scripts/decision_journal.py --action config-api --save-to-db \
 ## CLI Usage
 
 ```bash
-# One-shot decision
+# One-shot decision (--demo uses sample data for this request only; no real LLM call, no preference change)
 python scripts/decision_journal.py -q "Should I take the new job offer?"
-python scripts/decision_journal.py -q "What should I have for dinner?" --mode random
+python scripts/decision_journal.py -q "What should I have for dinner?" --mode random --demo
 
 # Archive & stats
 python scripts/decision_journal.py --action archive

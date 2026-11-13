@@ -43,6 +43,7 @@ CLI 入口：
 
 ```bash
 python scripts/decision_journal.py --question "该不该换工作" --mode auto
+python scripts/decision_journal.py --question "今晚吃什么" --mode random --demo  # 仅本次 mock，不改偏好
 python scripts/decision_journal.py --action archive
 python scripts/decision_journal.py --action stats
 python scripts/decision_journal.py --action export --id <id> --format md

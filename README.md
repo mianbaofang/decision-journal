@@ -295,9 +295,9 @@ python scripts/decision_journal.py --action config-api --save-to-db \
 ## CLI 使用
 
 ```bash
-# 一句话决策
+# 一句话决策（--demo 仅本次使用示例数据，不调用真实 LLM，也不改偏好）
 python scripts/decision_journal.py -q "该不该跳槽去新公司"
-python scripts/decision_journal.py -q "今晚吃什么" --mode random
+python scripts/decision_journal.py -q "今晚吃什么" --mode random --demo
 
 # 查看档案与统计
 python scripts/decision_journal.py --action archive
