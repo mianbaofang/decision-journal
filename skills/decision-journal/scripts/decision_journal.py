@@ -1,11 +1,11 @@
 """别纠结决策辅助 CLI
 
-通过 HTTP 调用后端 API，支持 chat / archive / stats / decision / config-api 五种动作。
+通过 HTTP 调用后端 API，支持 chat / archive / stats / decision / export / config-api / stop 动作。
 辅助人做选择，不替代人做决定。
 
 Skill 版本特有：用户可自配 LLM API Key + 天气 API Key（iOS/MP 版本由
 服务器端管理，用户不接触）。配置来源优先级（与后端 config.py 对齐）：
-  环境变量 > SQLite > ~/.decision-journal/config.json
+  本次请求参数 > 环境变量 > SQLite > ~/.decision-journal/config.json
 """
 
 import argparse
@@ -107,6 +107,47 @@ def ensure_backend(base_url: str, enabled: bool = True, timeout: float = BACKEND
         time.sleep(0.4)
     print(f"后端启动失败，详见 {BACKEND_LOG}", file=sys.stderr)
     return False
+
+
+def cmd_stop_backend(base_url: str) -> int:
+    """停止 base_url 端口上监听的本地后端进程（--action stop）。
+
+    Windows 用 netstat 找到 LISTENING 进程后 taskkill；
+    POSIX 用 pkill 匹配 backend/main.py 命令行。
+    """
+    try:
+        port = base_url.rsplit(":", 1)[-1].split("/")[0]
+    except Exception:
+        print(f"无法从 base_url 解析端口：{base_url}", file=sys.stderr)
+        return 2
+
+    if not _health_ok(base_url):
+        print(f"后端未在运行（{base_url} 无健康响应），无需停止。")
+        return 0
+
+    killed = False
+    if os.name == "nt":
+        try:
+            out = subprocess.run(["netstat", "-ano"], capture_output=True, text=True, timeout=15).stdout
+        except (OSError, subprocess.TimeoutExpired):
+            out = ""
+        pids = {
+            line.split()[-1]
+            for line in out.splitlines()
+            if f":{port}" in line and "LISTENING" in line.upper() and line.split()
+        }
+        for pid in pids:
+            result = subprocess.run(["taskkill", "/PID", pid, "/F"], capture_output=True, text=True)
+            killed = killed or result.returncode == 0
+    else:
+        result = subprocess.run(["pkill", "-f", "backend/main.py"], capture_output=True, text=True)
+        killed = result.returncode == 0
+
+    if killed:
+        print(f"已停止本地后端（{base_url}）。")
+        return 0
+    print(f"未能停止后端；请手动关闭监听 {base_url} 的进程。", file=sys.stderr)
+    return 3
 
 
 def _read_config_file() -> dict:
@@ -369,8 +410,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--action", "-a",
         default="chat",
-        choices=["chat", "archive", "stats", "decision", "config-api", "export"],
-        help="执行动作，默认 chat。decision: 查看或删除单条决策（需 --id）；export: 导出决策简报（需 --id）；config-api: 通过后端管理 SQLite 配置",
+        choices=["chat", "archive", "stats", "decision", "config-api", "export", "stop"],
+        help="执行动作，默认 chat。decision: 查看或删除单条决策（需 --id）；export: 导出决策简报（需 --id）；config-api: 通过后端管理 SQLite 配置；stop: 停止本机自动启动的后端",
     )
     parser.add_argument(
         "--base-url",
@@ -443,6 +484,8 @@ def main() -> int:
         return cmd_config(args)
 
     args = build_parser().parse_args(argv)
+    if args.action == "stop":
+        return cmd_stop_backend(args.base_url)
     if not ensure_backend(args.base_url, enabled=not args.no_autostart, timeout=args.backend_timeout):
         return 3
     try:
@@ -464,6 +507,16 @@ def main() -> int:
             "无法连接本地后端。请确认 backend/main.py 已启动，或重试让 CLI 自动启动。",
             file=sys.stderr,
         )
+        return 3
+    except httpx.HTTPStatusError as exc:
+        detail = (exc.response.text or "").strip()
+        print(
+            f"后端返回 {exc.response.status_code}：{detail[:300] or exc.response.reason_phrase}",
+            file=sys.stderr,
+        )
+        return 2
+    except httpx.TimeoutException:
+        print("后端响应超时；请确认本机负载或后端日志：~/.decision-journal/backend.log", file=sys.stderr)
         return 3
     return 1
 
