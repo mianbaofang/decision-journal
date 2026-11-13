@@ -221,6 +221,16 @@ const App = (() => {
   }
 
   /* ---------- 侧栏最近决策 ---------- */
+  function formatWhen(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    const sameYear = d.getFullYear() === new Date().getFullYear();
+    const md = pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    return sameYear ? md + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) : d.getFullYear() + '-' + md;
+  }
+
   async function loadSidebarRecent() {
     const container = $('sidebarRecent');
     if (!container) return;
@@ -240,9 +250,23 @@ const App = (() => {
         dot.className = 'recent-dot';
         dot.style.background = modeColors[d.mode] || '#317d78';
         item.appendChild(dot);
+        // 问题 + 时间/模式元信息，重复问题也能区分
+        const col = document.createElement('span');
+        col.className = 'recent-col';
         const txt = document.createElement('span');
+        txt.className = 'recent-q';
         txt.textContent = d.question;
-        item.appendChild(txt);
+        col.appendChild(txt);
+        const modeKey = 'mode.' + (d.mode || '');
+        const modeLabel = d.mode && I18N.t(modeKey) !== modeKey ? I18N.t(modeKey) : '';
+        const metaText = [formatWhen(d.createdAt), modeLabel].filter(Boolean).join(' · ');
+        if (metaText) {
+          const meta = document.createElement('span');
+          meta.className = 'recent-meta';
+          meta.textContent = metaText;
+          col.appendChild(meta);
+        }
+        item.appendChild(col);
         item.addEventListener('click', () => { switchTab('archive'); });
         container.appendChild(item);
       });

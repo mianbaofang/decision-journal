@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="styles/archive.css?v=8">
 <link rel="stylesheet" href="styles/stats.css?v=8">
 <link rel="stylesheet" href="styles/settings.css?v=7">
-<link rel="stylesheet" href="styles/desktop.css?v=10">
+<link rel="stylesheet" href="styles/desktop.css?v=11">
 <link rel="stylesheet" href="styles/skins.css?v=7">
 <link rel="stylesheet" href="styles/motion.css?v=4">
 </head>
@@ -76,11 +76,21 @@
   <main class="main">
     <div class="scroll-area" id="chatScroll">
       <section class="hero">
-        <div class="hero-label">
-          <span>DECISION JOURNAL</span>
+        <div class="hero-main">
+          <div class="hero-label">
+            <span>DECISION JOURNAL</span>
+          </div>
+          <h1 class="hero-title" data-i18n="hero.title">你负责做选择，它负责记住。</h1>
+          <p class="hero-sub" data-i18n="hero.copy">拆出证据、风险和下一步；每次选择自动存进本地决策日志，事后能复盘、能导出。</p>
         </div>
-        <h1 class="hero-title" data-i18n="hero.title">你负责做选择，它负责记住。</h1>
-        <p class="hero-sub" data-i18n="hero.copy">拆出证据、风险和下一步；每次选择自动存进本地决策日志，事后能复盘、能导出。</p>
+        <!-- 真实运行产出的简报示例（Demo 模式，见 examples/），仅桌面宽屏展示，作为产品自证 -->
+        <aside class="hero-sample" aria-hidden="true">
+          <div class="hs-head"><span class="hs-title">决策简报 · 该不该换工作</span><span class="hs-tag">示例 · Demo</span></div>
+          <div class="hs-summary">依我看，分两步走，先动起来再说，给自己留个退路就行。</div>
+          <div class="hs-line"><span class="hs-k">支持</span><span class="hs-v">能少纠结这事，自己拿主意更干脆</span></div>
+          <div class="hs-line"><span class="hs-k">风险</span><span class="hs-v">短期有压力，需要扛一阵</span></div>
+          <div class="hs-next"><span class="hs-k">下一步</span><span class="hs-v">今晚 30 分钟，写下最坏结果与各自的补救办法</span></div>
+        </aside>
       </section>
 
       <section class="mode-grid" id="modeSelector" role="radiogroup" aria-label="决策模式选择">
@@ -289,10 +299,10 @@
 <script src="scripts/motion.js?v=3"></script>
 <script src="scripts/brief.js?v=20"></script>
 <script src="scripts/voice.js?v=6"></script>
-<script src="scripts/chat.js?v=9"></script>
+<script src="scripts/chat.js?v=10"></script>
 <script src="scripts/archive.js?v=8"></script>
 <script src="scripts/stats.js?v=8"></script>
-<script src="scripts/settings.js?v=8"></script>
-<script src="scripts/app.js?v=11"></script>
+<script src="scripts/settings.js?v=9"></script>
+<script src="scripts/app.js?v=12"></script>
 </body>
 </html>
