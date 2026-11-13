@@ -29,7 +29,7 @@
   ·
   <a href="ACKNOWLEDGEMENTS.md">致谢</a>
   ·
-  <a href="docs/releases/v0.9.1.md">v0.9.1 发布说明</a>
+  <a href="docs/releases/v0.10.0.md">v0.10.0 发布说明</a>
   ·
   <a href="SECURITY.md">安全报告</a>
   ·
@@ -103,7 +103,7 @@ python main.py
 
 我最在意的边界是：它只能辅助选择，不能替人承担选择。尤其是很多生活里的决定，真正重要的不是"答案看起来对不对"，而是用户有没有想明白自己为什么这样选。如果能让一个人从"我不知道怎么办"变成"我知道可以先做哪一步"，它就有价值了。
 
-**别纠结**是一个本地优先的 AI 决策助手（AI decision assistant / decision support），也可以作为 decision support Skill 或 choice assistant 使用。它提供 Web 桌面界面、CLI 和可安装 Skill（decision-journal），用 FastAPI + SQLite 运行，可以连接 OpenAI 兼容接口。它不替你做决定，只把纠结拆成证据、风险和下一步。
+**别纠结**是一个本地优先的 AI 决策助手（AI decision assistant / decision support），也可以作为 decision support Skill 或 decision journal 工具使用。它提供 Web 桌面界面、CLI 和可安装 Skill（decision-journal），用 FastAPI + SQLite 运行，可以连接 OpenAI 兼容接口。它不替你做决定，只把纠结拆成证据、风险和下一步。
 
 > 使用前请阅读 [免责声明](DISCLAIMER.md)。本项目只提供决策辅助，不替代法律、医疗、金融、心理等专业建议，也不替用户承担最终选择。
 
@@ -310,6 +310,9 @@ python scripts/decision_journal.py --action decision --id <id> --delete
 # 导出决策简报
 python scripts/decision_journal.py --action export --id <id> --format md
 python scripts/decision_journal.py --action export --id <id> --format json
+
+# 停止本机自动启动的后端（只处理 loopback 上确认为本项目的进程）
+python scripts/decision_journal.py --action stop
 ```
 
 完整参数见 [可安装 Skill 入口](skills/decision-journal/SKILL.md)。合并后的仓库只保留这一处 canonical Skill 入口，避免 GitHub 自动发现重复条目。
@@ -457,7 +460,7 @@ decision-journal/
 
 ## 状态
 
-当前版本：[`v0.9.1`](docs/releases/v0.9.1.md)。仓库产品名是 **Decision Journal（别纠结）**；`decision-journal` 是为既有 CLI 命令和 Skill 安装发现保留的标识。这一补丁将唯一可安装 Skill 固定到 `skills/decision-journal/`，移除根目录重复入口，并提供带 SHA-256 的版本化安装 ZIP；产品功能与使用边界保持不变。
+当前版本：[`v0.10.0`](docs/releases/v0.10.0.md)。仓库、可安装 Skill 与 CLI 已统一为 **Decision Journal（别纠结）**：Skill 目录 `skills/decision-journal/`、CLI 命令 `decision-journal`、环境变量 `DECISION_JOURNAL_*`、本地配置 `~/.decision-journal/`。功能与使用边界保持不变，旧数据可自动迁移（见 CHANGELOG）。
 
 ## 作者与联系
 

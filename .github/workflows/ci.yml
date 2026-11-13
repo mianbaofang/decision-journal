@@ -61,7 +61,7 @@ jobs:
 
       - name: Start backend
         run: |
-          python backend/main.py > "$RUNNER_TEMP/decision-brief-backend.log" 2>&1 &
+          python backend/main.py > "$RUNNER_TEMP/decision-journal-backend.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/decision-brief-backend.pid"
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:8010/api/health; then
@@ -69,7 +69,7 @@ jobs:
             fi
             sleep 1
           done
-          cat "$RUNNER_TEMP/decision-brief-backend.log"
+          cat "$RUNNER_TEMP/decision-journal-backend.log"
           exit 1
 
       - name: Run desktop Playwright tests
@@ -77,4 +77,4 @@ jobs:
 
       - name: Show backend log on failure
         if: failure()
-        run: cat "$RUNNER_TEMP/decision-brief-backend.log"
+        run: cat "$RUNNER_TEMP/decision-journal-backend.log"

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mianbaofang.github.io/decision-brief/sitemap.xml
+Sitemap: https://mianbaofang.github.io/decision-journal/sitemap.xml

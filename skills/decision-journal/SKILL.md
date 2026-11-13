@@ -46,6 +46,7 @@ python scripts/decision_journal.py --question "该不该换工作" --mode auto
 python scripts/decision_journal.py --action archive
 python scripts/decision_journal.py --action stats
 python scripts/decision_journal.py --action export --id <id> --format md
+python scripts/decision_journal.py --action stop  # 停止本机自动启动的后端
 ```
 
 完整参数以 `python scripts/decision_journal.py --help`、`backend/` 路由和前端设置页为准。

@@ -1,6 +1,6 @@
 # Output quality scorecard
 
-Release candidate: `v0.9.1`
+Release candidate: `v0.10.0`
 
 This scorecard defines the evidence expected for the installable Skill. It does not claim live third-party model quality or automatic activation telemetry.
 

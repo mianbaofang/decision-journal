@@ -29,7 +29,7 @@
   ·
   <a href="ACKNOWLEDGEMENTS.md">Acknowledgements</a>
   ·
-  <a href="docs/releases/v0.9.1.md">v0.9.1 Release Notes</a>
+  <a href="docs/releases/v0.10.0.md">v0.10.0 Release Notes</a>
   ·
   <a href="SECURITY.md">Security</a>
   ·
@@ -103,7 +103,7 @@ The current design offers several entry points: Rational looks at benefits, risk
 
 The boundary I care about most: it can only assist your choice; it cannot bear the choice for you. Especially with life decisions, what really matters isn't whether the answer "looks right," but whether you've thought through why you're choosing it. If it can move someone from "I don't know what to do" to "I know what first step I can take," it has done its job.
 
-**Decision Journal (别纠结)** is a local-first AI decision assistant, decision-support tool, and choice assistant with a Web UI, CLI, and an installable Skill (decision-journal). It runs on FastAPI + SQLite and connects to OpenAI-compatible APIs. It does not decide for you; it separates a dilemma into evidence, risks, and a next step.
+**Decision Journal (别纠结)** is a local-first AI decision assistant, decision-support tool, and decision journal with a Web UI, CLI, and an installable Skill (decision-journal). It runs on FastAPI + SQLite and connects to OpenAI-compatible APIs. It does not decide for you; it separates a dilemma into evidence, risks, and a next step.
 
 > Read [Disclaimer](DISCLAIMER.md) before use. This project is decision support only; it is not legal, medical, financial, psychological, or other professional advice.
 
@@ -457,7 +457,7 @@ You can explicitly enable Demo mode to explore the full UI with sample results, 
 
 ## Status
 
-Current version: [`v0.9.1`](docs/releases/v0.9.1.md). The public product is **Decision Journal (别纠结)**; `decision-journal` is the retained identifier for existing CLI commands and Skill installation discovery. This patch keeps one installable Skill at `skills/decision-journal/`, removes the duplicate root entry, and publishes a versioned Skill ZIP with a SHA-256 checksum; product behavior and safety boundaries are unchanged.
+Current version: [`v0.10.0`](docs/releases/v0.10.0.md). The repository, the installable Skill, and the CLI are now unified as **Decision Journal (别纠结)**: skill directory `skills/decision-journal/`, CLI command `decision-journal`, env vars `DECISION_JOURNAL_*`, local config `~/.decision-journal/`. Behavior and safety boundaries are unchanged; existing local data migrates automatically (see CHANGELOG).
 
 ## Author And Contact
 

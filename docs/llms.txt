@@ -12,7 +12,7 @@ Decision Journal is a local-first AI decision assistant that remembers: it accep
 - Chinese Pages intro: https://mianbaofang.github.io/decision-journal/
 - English Pages intro: https://mianbaofang.github.io/decision-journal/index-en.html
 
-Decision Journal is the public product and repository identity. `decision-journal` is the retained installable Skill and CLI identifier for package discovery and existing commands.
+Decision Journal (别纠结) is the unified identity for the repository, the installable Skill, and the CLI since v0.10.0.
 
 ## Capabilities
 

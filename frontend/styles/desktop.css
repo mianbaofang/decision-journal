@@ -314,7 +314,7 @@ html, body {
 
 .hs-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
 .hs-title { font-weight: 700; color: var(--ink); font-family: var(--font-display); }
-.hs-tag { font-size: 10px; color: var(--aqua); border: 1px solid currentColor; border-radius: 999px; padding: 1px 8px; opacity: 0.85; white-space: nowrap; }
+.hs-tag { font-size: 11px; color: #fff; background: var(--aqua); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
 .hs-summary { color: var(--ink); line-height: 1.5; margin-bottom: 8px; }
 .hs-line, .hs-next { display: flex; gap: 4px; margin-top: 4px; }
 .hs-k { flex-shrink: 0; color: var(--text-secondary); }

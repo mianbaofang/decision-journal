@@ -1,8 +1,8 @@
 # 《别纠结》项目交接文档
 
 > 项目：`decision-journal-master`  
-> 当前公开版本：`v0.9.0`  
-> 文档基准：2026-08-13，按当前工作区代码和资产整理  
+> 当前公开版本：`v0.10.0`  
+> 文档基准：2026-11-13，按当前工作区代码和资产整理  
 > 产品名称：别纠结（Decision Journal）
 
 ## 1. 这是什么
@@ -23,7 +23,7 @@
 
 ## 2. 当前状态与接手重点
 
-- 版本号为 `0.9.0`，变更记录在 `CHANGELOG.md` 和 `docs/releases/v0.9.0.md`。
+- 版本号为 `0.10.0`，变更记录在 `CHANGELOG.md` 和 `docs/releases/v0.10.0.md`。
 - 后端是 Python/FastAPI，前端是原生 HTML/CSS/JavaScript，没有 Node 构建步骤。
 - LLM 与高德天气都不内置凭据，必须由使用者自行配置。
 - 面向用户的“风水”已改为“国学”，但内部模式 id 仍是 `fengshui`。这是兼容旧数据、CLI 参数、API 和前端逻辑的约定，不要直接改名。
@@ -381,7 +381,7 @@ pytest -q
 
 ### 13.2 桌面 UI 测试
 
-`tests/test_desktop_ui.py` 不是自己启动服务，它默认访问 `http://127.0.0.1:8010`。跑完整 `pytest` 前，要先在另一个终端启动后端：
+`tests/test_desktop_ui.py` 在后端未运行时会自动拉起临时实例（独立临时数据库，结束后关闭）；也可用环境变量 `DECISION_JOURNAL_TEST_URL` 指向已运行实例。手动方式仍可用——先在另一个终端启动后端：
 
 ```powershell
 cd E:\Object\decision-journal-master\backend
@@ -426,7 +426,7 @@ pytest tests/test_integration.py -q
 - 英文 README：`README.en.md`
 - GitHub Pages 中文介绍：`docs/index.html`
 - GitHub Pages 英文介绍：`docs/index-en.html`
-- 发布说明：`docs/releases/v0.9.0.md`
+- 发布说明：`docs/releases/v0.10.0.md`
 
 README 顶部使用：
 
@@ -494,7 +494,7 @@ README 顶部使用：
 - `README.en.md`：英文说明
 - `skills/decision-journal/SKILL.md`：CLI / Skill 参数与返回结构
 - `CHANGELOG.md`：版本变更
-- `docs/releases/v0.9.0.md`：当前版本发布说明
+- `docs/releases/v0.10.0.md`：当前版本发布说明
 - `DISCLAIMER.md`：高风险决策、隐私、第三方服务边界
 - `ACKNOWLEDGEMENTS.md`：第三方引用和致谢
 - `CONTRIBUTING.md`：贡献约束
