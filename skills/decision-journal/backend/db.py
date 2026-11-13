@@ -72,18 +72,30 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
     )
 
 
+# 当前 schema 的 decisions 全部列；旧库缺任何一列时不走整体 backup，
+# 而是先建新 schema 再按列合并，避免复制出一个后续写入会失败的老表。
+_DECISION_COLUMNS = {
+    "id", "question", "mode", "result", "brief", "created_at",
+    "executed", "regret", "dialogue_history",
+}
+_REQUIRED_DECISION_COLUMNS = {"id", "question", "mode", "result", "created_at"}
+
+
+def _decision_columns(conn: sqlite3.Connection) -> set:
+    return {
+        str(row[1])
+        for row in conn.execute("PRAGMA table_info(decisions)").fetchall()
+    }
+
+
 def _legacy_decision_rows(conn: sqlite3.Connection) -> list:
     """读取旧库 decisions 行；兼容缺少可选列的老库，跳过不可用的行。
 
     返回顺序与 decisions 表列顺序一致：
     (id, question, mode, result, brief, created_at, executed, regret, dialogue_history)
     """
-    columns = {
-        str(row[1])
-        for row in conn.execute("PRAGMA table_info(decisions)").fetchall()
-    }
-    required = {"id", "question", "mode", "result", "created_at"}
-    if not required.issubset(columns):
+    columns = _decision_columns(conn)
+    if not _REQUIRED_DECISION_COLUMNS.issubset(columns):
         return []
 
     def col(name: str, default: str) -> str:
@@ -190,12 +202,13 @@ def _migrate_legacy_db() -> None:
 
         if new_decisions > 0:
             return  # 新库已有决策：不覆盖、不标记、不动旧库
-        if not new_existed and new_config == 0:
-            # 全新数据库：整体复制最完整，backup API 会带上 WAL 中已提交的数据。
+        legacy_has_full_schema = _DECISION_COLUMNS.issubset(_decision_columns(legacy_conn))
+        if not new_existed and new_config == 0 and legacy_has_full_schema:
+            # 全新数据库且旧 schema 完整：整体复制最完整，backup API 会带上 WAL。
             _backup_legacy(legacy_conn, new_conn)
             adopted = True
         else:
-            # 已存在的空库/仅配置库：只做幂等合并，保留新库配置。
+            # 已存在/仅配置/旧 schema 缺列：新建 schema 后幂等合并，保留新库配置。
             adopted = _merge_legacy_into_new(legacy_conn, new_conn)
     except (sqlite3.Error, OSError):
         adopted = False

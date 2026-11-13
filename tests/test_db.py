@@ -287,6 +287,33 @@ def test_migration_reads_uncheckpointed_wal_when_new_db_exists(tmp_path, monkeyp
     assert db.get_decision("wal_1")["question"] == "WAL 问题"
 
 
+def test_migration_backup_includes_wal_for_new_target(tmp_path, monkeypatch):
+    """场景f2：全新目标走 backup API 时，也必须带上旧库未 checkpoint 的 WAL。"""
+    target = tmp_path / "decision_journal.db"
+    monkeypatch.setattr(db, "DB_PATH", target)
+    legacy = _legacy_path()
+    conn = sqlite3.connect(str(legacy))
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA wal_autocheckpoint=0")
+    conn.execute(
+        """CREATE TABLE decisions (
+            id TEXT PRIMARY KEY, question TEXT NOT NULL, mode TEXT NOT NULL,
+            result TEXT NOT NULL, brief TEXT, created_at TEXT NOT NULL,
+            executed INTEGER DEFAULT 0, regret INTEGER DEFAULT 0, dialogue_history TEXT)"""
+    )
+    conn.execute("CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+    conn.execute(
+        "INSERT INTO decisions VALUES ('wal_new_1', '全新目标 WAL', 'random', '{}', NULL, '2024-01-01T00:00:00', 0, 0, NULL)"
+    )
+    conn.commit()
+
+    db._migrate_legacy_db()
+    conn.close()
+
+    assert db.count_decisions() == 1
+    assert db.get_decision("wal_new_1")["question"] == "全新目标 WAL"
+
+
 def test_migration_survives_corrupt_legacy(tmp_path, monkeypatch):
     """场景g：旧库是损坏文件 → 不崩溃、不标记、新库仍可正常初始化。"""
     monkeypatch.setattr(db, "DB_PATH", tmp_path / "decision_journal.db")
@@ -372,10 +399,9 @@ def test_migration_idempotent_when_marker_rename_fails(tmp_path, monkeypatch):
 
 
 def test_migration_accepts_old_schema_without_optional_columns(tmp_path, monkeypatch):
-    """场景k：旧库 decisions 缺 brief/executed/regret/dialogue 列 → 仍能迁移核心字段。"""
+    """场景k：全新目标 + 旧 schema 缺列 → 先建新 schema 再迁移，后续写入不失败。"""
     target = tmp_path / "decision_journal.db"
     monkeypatch.setattr(db, "DB_PATH", target)
-    db.init_db()
     legacy = _legacy_path()
     conn = sqlite3.connect(str(legacy))
     conn.execute(
@@ -393,6 +419,9 @@ def test_migration_accepts_old_schema_without_optional_columns(tmp_path, monkeyp
 
     assert db.count_decisions() == 1
     assert db.get_decision("old_1")["question"] == "旧 schema"
+    # 新表必须已补齐可选列，后续正常写入不能因缺列失败
+    db.save_decision(_make_decision(question="旧 schema 迁移后写入"))
+    assert db.count_decisions() == 2
 
 
 def test_migration_concurrent_calls_do_not_duplicate(tmp_path, monkeypatch):
