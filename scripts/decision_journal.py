@@ -12,6 +12,9 @@ import argparse
 import datetime
 import json
 import os
+import re
+import shlex
+import socket
 import subprocess
 import sys
 import time
@@ -25,13 +28,20 @@ DEFAULT_BASE_URL = "http://127.0.0.1:8010"
 
 # 自动启动后端的等待时间与日志位置
 BACKEND_START_TIMEOUT = 20.0
-BACKEND_LOG = Path.home() / ".decision-journal" / "backend.log"
+# 测试/便携模式可重定向，避免写入真实用户目录
+BACKEND_LOG = Path(
+    os.environ.get("DECISION_JOURNAL_BACKEND_LOG")
+    or (Path.home() / ".decision-journal" / "backend.log")
+)
 
 # 六种决策模式（与后端 modes_data 保持一致）
 MODES = ["auto", "rational", "random", "nature", "dialogue", "fengshui"]
 
-# 配置文件路径（与后端 services/config.py 保持一致）
-CONFIG_PATH = Path.home() / ".decision-journal" / "config.json"
+# 配置文件路径（与后端 config.py 保持一致；测试可用环境变量隔离）
+CONFIG_PATH = Path(
+    os.environ.get("DECISION_JOURNAL_CONFIG_FILE")
+    or (Path.home() / ".decision-journal" / "config.json")
+)
 
 # CLI flag -> 请求体字段名（与后端 ChatRequest 字段对齐）
 # 键名与 _collect_cli_config 返回的 config 键名一致
@@ -59,17 +69,22 @@ def _backend_main() -> Optional[Path]:
 
 
 def _health_ok(base_url: str, timeout: float = 1.0) -> bool:
+    """校验 /api/health 的业务身份，避免把同端口的其他 200 服务当成本后端。"""
     try:
         response = httpx.get(base_url.rstrip("/") + "/api/health", timeout=timeout)
-        return response.status_code == 200
+        if response.status_code != 200:
+            return False
+        data = response.json()
+        return isinstance(data, dict) and data.get("status") == "ok" and bool(data.get("name"))
     except Exception:
         return False
 
 
 def ensure_backend(base_url: str, enabled: bool = True, timeout: float = BACKEND_START_TIMEOUT) -> bool:
-    """确保本地后端可用：先探测，再按需自动启动，并等待健康检查通过。
+    """确保后端可用：先探测；仅对 loopback HTTP 地址按需启动本地后端。
 
-    返回 True 表示可以继续调用 API；False 表示需要用户手动处理后端。
+    远程主机或非 HTTP 的 base_url 只做健康检查，绝不在本机另起一个 127.0.0.1:8010
+    进程。启动时把解析到的 host/port 显式传给 backend/main.py，支持非默认端口。
     """
     if _health_ok(base_url):
         return True
@@ -79,6 +94,23 @@ def ensure_backend(base_url: str, enabled: bool = True, timeout: float = BACKEND
             file=sys.stderr,
         )
         return False
+
+    target = _parse_local_target(base_url)
+    if target is None:
+        print(
+            f"base_url 指向远程主机或非 loopback 地址（{base_url}），CLI 不会自动启动本地后端。"
+            "请确认远程服务可用，或改用本机 --base-url。",
+            file=sys.stderr,
+        )
+        return False
+    scheme, host, port = target
+    if scheme != "http":
+        print(
+            f"自动启动只支持本机 http base_url，当前为 {base_url}；请手动启动后端。",
+            file=sys.stderr,
+        )
+        return False
+
     main_py = _backend_main()
     if main_py is None:
         print(
@@ -86,17 +118,33 @@ def ensure_backend(base_url: str, enabled: bool = True, timeout: float = BACKEND
             file=sys.stderr,
         )
         return False
+
     BACKEND_LOG.parent.mkdir(parents=True, exist_ok=True)
     log = open(BACKEND_LOG, "a", encoding="utf-8")
     stamp = datetime.datetime.now().isoformat(timespec="seconds")
-    log.write(f"[{stamp}] starting backend: {main_py}\n")
+    log.write(f"[{stamp}] starting backend: {main_py} ({host}:{port})\n")
     log.flush()
-    popen_kwargs = {"cwd": str(main_py.parent), "stdout": log, "stderr": subprocess.STDOUT, "env": {**os.environ, "PYTHONUNBUFFERED": "1"}}
+    bind_host = "127.0.0.1" if host == "localhost" else host
+    command = [sys.executable, str(main_py), "--host", bind_host, "--port", str(port)]
+    popen_kwargs = {
+        "cwd": str(main_py.parent),
+        "stdout": log,
+        "stderr": subprocess.STDOUT,
+        "env": {**os.environ, "PYTHONUNBUFFERED": "1"},
+    }
     if os.name == "nt":
         popen_kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0)
     else:
         popen_kwargs["start_new_session"] = True
-    proc = subprocess.Popen([sys.executable, str(main_py)], **popen_kwargs)
+    try:
+        proc = subprocess.Popen(command, **popen_kwargs)
+    except OSError as exc:
+        log.write(f"failed to start backend: {type(exc).__name__}\n")
+        log.flush()
+        print(f"后端启动失败，详见 {BACKEND_LOG}", file=sys.stderr)
+        return False
+    finally:
+        log.close()
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if _health_ok(base_url):
@@ -109,34 +157,61 @@ def ensure_backend(base_url: str, enabled: bool = True, timeout: float = BACKEND
     return False
 
 
-def _parse_local_port(base_url: str) -> Optional[int]:
-    """解析 base_url 的端口；仅接受本机 loopback 目标，避免误伤其他主机/进程。"""
+def _parse_local_target(base_url: str) -> Optional[tuple]:
+    """解析 loopback base_url，返回 (scheme, host, port)；远程/非法地址返回 None。"""
     from urllib.parse import urlsplit
 
-    parts = urlsplit(base_url)
+    try:
+        parts = urlsplit(base_url)
+    except ValueError:
+        return None
     if parts.scheme not in ("http", "https"):
         return None
     host = (parts.hostname or "").lower()
     if host not in ("127.0.0.1", "localhost", "::1"):
         return None
     try:
-        return parts.port or (443 if parts.scheme == "https" else 80)
+        port = parts.port or (443 if parts.scheme == "https" else 80)
     except ValueError:
         return None
+    return parts.scheme, host, port
 
 
-def _find_backend_pids_windows(port: int) -> list:
-    """Windows：找出持有端口、且命令行确实是本项目 backend/main.py 的 python 进程。"""
+def _parse_local_port(base_url: str) -> Optional[int]:
+    """解析本机 loopback 端口；保留给 stop/测试使用。"""
+    target = _parse_local_target(base_url)
+    return target[2] if target else None
+
+
+def _normalized_cmd(value: str) -> str:
+    """统一路径分隔符与大小写，供命令行匹配使用。"""
+    return value.replace("\\", "/").lower()
+
+
+def _command_line_runs_backend(command_line: str, target: Path) -> bool:
+    """命令行是否把本项目 backend/main.py 的绝对路径作为独立参数。
+
+    只认完整绝对路径，不做 `main.py` / `backend` 子串匹配，避免误杀同名项目。
+    """
+    if not command_line or target is None:
+        return False
+    target_text = _normalized_cmd(str(target))
+    pattern = r'(?:^|[\s"\'])' + re.escape(target_text) + r'(?=$|[\s"\'])'
+    return re.search(pattern, _normalized_cmd(command_line)) is not None
+
+
+def _find_backend_pids_windows(port: int, target: Path) -> list:
+    """Windows：只返回同时持有该端口、且命令行含本项目绝对路径的 python 进程。"""
     ps_cmd = (
+        # 不用 -State Listen：部分 Windows 版本对监听 socket 返回空 State，
+        # 过滤后会把真正的后端漏掉；后续再用 python + 绝对路径核对。
         "$conns = Get-NetTCPConnection -LocalPort " + str(port) + " -ErrorAction SilentlyContinue; "
         "$pids = $conns | Select-Object -ExpandProperty OwningProcess -Unique; "
         "$out = @(); "
         "foreach ($p in $pids) { "
         "  $proc = Get-CimInstance Win32_Process -Filter \"ProcessId = $p\" -ErrorAction SilentlyContinue; "
-        "  if ($proc -and $proc.CommandLine) { "
-        "    $cl = $proc.CommandLine.ToLower(); "
-        "    if ($cl.Contains('main.py') -and $cl.Contains('backend') -and $proc.ProcessName.ToLower().Contains('python')) "
-        "    { $out += $p } "
+        "  if ($proc -and $proc.CommandLine -and $proc.ProcessName.ToLower().Contains('python')) { "
+        "    $out += (\"{0}`t{1}\" -f $p, $proc.CommandLine) "
         "  } "
         "} "
         "$out -join \"`n\""
@@ -148,52 +223,143 @@ def _find_backend_pids_windows(port: int) -> list:
         ).stdout
     except (OSError, subprocess.TimeoutExpired):
         return []
-    return [int(line.strip()) for line in out.splitlines() if line.strip().isdigit()]
-
-
-def _find_backend_pids_posix(port: int) -> list:
-    """POSIX：遍历 ps，命令行含 backend/main.py 且由 python 启动的进程才认。"""
-    try:
-        out = subprocess.run(["ps", "-axo", "pid=,args="], capture_output=True, text=True, timeout=15).stdout
-    except (OSError, subprocess.TimeoutExpired):
-        return []
-    pids: list = []
+    pids = []
     for line in out.splitlines():
-        parts = line.strip().split(None, 1)
-        if len(parts) < 2 or not parts[0].isdigit():
-            continue
-        argv = parts[1].split()
-        if len(argv) < 2:
-            continue
-        is_python = "python" in argv[0].lower()
-        runs_backend = any(a.endswith("backend/main.py") for a in argv[1:])
-        if is_python and runs_backend:
-            pids.append(int(parts[0]))
+        pid_text, _, command_line = line.partition("\t")
+        if pid_text.strip().isdigit() and _command_line_runs_backend(command_line, target):
+            pids.append(int(pid_text.strip()))
     return pids
 
 
-def _find_backend_pids(port: int) -> list:
+def _listening_pids_posix(port: int) -> Optional[list]:
+    """POSIX：找出监听该端口的 PID；无法确认时返回 None（调用方必须拒绝杀进程）。"""
+    lsof_cmd = ["lsof", "-nP", f"-tiTCP:{port}", "-sTCP:LISTEN"]
+    try:
+        result = subprocess.run(lsof_cmd, capture_output=True, text=True, timeout=10)
+        if result.returncode == 0:
+            return [int(line.strip()) for line in result.stdout.splitlines() if line.strip().isdigit()]
+        if result.returncode == 1 and not (result.stderr or "").strip():
+            return []  # lsof 正常执行：该端口没有监听者
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+    ss_cmd = ["ss", "-ltnpH", f"sport = :{port}"]
+    try:
+        result = subprocess.run(ss_cmd, capture_output=True, text=True, timeout=10)
+        if result.returncode == 0:
+            return sorted({int(pid) for pid in re.findall(r"pid=(\d+)", result.stdout)})
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    return None
+
+
+def _process_is_python_posix(pid: int) -> bool:
+    try:
+        result = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "comm="],
+            capture_output=True, text=True, timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return "python" in (result.stdout or "").strip().lower()
+
+
+def _process_command_line_posix(pid: int) -> str:
+    try:
+        result = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "args="],
+            capture_output=True, text=True, timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+    return (result.stdout or "").strip()
+
+
+def _pid_runs_backend_posix(pid: int, target: Path) -> bool:
+    """PID 是否为启动本项目 backend/main.py 的 python 进程。
+
+    优先匹配绝对路径；Linux 上若命令行是相对路径，则结合 /proc/<pid>/cwd 解析。
+    """
+    if not _process_is_python_posix(pid):
+        return False
+    args = _process_command_line_posix(pid)
+    if not args:
+        return False
+    if _command_line_runs_backend(args, target):
+        return True
+    try:
+        cwd = Path(os.readlink(f"/proc/{pid}/cwd"))
+    except (OSError, ValueError):
+        return False
+    for token in shlex.split(args):
+        candidate = Path(token)
+        if not candidate.is_absolute():
+            candidate = cwd / candidate
+        try:
+            if candidate.resolve() == target.resolve():
+                return True
+        except OSError:
+            continue
+    return False
+
+
+def _find_backend_pids_posix(port: int, target: Path) -> list:
+    """POSIX：先确认端口监听者，再逐个核对本项目绝对路径，避免误杀其他实例。"""
+    owners = _listening_pids_posix(port)
+    if not owners:
+        return []
+    return [pid for pid in owners if _pid_runs_backend_posix(pid, target)]
+
+
+def _find_backend_pids(port: int, target: Path) -> list:
     if os.name == "nt":
-        return _find_backend_pids_windows(port)
-    return _find_backend_pids_posix(port)
+        return _find_backend_pids_windows(port, target)
+    return _find_backend_pids_posix(port, target)
+
+
+def _port_open(base_url: str, timeout: float = 0.4) -> bool:
+    """TCP 层判断端口是否仍有进程监听（用于区分“未运行”和“无法确认”）。"""
+    target = _parse_local_target(base_url)
+    if target is None:
+        return False
+    _, host, port = target
+    if host == "localhost":
+        host = "127.0.0.1"
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def _pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
 
 
 def _kill_pids(pids: list) -> None:
     for pid in pids:
         try:
             if os.name == "nt":
-                subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True, text=True, timeout=15)
+                subprocess.run(
+                    ["taskkill", "/PID", str(pid), "/T", "/F"],
+                    capture_output=True, text=True, timeout=15,
+                )
             else:
                 os.kill(pid, 15)  # SIGTERM，给后端优雅退出机会
         except (OSError, subprocess.TimeoutExpired):
             pass
     if os.name != "nt":
         time.sleep(1.0)
-        for pid in pids:  # 未退出的补 SIGKILL
-            try:
-                os.kill(pid, 9)
-            except (OSError, ProcessLookupError):
-                pass
+        for pid in pids:  # 未退出的补 SIGKILL；先确认 PID 仍存活，降低 PID 复用风险
+            if _pid_alive(pid):
+                try:
+                    os.kill(pid, 9)
+                except OSError:
+                    pass
 
 
 def cmd_stop_backend(base_url: str) -> int:
@@ -209,17 +375,24 @@ def cmd_stop_backend(base_url: str) -> int:
     if port is None:
         print(f"仅支持停止本机 loopback 地址的后端，无法处理：{base_url}", file=sys.stderr)
         return 2
+    target = _backend_main()
+    if target is None:
+        print("找不到随包分发的 backend/main.py，无法确认要停止哪个进程；未做操作。", file=sys.stderr)
+        return 2
 
-    pids = _find_backend_pids(port)
+    pids = _find_backend_pids(port, target)
     if not pids:
-        if _health_ok(base_url):
-            print(f"端口 {port} 被其他进程占用且不是本项目的 backend/main.py，未做操作。", file=sys.stderr)
+        if _health_ok(base_url) or _port_open(base_url):
+            print(
+                f"端口 {port} 有服务在监听，但无法确认是本项目 {target}；未做操作。",
+                file=sys.stderr,
+            )
             return 3
         print(f"后端未在运行（{base_url}）。")
         return 0
 
     _kill_pids(pids)
-    if not _find_backend_pids(port):
+    if not _find_backend_pids(port, target):
         print(f"已停止本地后端（{base_url}）。")
         return 0
     print(f"未能停止后端；请手动关闭监听 {base_url} 的进程。", file=sys.stderr)
@@ -289,6 +462,9 @@ def cmd_chat(args: argparse.Namespace, client: httpx.Client) -> int:
             _save_config_file(cli_cfg)
 
     payload: dict = {"question": args.question, "mode": args.mode}
+    if getattr(args, "demo", False):
+        # 仅本次请求启用 mock；不写入用户偏好，也不调用真实 LLM。
+        payload["demoMode"] = True
     payload.update(_build_request_overrides(_collect_cli_config(args)))
     resp = client.post("/api/chat", json=payload)
     resp.raise_for_status()
@@ -296,6 +472,8 @@ def cmd_chat(args: argparse.Namespace, client: httpx.Client) -> int:
 
     # nature 模式输出自然意象简报
     nature = data.get("nature")
+    brief = data.get("brief")
+    result = data.get("result")
     reply = data.get("reply", "")
     if reply:
         print(reply)
@@ -303,8 +481,22 @@ def cmd_chat(args: argparse.Namespace, client: httpx.Client) -> int:
 
     if nature:
         _print_json(nature)
+    elif isinstance(brief, dict) and brief:
+        _print_json(brief)
+    elif isinstance(result, dict):
+        # random / dialogue 等模式没有 Brief，输出完整 ModeResult，避免只打印 {}。
+        _print_json(result)
     else:
-        _print_json(data.get("brief", {}))
+        _print_json({})
+
+    # 明确标注真实模型或 Demo/mock，不把示例数据说成真实分析。
+    source = ""
+    if isinstance(brief, dict):
+        source = brief.get("source") or ""
+    if not source and isinstance(result, dict):
+        source = result.get("source") or result.get("_source") or ""
+    if source:
+        print(f"结果来源：{source}")
 
     # 若后端已落库，提示 decisionId（便于后续 decision 动作查看/删除）
     decision_id = data.get("decisionId")
@@ -511,6 +703,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="把本次 CLI 提供的配置持久化到 ~/.decision-journal/config.json",
     )
     parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="仅本次 chat 使用 Demo/mock 示例数据，不调用真实 LLM，也不修改偏好",
+    )
+    parser.add_argument(
         "--id",
         default=None,
         help="决策记录 id（decision 动作必填）",
@@ -551,6 +748,36 @@ def build_config_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _secret_values(args: argparse.Namespace) -> list:
+    """收集本次 CLI/环境中的敏感值，用于错误输出脱敏。"""
+    values = []
+    for name in ("api_key", "weather_key", "weather_appsecret"):
+        value = getattr(args, name, None)
+        if value:
+            values.append(str(value))
+    for env_name in (
+        "DECISION_JOURNAL_LLM_API_KEY",
+        "DECISION_JOURNAL_WEATHER_KEY",
+        "DECISION_JOURNAL_WEATHER_APPSECRET",
+    ):
+        value = os.environ.get(env_name)
+        if value:
+            values.append(value)
+    return values
+
+
+def _redact_secrets(text: str, secrets: Optional[list] = None) -> str:
+    """从错误文本中移除已知 secret 与常见 Key 形态，避免转发上游响应时泄露。"""
+    redacted = text or ""
+    for secret in secrets or []:
+        if secret and len(secret) >= 4:
+            redacted = redacted.replace(secret, "***")
+    redacted = re.sub(r"(?i)(bearer\s+)[A-Za-z0-9._\-]{4,}", r"\1***", redacted)
+    redacted = re.sub(r"(?i)((?:api[_-]?key|token|secret|authorization)\s*[:=]\s*[\"']?)[^\"'\s,}]+", r"\1***", redacted)
+    redacted = re.sub(r"sk-[A-Za-z0-9._\-]{4,}", "sk-***", redacted)
+    return redacted
+
+
 def main() -> int:
     """入口。支持 config 子命令与默认 chat/archive/stats 流程。"""
     argv = sys.argv[1:]
@@ -585,14 +812,14 @@ def main() -> int:
         )
         return 3
     except httpx.HTTPStatusError as exc:
-        detail = (exc.response.text or "").strip()
+        detail = _redact_secrets((exc.response.text or "").strip(), _secret_values(args))
         print(
             f"后端返回 {exc.response.status_code}：{detail[:300] or exc.response.reason_phrase}",
             file=sys.stderr,
         )
         return 2
     except httpx.TimeoutException:
-        print("后端响应超时；请确认本机负载或后端日志：~/.decision-journal/backend.log", file=sys.stderr)
+        print(f"后端响应超时；请确认本机负载或后端日志：{BACKEND_LOG}", file=sys.stderr)
         return 3
     return 1
 

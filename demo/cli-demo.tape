@@ -5,7 +5,8 @@
 # 产物：demo/cli-demo.gif（可直接用于 README / 社交分享）
 #
 # 说明：CLI 会自动拉起本机后端（~/.decision-journal/backend.log 有日志），
-# Demo 模式输出会在界面上如实标注 source=mock；本录像会向本地决策日志写入一条真实记录。
+# --demo 只让本次请求使用示例数据并如实标注“结果来源：mock”，无需 API Key；
+# 本录像会向本地决策日志写入一条记录（可用 DECISION_JOURNAL_DB_PATH 指向临时库）。
 # 开场动画影片的复现管线见 film-b 工程（npx remotion render src/index.ts BieJiuJie ...）。
 Output demo/cli-demo.gif
 
@@ -16,7 +17,7 @@ Set Theme "Catppuccin Mocha"
 Set TypingSpeed 35ms
 Set Padding 18
 
-Type "python scripts/decision_journal.py --question '该不该换工作' --mode rational"
+Type "python scripts/decision_journal.py --question '该不该换工作' --mode rational --demo"
 Sleep 500ms
 Enter
 Sleep 7s
