@@ -29,45 +29,176 @@ def get_conn() -> sqlite3.Connection:
     return conn
 
 
+def _table_exists(conn: sqlite3.Connection, table: str) -> bool:
+    """表是否存在（不依赖 sqlite_master 的大小写）。"""
+    row = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+        (table,),
+    ).fetchone()
+    return row is not None
+
+
+def _table_count(conn: sqlite3.Connection, table: str) -> int:
+    """表行数；表不存在时返回 0。"""
+    if not _table_exists(conn, table):
+        return 0
+    row = conn.execute(f"SELECT COUNT(*) AS n FROM {table}").fetchone()
+    return int(row[0]) if row else 0
+
+
+def _ensure_schema(conn: sqlite3.Connection) -> None:
+    """创建 decisions / config 表与索引（幂等）。"""
+    conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS decisions (
+            id TEXT PRIMARY KEY,
+            question TEXT NOT NULL,
+            mode TEXT NOT NULL,
+            result TEXT NOT NULL,
+            brief TEXT,
+            created_at TEXT NOT NULL,
+            executed INTEGER DEFAULT 0,
+            regret INTEGER DEFAULT 0,
+            dialogue_history TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_decisions_created_at ON decisions(created_at);
+        CREATE INDEX IF NOT EXISTS idx_decisions_mode ON decisions(mode);
+
+        CREATE TABLE IF NOT EXISTS config (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+        """
+    )
+
+
+def _legacy_decision_rows(conn: sqlite3.Connection) -> list:
+    """读取旧库 decisions 行；兼容缺少可选列的老库，跳过不可用的行。
+
+    返回顺序与 decisions 表列顺序一致：
+    (id, question, mode, result, brief, created_at, executed, regret, dialogue_history)
+    """
+    columns = {
+        str(row[1])
+        for row in conn.execute("PRAGMA table_info(decisions)").fetchall()
+    }
+    required = {"id", "question", "mode", "result", "created_at"}
+    if not required.issubset(columns):
+        return []
+
+    def col(name: str, default: str) -> str:
+        return name if name in columns else default
+
+    query = (
+        "SELECT "
+        + ", ".join(
+            (
+                col("id", "NULL"),
+                col("question", "NULL"),
+                col("mode", "NULL"),
+                col("result", "'{}'"),
+                col("brief", "NULL"),
+                col("created_at", "NULL"),
+                col("executed", "0"),
+                col("regret", "0"),
+                col("dialogue_history", "NULL"),
+            )
+        )
+        + " FROM decisions"
+    )
+    rows = []
+    for row in conn.execute(query).fetchall():
+        if not row[0] or row[1] is None or not row[2] or row[3] is None or not row[5]:
+            continue
+        rows.append(tuple(row))
+    return rows
+
+
+def _backup_legacy(legacy_conn: sqlite3.Connection, new_conn: sqlite3.Connection) -> None:
+    """用 SQLite backup API 整体复制（含未 checkpoint 的 WAL 数据）。"""
+    legacy_conn.backup(new_conn)
+    new_conn.commit()
+
+
+def _merge_legacy_into_new(legacy_conn: sqlite3.Connection, new_conn: sqlite3.Connection) -> bool:
+    """把旧库 decisions/config 合并进新库，不覆盖新库已有配置。
+
+    - BEGIN IMMEDIATE 让并发启动的实例串行化；进入事务后重新检查新库是否已有决策；
+    - decisions 用 INSERT OR IGNORE，按主键幂等；
+    - config 只补新库缺失的键，绝不覆盖已有 Key/偏好；
+    - 单事务提交，失败整体回滚。
+    """
+    _ensure_schema(new_conn)
+    new_conn.execute("BEGIN IMMEDIATE")
+    try:
+        if _table_count(new_conn, "decisions") > 0:
+            new_conn.rollback()
+            return False
+        for row in _legacy_decision_rows(legacy_conn):
+            new_conn.execute(
+                """
+                INSERT OR IGNORE INTO decisions
+                    (id, question, mode, result, brief, created_at, executed, regret, dialogue_history)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                row,
+            )
+        if _table_exists(legacy_conn, "config"):
+            for row in legacy_conn.execute("SELECT key, value FROM config").fetchall():
+                if row[0] is None or row[1] is None:
+                    continue
+                new_conn.execute(
+                    "INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)",
+                    (row[0], row[1]),
+                )
+        new_conn.commit()
+        return True
+    except Exception:
+        new_conn.rollback()
+        raise
+
+
 def _migrate_legacy_db() -> None:
-    """v0.10.0 更名迁移：把旧 choice.db 的数据整体接管到 decision_journal.db。
+    """v0.10.0 更名迁移：把旧 choice.db 的数据接管到 decision_journal.db。
 
     安全边界：
-    - 仅当旧库存在、未标记 migrated、且新库"文件不存在或 decisions/config 皆空"时执行，
-      绝不覆盖新库里已有的决策或配置（API Key、偏好）；
-    - 用 sqlite3 backup API 复制（连同未 checkpoint 的 -wal 数据），不做裸文件拷贝；
-    - 成功后把旧库改名为 choice.db.migrated，避免反复迁移；
-    - 任何失败都静默跳过，不阻塞启动；用户也可手动把 choice.db 改名为 decision_journal.db。
+    - 旧库不存在、已标记 migrated、不是本项目的库（没有 decisions 表）时不动；
+    - 新库已有决策时绝不覆盖、也不打标记，保留旧库供用户手动检查；
+    - 新库文件全新且为空时用 backup API 整体复制（连同 WAL）；
+    - 新库已存在但为空、或只含配置时，事务内只补 decisions 与缺失的 config 键，
+      保留新库已有 Key/偏好与未知表，并让并发启动串行化；
+    - 成功后把旧库改名为 choice.db.migrated；改名失败保留旧库，重复调用幂等；
+    - 任何失败静默跳过并回滚，不阻塞启动。
     """
     legacy = DB_PATH.parent / "choice.db"  # 跟随 DB_PATH 所在目录（测试隔离时指向临时目录）
     marker = DB_PATH.parent / "choice.db.migrated"
     if not legacy.exists() or marker.exists():
         return
+
+    new_existed = DB_PATH.exists()
     legacy_conn = None
     new_conn = None
+    adopted = False
     try:
         legacy_conn = sqlite3.connect(str(legacy))
+        # 只接管本项目的旧库；别的同名 SQLite 文件原样保留。
+        if not _table_exists(legacy_conn, "decisions"):
+            return
         new_conn = sqlite3.connect(str(DB_PATH))
-        new_empty = True
-        for table in ("decisions", "config"):
-            try:
-                row = new_conn.execute(f"SELECT COUNT(*) AS n FROM {table}").fetchone()
-                if row and row[0] > 0:
-                    new_empty = False
-                    break
-            except sqlite3.OperationalError:
-                pass  # 表还不存在：视作空
-        if new_empty:
-            legacy_conn.backup(new_conn)
-            new_conn.commit()
-            legacy_conn.close()
-            legacy_conn = None
-            try:
-                legacy.rename(marker)
-            except OSError:
-                pass  # 改名失败不影响迁移结果；新库已有数据，不会重复接管
-    except Exception:
-        pass  # 迁移失败不阻塞启动
+        new_decisions = _table_count(new_conn, "decisions")
+        new_config = _table_count(new_conn, "config")
+
+        if new_decisions > 0:
+            return  # 新库已有决策：不覆盖、不标记、不动旧库
+        if not new_existed and new_config == 0:
+            # 全新数据库：整体复制最完整，backup API 会带上 WAL 中已提交的数据。
+            _backup_legacy(legacy_conn, new_conn)
+            adopted = True
+        else:
+            # 已存在的空库/仅配置库：只做幂等合并，保留新库配置。
+            adopted = _merge_legacy_into_new(legacy_conn, new_conn)
+    except (sqlite3.Error, OSError):
+        adopted = False
     finally:
         for conn in (legacy_conn, new_conn):
             if conn is not None:
@@ -76,33 +207,19 @@ def _migrate_legacy_db() -> None:
                 except sqlite3.Error:
                     pass
 
+    if adopted:
+        try:
+            legacy.rename(marker)
+        except OSError:
+            # 改名失败不影响已提交的数据；下次启动会按幂等路径重试或跳过。
+            pass
+
 
 def init_db() -> None:
     """初始化数据库表。应用启动时调用一次。"""
     _migrate_legacy_db()
     with get_conn() as conn:
-        conn.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS decisions (
-                id TEXT PRIMARY KEY,
-                question TEXT NOT NULL,
-                mode TEXT NOT NULL,
-                result TEXT NOT NULL,
-                brief TEXT,
-                created_at TEXT NOT NULL,
-                executed INTEGER DEFAULT 0,
-                regret INTEGER DEFAULT 0,
-                dialogue_history TEXT
-            );
-            CREATE INDEX IF NOT EXISTS idx_decisions_created_at ON decisions(created_at);
-            CREATE INDEX IF NOT EXISTS idx_decisions_mode ON decisions(mode);
-
-            CREATE TABLE IF NOT EXISTS config (
-                key TEXT PRIMARY KEY,
-                value TEXT NOT NULL
-            );
-            """
-        )
+        _ensure_schema(conn)
 
 
 # ─── decisions 表操作 ───────────────────────────────────────────
