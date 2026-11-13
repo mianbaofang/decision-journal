@@ -9,6 +9,7 @@
 """
 
 import json
+import shutil
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -27,8 +28,40 @@ def get_conn() -> sqlite3.Connection:
     return conn
 
 
+def _migrate_legacy_db() -> None:
+    """v0.10.0 更名迁移：旧 choice.db 有数据而新库还是空表时，整体接管旧库。
+
+    失败不阻塞启动；用户也可手动把 choice.db 改名为 decision_journal.db。
+    """
+    legacy = DB_PATH.parent / "choice.db"  # 跟随 DB_PATH 所在目录（测试隔离时指向临时目录）
+    if not legacy.exists():
+        return
+    try:
+        conn = get_conn()
+        try:
+            try:
+                row = conn.execute("SELECT COUNT(*) AS n FROM decisions").fetchone()
+                empty = row is None or row["n"] == 0
+            except sqlite3.OperationalError:
+                empty = True  # 新库还没建表：视作空库，直接接管旧库
+        finally:
+            conn.close()
+        if empty:
+            shutil.copy2(legacy, DB_PATH)
+            for suffix in ("-wal", "-shm"):
+                stale = Path(str(DB_PATH) + suffix)
+                if stale.exists():
+                    try:
+                        stale.unlink()
+                    except OSError:
+                        pass
+    except Exception:
+        pass
+
+
 def init_db() -> None:
     """初始化数据库表。应用启动时调用一次。"""
+    _migrate_legacy_db()
     with get_conn() as conn:
         conn.executescript(
             """
