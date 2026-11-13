@@ -6,7 +6,7 @@
   一句话拆出证据、风险和下一步；每次选择自动存成本地决策日志，事后能复盘、能导出。
 </p>
 
-<table align="center"><tr><td><a href="https://github.com/mianbaofang/decision-journal/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-journal?style=flat-square&label=release" alt="最新公开版本"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-journal/ci.yml?branch=master&style=flat-square&label=tests" alt="持续集成测试状态"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-journal?style=flat-square&label=license" alt="MIT 开源协议"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/stargazers"><img src="https://img.shields.io/github/stars/mianbaofang/decision-journal?style=flat-square&label=stars" alt="GitHub Stars"></a></td></tr></table>
+<table align="center"><tr><td><a href="https://github.com/mianbaofang/decision-journal/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-journal?style=flat-square&label=release" alt="最新公开版本"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-journal/ci.yml?branch=master&style=flat-square&label=tests" alt="持续集成测试状态"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-journal?style=flat-square&label=license" alt="MIT 开源协议"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/stargazers"><img src="https://img.shields.io/github/stars/mianbaofang/decision-journal?style=flat-square&label=stars" alt="GitHub Stars"></a></td><td><a href="https://skills.sh/mianbaofang/decision-journal"><img src="https://skills.sh/b/mianbaofang/decision-journal" alt="skills.sh 安装计数"></a></td></tr></table>
 
 <p align="center"><img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square" alt="Python 3.9 或更高版本"> <img src="https://img.shields.io/badge/FastAPI-API-009688?style=flat-square" alt="FastAPI 后端"> <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square" alt="SQLite WAL 本地存储"> <img src="https://img.shields.io/badge/6%20languages-i18n-6A5ACD?style=flat-square" alt="支持六种界面语言"> <img src="https://img.shields.io/badge/multimodal-text%20voice%20image-C05A7A?style=flat-square" alt="支持文字语音图片输入"></p>
 
@@ -52,6 +52,20 @@
 </table>
 
 ## 快速开始
+
+一行把 Skill 装进你的 Agent（Claude Code / Codex / OpenClaw 等）：
+
+```bash
+npx skills add mianbaofang/decision-journal
+```
+
+装完对 Agent 说：
+
+```text
+用 decision-journal 帮我拆一下这个选择：该不该换工作？给我证据、风险和一个可以先做的下一步。
+```
+
+本地跑 Web / CLI：
 
 ```bash
 pip install -e ".[dev]"
