@@ -37,6 +37,7 @@ const Archive = (() => {
       return;
     }
     items.forEach(d => list.appendChild(renderCard(d)));
+    if (window.Motion) Motion.stagger(list.querySelectorAll('.archive-card'), { step: 40, max: 8 });
     // 分页器
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     if (totalPages > 1) list.appendChild(renderPager(totalPages));
@@ -105,12 +106,14 @@ const Archive = (() => {
     const time = document.createElement('span');
     time.textContent = formatTime(d.createdAt);
     meta.appendChild(time);
-    const conf = document.createElement('span');
-    conf.className = 'ac-confidence';
-    const pct = (d.brief && d.brief.confidence) || 0;
-    conf.appendChild(Brief.miniRing(pct));
-    conf.appendChild(document.createTextNode(pct + '%'));
-    meta.appendChild(conf);
+    const pct = d.brief && d.brief.confidence;
+    if (Number.isFinite(pct)) {
+      const conf = document.createElement('span');
+      conf.className = 'ac-confidence';
+      conf.appendChild(Brief.miniRing(pct));
+      conf.appendChild(document.createTextNode(pct + '%'));
+      meta.appendChild(conf);
+    }
     card.appendChild(meta);
 
     return card;
@@ -263,7 +266,7 @@ const Archive = (() => {
     const d = new Date(ts);
     const now = new Date();
     const diff = (now - d) / 1000;
-    if (diff < 60) return '刚刚';
+    if (diff < 60) return I18N.t('archive.justNow');
     if (diff < 3600) return Math.floor(diff / 60) + ' min';
     if (diff < 86400) return Math.floor(diff / 3600) + ' h';
     const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');

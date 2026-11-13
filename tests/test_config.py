@@ -187,7 +187,7 @@ def test_get_preferences_returns_defaults_when_empty():
     assert prefs["default_mode"] == "auto"
     assert prefs["theme"] == "auto"
     assert prefs["skin"] == "heritage"
-    assert prefs["auto_speak"] is True
+    assert prefs["auto_speak"] is False  # 隐私默认：不自动朗读
     assert prefs["tts_rate"] == 0.95
     assert prefs["tts_pitch"] == 1.05
     assert prefs["values"]["efficiency"] == 60
@@ -201,7 +201,7 @@ def test_save_preferences_merges_with_defaults():
     assert saved["theme"] == "dark"
     # 其它字段仍是默认值
     assert saved["default_mode"] == "auto"
-    assert saved["auto_speak"] is True
+    assert saved["auto_speak"] is False  # 隐私默认：不自动朗读
 
     # 再次 get 应能拿到刚保存的值
     prefs = config_mod.get_preferences()

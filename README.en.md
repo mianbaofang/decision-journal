@@ -1,16 +1,17 @@
 # Decision Brief · 别纠结
 
 <p align="center">
-  <strong>Compress your dilemma into one sentence.</strong><br>
-  Text, voice, or photo — you name the choice. We turn anxiety into evidence, risks, and a next step you can act on.
+  <strong>The decision assistant that remembers.</strong><br>
+  You make the call; it remembers why.<br>
+  One sentence becomes evidence, risks, and a next step — every choice is saved to a local decision journal you can review and export.
 </p>
 
-<table align="center"><tr><td><a href="https://github.com/mianbaofang/decision-brief/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-brief?style=flat-square&label=release" alt="Latest public release"></a></td><td><a href="https://github.com/mianbaofang/decision-brief/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-brief/ci.yml?branch=master&style=flat-square&label=tests" alt="Continuous integration test status"></a></td><td><a href="https://github.com/mianbaofang/decision-brief/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-brief?style=flat-square&label=license" alt="MIT license"></a></td><td><a href="https://github.com/mianbaofang/decision-brief/stargazers"><img src="https://img.shields.io/github/stars/mianbaofang/decision-brief?style=flat-square&label=stars" alt="GitHub stars"></a></td></tr></table>
+<table align="center"><tr><td><a href="https://github.com/mianbaofang/decision-journal/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-journal?style=flat-square&label=release" alt="Latest public release"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-journal/ci.yml?branch=master&style=flat-square&label=tests" alt="Continuous integration test status"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-journal?style=flat-square&label=license" alt="MIT license"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/stargazers"><img src="https://img.shields.io/github/stars/mianbaofang/decision-journal?style=flat-square&label=stars" alt="GitHub stars"></a></td></tr></table>
 
 <p align="center"><img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square" alt="Python 3.9 or newer"> <img src="https://img.shields.io/badge/FastAPI-API-009688?style=flat-square" alt="FastAPI backend"> <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square" alt="SQLite WAL local storage"> <img src="https://img.shields.io/badge/6%20languages-i18n-6A5ACD?style=flat-square" alt="Six interface languages"> <img src="https://img.shields.io/badge/multimodal-text%20voice%20image-C05A7A?style=flat-square" alt="Text, voice, and image input"></p>
 
 <p align="center">
-  <a href="https://mianbaofang.github.io/decision-brief/index-en.html">
+  <a href="https://mianbaofang.github.io/decision-journal/index-en.html">
     <img src="docs/images/intro-animation-preview-en.gif" alt="Decision Brief English intro animation preview" width="100%">
   </a>
 </p>
@@ -20,9 +21,9 @@
   ·
   <a href="skills/choice-assistant/SKILL.md">Installable Skill</a>
   ·
-  <a href="https://mianbaofang.github.io/decision-brief/">Chinese Intro</a>
+  <a href="https://mianbaofang.github.io/decision-journal/">Chinese Intro</a>
   ·
-  <a href="https://mianbaofang.github.io/decision-brief/index-en.html">English Intro</a>
+  <a href="https://mianbaofang.github.io/decision-journal/index-en.html">English Intro</a>
   ·
   <a href="DISCLAIMER.md">Disclaimer</a>
   ·
@@ -32,8 +33,23 @@
   ·
   <a href="SECURITY.md">Security</a>
   ·
-  <a href="https://github.com/mianbaofang/decision-brief/issues/new/choose">Feedback</a>
+  <a href="PRIVACY.md">Privacy</a>
+  ·
+  <a href="https://github.com/mianbaofang/decision-journal/issues/new/choose">Feedback</a>
 </p>
+
+<table align="center">
+  <tr>
+    <th>Before deciding</th>
+    <th>After deciding</th>
+    <th>Take it with you</th>
+  </tr>
+  <tr>
+    <td>Six lenses for benefits, risks, reversibility, and a smallest next step</td>
+    <td>Execution and regret markers, execution rate, regret-rate review</td>
+    <td>One command exports <code>.brief.md</code> — archive it, share it, diff it</td>
+  </tr>
+</table>
 
 ## Quick Start
 
@@ -73,7 +89,7 @@ The current design offers several entry points: Rational looks at benefits, risk
 
 The boundary I care about most: it can only assist your choice; it cannot bear the choice for you. Especially with life decisions, what really matters isn't whether the answer "looks right," but whether you've thought through why you're choosing it. If it can move someone from "I don't know what to do" to "I know what first step I can take," it has done its job.
 
-**Decision Brief (别纠结)** is a local-first AI decision assistant, decision-support tool, and choice assistant with a Web UI, CLI, and Codex Skill. It runs on FastAPI + SQLite and connects to OpenAI-compatible APIs. It does not decide for you; it separates a dilemma into evidence, risks, and a next step.
+**Decision Brief (别纠结)** is a local-first AI decision assistant, decision-support tool, and choice assistant with a Web UI, CLI, and an installable Skill (choice-assistant). It runs on FastAPI + SQLite and connects to OpenAI-compatible APIs. It does not decide for you; it separates a dilemma into evidence, risks, and a next step.
 
 > Read [Disclaimer](DISCLAIMER.md) before use. This project is decision support only; it is not legal, medical, financial, psychological, or other professional advice.
 
@@ -84,11 +100,35 @@ The boundary I care about most: it can only assist your choice; it cannot bear t
 | One-sentence dilemma | Evidence, risks, trade-offs, and a next action |
 | Six lenses | Rational analysis, random choice, nature metaphor, traditional-culture reference, guided dialogue, and auto mode |
 | Multimodal input | Text, voice, and image input flow into the same decision brief |
-| Review loop | Local archive, execution status, regret tracking, and decision-pattern review |
+| Decision journal | Local archive, execution markers, regret rate, lens distribution, and `.brief.md` export |
 
 ## In One Sentence
 
 Type (or speak, or attach a photo), pick one of six lenses (or let "Auto" choose), and get a structured decision brief in seconds. Every decision is auto-archived. Mark it executed or regretted later. Review your patterns over time.
+
+## How It's Different From Chatting With an AI
+
+A chatbot gives you an answer, and it's gone when you close the tab. Decision Brief keeps each choice:
+
+- **It persists.** Question, lens, conclusion, risks, next step, and score are written to local SQLite.
+- **It reviews.** Mark executed or regretted, then see execution rate, regret rate, and lens distribution.
+- **It exports.** One command produces a shareable `.brief.md` or `.json` for your notes, journal, or weekly review.
+- **It doesn't fake certainty.** No confidence number without a real basis; nature and traditional-culture modes are clearly labelled as references.
+
+## Decision Journal And Review
+
+Every analysis is archived automatically — no extra save button. The archive shows the original conclusion, lens, risks, and next step, and lets you mark "executed" or "regret".
+
+Take one decision with you:
+
+```bash
+python scripts/choice_assistant.py --action export --id <id> --format md > my-decision.brief.md
+python scripts/choice_assistant.py --action export --id <id> --format json
+```
+
+The Markdown brief contains the conclusion, supporting perspectives, risks, next steps, score, and status — ready for an archive, a note system, or a teammate. JSON is there for scripts. Export writes a local file only.
+
+The value of a decision journal isn't recording the "right answer". It's comparing today's outcome with the reasoning you had then, and spotting patterns: do you always overestimate risk? Do you skip the reversibility check when you're rushed? Those records beat "I think it'll be fine" next time.
 
 ## Feature Map
 
@@ -106,7 +146,7 @@ flowchart TD
     ROUTER --> RANDOM["Random: options and a random result"]
     ROUTER --> NATURE["Nature: weather, time, moon phase, signal weights"]
     ROUTER --> DIALOGUE["Dialogue: follow-up questions and answer history"]
-    ROUTER --> CULTURE["Traditional Culture: BaZi, five elements, practical reference"]
+    ROUTER --> CULTURE["Traditional Culture: year pillar, missing inputs, practical reference"]
     AUTO --> RATIONAL
     AUTO --> RANDOM
     AUTO --> NATURE
@@ -163,11 +203,11 @@ Without an LLM key, the page asks you to configure one or explicitly start Demo 
 | Lens | Seal | When to use | What you get |
 | --- | :---: | --- | --- |
 | **Auto** | 自 | You aren't sure which lens fits — let the router pick | Best-fit lens, chosen from your wording |
-| **Rational** | 理 | Quitting a job, buying a house, big-ticket purchases | Pros / risks / reversibility / smallest next step / confidence score |
+| **Rational** | 理 | Quitting a job, buying a house, big-ticket purchases | Pros / risks / reversibility / value fit / smallest next step |
 | **Random** | 随 | Lunch, movie, which road to take — low-stakes calls | Shortlist + a randomized pick, with a little ceremony |
 | **Nature** | 然 | Stuck emotionally, relationship calls, needing perspective | Location, time, weather, wind, moon phase, forecast, and signal weights |
 | **Dialogue** | 问 | You already know the answer but can't admit it | 3–5 rounds of questions that help you hear yourself |
-| **Traditional Culture** | 局 | Looking at a choice through traditional Chinese thought | BaZi chart + five-element reading + practical reference |
+| **Traditional Culture** | 局 | Looking at a choice through traditional Chinese thought | Year pillar and hour reference + missing-input notes + practical reference (no full chart) |
 
 ## Screenshots
 
@@ -183,16 +223,18 @@ Without an LLM key, the page asks you to configure one or explicitly start Demo 
 
 - **🎴 Seal-style mode picker**: six single-character Chinese seal buttons (自 / 理 / 随 / 然 / 问 / 局) on a paper-textured canvas
 - **⌨️🎙️🖼️ Tri-modal input**: a spacious rounded composer card that supports typing, voice dictation, and image upload (multimodal vision)
-- **💬 Structured briefs**: each lens has its own result card; Rational shows confidence and decision evidence
-- **📁 Archive**: every decision saved automatically; mark as executed / regretted; open details; delete; sidebar refreshes live
+- **💬 Structured briefs**: each lens has its own result card; Rational shows the pros/cons list and a checkable score
+- **📁 Decision journal**: every decision saved automatically; mark as executed / regretted; open details; delete; sidebar refreshes live
+- **📤 Brief export**: export one decision as Markdown / JSON for your archive, notes, or tooling
 - **📊 Statistics**: execution rate, regret rate, mode distribution, and timeline review
-- **🔊 TTS readout**: Edge TTS with selectable voices (free, no key required); optional auto-speak preference
+- **🔊 TTS readout**: Read a brief on demand with selectable Edge TTS voices. Auto-speak is off by default so decision text is not sent to a speech service without an explicit action
 - **🎲 Six random effects**: pointer draw, fortune sticks, 3D dice, six-card draw, ticket machine, and ink path, all rendered live in the browser
 - **🌦️ Nature inputs**: add your Amap key, weather Base URL, and city for live weather, trends, moon phase, and signal weights; otherwise simulated weather is used
 - **💬 Dialogue history**: every follow-up question and selected answer is saved in `dialogueHistory`
 - **🎨 Four interface styles**: Heritage, Quiet Workbench, Decision Journal, and Modular Console, plus Light / Dark / System themes
-- **🌍 6 languages**: Simplified Chinese, Traditional Chinese, English, French, Japanese, Spanish
-- **💾 Local-first**: persisted in SQLite (WAL mode); your data stays on your machine
+- **✨ Restrained motion**: short entrances for the hero, seals, briefs, score bars, and stats, with a static version for reduced-motion users
+- **🌍 6 languages**: Simplified Chinese, Cantonese (zh-HK), English, French, Japanese, Spanish
+- **💾 Local-first**: persisted in SQLite (WAL mode) on your machine; only the LLM, weather, and narration services you configure leave it, and auto-speak is off by default
 - **🖥️ Responsive**: two-pane + drawer on desktop, single-pane on mobile; the composer is roomy and comfortable on every screen
 - **🔌 CLI + Web dual entry**: both use the same backend and database
 - **🧪 Demo preview**: when no LLM key is set, you can explicitly start Demo mode to view sample results
@@ -250,6 +292,10 @@ python scripts/choice_assistant.py --action stats
 # Manage a single decision
 python scripts/choice_assistant.py --action decision --id <id>
 python scripts/choice_assistant.py --action decision --id <id> --delete
+
+# Export a decision brief
+python scripts/choice_assistant.py --action export --id <id> --format md
+python scripts/choice_assistant.py --action export --id <id> --format json
 ```
 
 See the [installable Skill entry](skills/choice-assistant/SKILL.md) for the full parameter list. The consolidated repository keeps this as the only canonical Skill entry so GitHub discovery does not expose duplicates.
@@ -275,7 +321,7 @@ See the [installable Skill entry](skills/choice-assistant/SKILL.md) for the full
 - Traditional Culture and Nature lenses are for perspective and entertainment; they should not be the sole basis for serious decisions.
 - `.env`, local databases, real API keys, and personal decision records should not be committed to GitHub.
 
-Read [DISCLAIMER.md](DISCLAIMER.md) for the full disclaimer.
+Read [DISCLAIMER.md](DISCLAIMER.md) for the full disclaimer and [PRIVACY.md](PRIVACY.md) for the data boundary.
 
 ## Open Source And Acknowledgements
 
@@ -295,7 +341,7 @@ See [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md) for the full attribution list.
 ## Project Structure
 
 ```text
-decision-brief/
+decision-journal/
 ├── backend/
 │   ├── main.py                     # FastAPI entrypoint, router registration, static file serving
 │   ├── config.py                   # Config priority, secret masking, completeness checks
@@ -358,11 +404,42 @@ decision-brief/
 ├── skills/choice-assistant/         # Canonical installable Skill package
 │   └── SKILL.md                     # Skill parameters, response shapes, and examples
 ├── CHANGELOG.md                     # Version history
+├── PRIVACY.md                       # Data boundary and deletion
 ├── README.md                        # Chinese documentation
 └── README.en.md                     # This file
 ```
 
 The browser starts at `frontend/index.html`; the command-line entry is `scripts/choice_assistant.py`. Both call the same FastAPI routes. `routes/chat.py` delegates each request to the matching service, `services/` performs calculations and external calls, and `db.py` stores the result. On the frontend, `brief.js` renders results but does not make backend decisions.
+
+## FAQ
+
+### Should I quit my job or break up? Can this tool decide for me?
+
+No, and it shouldn't. It separates the choice into benefits, risks, cost, reversibility, and value fit, then suggests a smallest reversible next step. The decision and its consequences remain yours. For high-stakes legal, medical, financial, psychological, or employment questions, also consult a qualified professional.
+
+### How do I keep a decision journal?
+
+A useful entry records the question, the options, the expected outcome, the reasoning, your confidence at the time, and a review date. Decision Brief saves the first four plus the score automatically; later you only mark executed / regretted, which gradually calibrates your judgment.
+
+### What's the difference between a decision log and a diary?
+
+A diary records what happened. A decision log records why you chose, and what happened next. The first helps you remember events; the second helps you spot biases — always overestimating risk, deciding at emotional peaks, or repeatedly regretting the same kind of choice.
+
+### Is there a ready-made pros and cons template?
+
+Yes. Rational mode produces a pros/cons list, a benefit / risk / reversibility / value-fit score, and a smallest next step. Export it as `.brief.md` and reuse it as a template or paste it into your notes.
+
+### What if I chose wrong?
+
+Mark the record as regretted and note which step was off: missing information, emotional pressure, underestimated cost, or overestimated reversibility. The regret rate is not a grade — it's a signal for adjusting your process next time.
+
+### Where is my data stored? Is it uploaded?
+
+Decision records stay in local SQLite by default. Only the LLM, weather service, and TTS you explicitly configure or trigger receive the relevant content. There is no telemetry or account system. See [PRIVACY.md](PRIVACY.md).
+
+### Can I use it without an API key?
+
+You can explicitly enable Demo mode to explore the full UI with sample results, but Demo never calls a real model and is not real analysis. Real analysis needs your own OpenAI-compatible endpoint.
 
 ## Status
 
@@ -372,7 +449,7 @@ Current version: [`v0.9.1`](docs/releases/v0.9.1.md). The public product is **De
 
 Author: [@mianbaofang](https://github.com/mianbaofang).
 
-Please use [GitHub Issues](https://github.com/mianbaofang/decision-brief/issues) for feature requests and usage questions. Report security concerns according to [SECURITY.md](SECURITY.md).
+Please use [GitHub Issues](https://github.com/mianbaofang/decision-journal/issues) for feature requests and usage questions. Report security concerns according to [SECURITY.md](SECURITY.md).
 
 ## License
 

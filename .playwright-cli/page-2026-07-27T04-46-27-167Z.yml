@@ -1,0 +1,159 @@
+- generic [active] [ref=f3e1]:
+  - main [ref=f3e2]:
+    - generic [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - generic [ref=f3e6]: 别纠结
+        - generic [ref=f3e8]: DECISION BRIEF
+      - generic:
+        - generic:
+          - heading "别纠结" [level=1]
+          - paragraph: 先把问题说清楚。
+      - generic:
+        - img "父女收拾房间"
+        - generic: "01"
+        - generic:
+          - generic: 为什么做它
+          - heading "每一件东西，都要决定留不留。" [level=2]
+          - paragraph: 陪女儿收拾房间时，我发现最累的不是收拾，是一个接一个的小选择。
+      - generic:
+        - img "把选择写成一句话"
+        - generic: "02"
+        - generic:
+          - generic: 从一句话开始
+          - heading "把理由、风险和下一步分开。" [level=2]
+          - paragraph: 很多选择不是没有答案，是想法挤在一起了。
+      - generic:
+        - generic:
+          - generic: 01 / 先把问题写出来
+          - heading "把纠结压成一句能回答的话。" [level=2]
+          - paragraph: 从这里开始，再选一条适合自己的路。
+        - generic:
+          - generic:
+            - generic: 新的决定
+            - generic: 自动
+          - generic: 要不要接受这份新工作？
+          - generic:
+            - generic: 自动
+            - generic: 理性
+            - generic: 随机
+            - generic: 自然
+            - generic: 对话
+            - generic: 国学
+          - generic:
+            - generic: 把纠结的事压成一句话
+            - generic: ↗
+        - generic:
+          - generic: 看一看收益和风险
+          - generic: 小事卡住抽一个结果
+          - generic: 还说不清继续问下去
+      - generic:
+        - generic:
+          - generic: 02 / 理性分析
+          - heading "把想去和不敢去放在同一张桌上。" [level=2]
+          - paragraph: 收益、风险、可逆性和价值匹配，都会落到一个能先试的小动作。
+        - complementary: 支持理由把想要的生活具体写出来。
+        - generic:
+          - img "理性分析结果卡"
+        - complementary: 下一步先试一小步，给自己留退路。
+      - generic:
+        - generic:
+          - generic: 03 / 随机决策
+          - heading "小事卡住了，就给自己一个推动。" [level=2]
+          - paragraph: 指针、抽签、抽卡、骰子，适合低成本的小选择。
+        - generic:
+          - img "随机决策结果卡"
+        - generic: 今天吃什么、先做哪件事，抽一个结果就够了。大事还是留给自己慢慢想。
+      - generic:
+        - generic:
+          - generic: 04 / 换个角度
+          - heading "自然和国学，给你一个参考角度。" [level=2]
+          - paragraph: 天气、季节和文化意象都可以看看，判断仍然在你手里。
+        - generic:
+          - generic: 自然启示
+          - generic: 国学参考
+        - generic:
+          - img "自然参考结果卡"
+        - generic:
+          - strong: 换一个角度
+          - generic: 看完以后，还是由你决定要不要采纳。
+      - generic:
+        - generic:
+          - generic: 05 / 对话引导
+          - heading "说不清为什么纠结，就让它接着问。" [level=2]
+          - paragraph: 从害怕失去、想要改变和还缺什么信息里，找真正卡住的地方。
+        - generic:
+          - img "对话引导结果卡"
+        - generic:
+          - generic: 最担心失去什么？
+          - generic: 哪一部分想变好？
+          - generic: 还缺什么信息？
+      - generic:
+        - generic:
+          - generic: 06 / 用户自己配置
+          - heading "模型和天气接口，都由使用者自己填写。" [level=2]
+          - paragraph: 支持 OpenAI 兼容接口；没有配置高德天气 API 时，才使用模拟数据。
+        - generic:
+          - generic: Base URL
+          - generic: API Key
+          - generic: 模型名称
+          - generic: 高德天气
+        - generic:
+          - img "设置面板"
+        - generic:
+          - strong: 配置自己掌握。
+          - generic: 服务接不接、接哪一家，都由使用者决定。
+      - generic:
+        - generic:
+          - generic: 07 / 四套皮肤
+          - heading "同一套功能，换成顺手的工作台。" [level=2]
+          - paragraph: 原来的样子、安静工作台、决策日志和模块化工作台，随时切换。
+        - generic:
+          - generic:
+            - generic: "01"
+            - strong: 原来的样子
+          - generic:
+            - generic: "02"
+            - strong: 安静工作台
+          - generic:
+            - generic: "03"
+            - strong: 决策日志
+          - generic:
+            - generic: "04"
+            - strong: 模块化工作台
+        - generic:
+          - generic: ↘
+          - paragraph: 看得舒服，才愿意多停一会儿，把事情想明白。
+      - generic:
+        - generic:
+          - generic: 08 / 本地优先
+          - heading "网页、命令行和 Codex，走同一套判断。" [level=2]
+          - paragraph: Web 看得见，CLI 和 Skill 能嵌进你自己的工作流。
+        - generic:
+          - generic:
+            - generic: 入口
+            - strong: WebCLICodex Skill
+            - generic: 从不同地方开始
+          - generic:
+            - generic: 服务
+            - strong: FastAPI
+            - generic: 同一套路由和判断
+          - generic:
+            - generic: 数据
+            - strong: SQLite
+            - generic: 记录留在本机
+        - generic:
+          - strong: 本地运行。
+          - paragraph: 模型和天气服务要不要接、接哪一家，由用户自己决定。
+      - generic:
+        - generic:
+          - heading "别纠结" [level=1]
+          - paragraph: 先把问题说清楚。
+          - generic:
+            - generic: WEB
+            - generic: CLI
+            - generic: CODEX SKILL
+  - generic "动画预览控制" [ref=f3e9]:
+    - button "暂停" [ref=f3e10] [cursor=pointer]
+    - button "重播" [ref=f3e11] [cursor=pointer]
+    - slider "动画进度" [ref=f3e12]: "0.01"
+    - status [ref=f3e13]: 00.01 / 60.00

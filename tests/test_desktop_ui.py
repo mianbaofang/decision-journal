@@ -175,6 +175,51 @@ def test_stats_refreshes_each_time_drawer_opens(page):
         page.unroute("**/api/stats", handle_stats)
 
 
+def test_rational_brief_shows_score_bars_without_fake_confidence(page):
+    """理性结果应渲染可核对评分条，没有真实置信度时不显示信心环。"""
+    payload = {
+        "mode": "rational",
+        "decisionId": "dec-test-rational",
+        "result": {
+            "type": "rational",
+            "pros": ["能省时间", "可撤回"],
+            "cons": ["要先投入"],
+            "conclusion": "先做个小尝试。",
+            "nextStep": "今晚列出最坏结果和补救办法。",
+            "score": {"benefit": 84, "risk": 42, "cost": 62, "reversibility": 46, "valueFit": 63, "confidence": 58},
+            "_source": "mock",
+        },
+        "brief": {
+            "summary": "先做个小尝试。",
+            "confidence": None,
+            "perspectives": ["支持：能省时间；可撤回"],
+            "risks": ["风险：要先投入"],
+            "nextSteps": ["今晚列出最坏结果和补救办法。"],
+            "source": "mock",
+        },
+        "reply": "已用「rational」模式分析。",
+    }
+
+    def handle_chat(route):
+        route.fulfill(status=200, content_type="application/json", body=json.dumps(payload))
+
+    page.route("**/api/chat", handle_chat)
+    try:
+        page.goto(BASE_URL)
+        page.wait_for_selector(".mode-grid .mode-card", timeout=10000)
+        page.locator(".mode-grid .mode-card[data-mode='rational']").click()
+        page.locator("#inputText").fill("该不该报名课程？")
+        page.locator("#sendBtn").click()
+        page.wait_for_selector(".brief .score-row", timeout=10000)
+        assert page.locator(".brief").get_attribute("data-tone") == "rational"
+        assert page.locator(".brief .score-row").count() == 4
+        assert page.locator(".brief .confidence").count() == 0
+        assert page.locator(".brief .score-row").nth(0).inner_text().endswith("84")
+        assert "今晚列出最坏结果" in page.locator(".brief .next-step").inner_text()
+    finally:
+        page.unroute("**/api/chat", handle_chat)
+
+
 def test_zdog_dice_renders_requested_result(page):
     record = {
         "id": "dice-test-5",

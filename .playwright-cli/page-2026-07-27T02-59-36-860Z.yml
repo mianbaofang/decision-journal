@@ -1,0 +1,66 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]: 决策 / 自动
+      - button "新对话" [ref=e5] [cursor=pointer]
+    - navigation "主导航" [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: 别纠结
+        - generic [ref=e14]: 让选择不再内耗
+      - navigation [ref=e15]:
+        - button "决策" [ref=e16] [cursor=pointer]
+        - button "档案" [ref=e22] [cursor=pointer]
+        - button "统计" [ref=e28] [cursor=pointer]
+        - button "设置" [ref=e32] [cursor=pointer]
+      - generic [ref=e38]: 最近决策
+      - generic [ref=e40]:
+        - generic [ref=e41]: 简体中文
+        - generic [ref=e42]: v0.9.0
+    - main [ref=e43]:
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e46]: DECISION BRIEF
+          - heading "先把问题压成一句话。" [level=1] [ref=e48]
+          - paragraph [ref=e49]: 你说选择，我负责把焦虑拆成可判断的证据、风险和下一步动作。
+        - radiogroup "决策模式选择" [ref=e50]:
+          - radio "自动" [checked] [ref=e51] [cursor=pointer]:
+            - img [ref=e52]:
+              - generic [ref=e55]: 自
+          - radio "理性" [ref=e57] [cursor=pointer]:
+            - img [ref=e58]:
+              - generic [ref=e61]: 理
+          - radio "天意" [ref=e63] [cursor=pointer]:
+            - img [ref=e64]:
+              - generic [ref=e67]: 随
+          - radio "自然" [ref=e69] [cursor=pointer]:
+            - img [ref=e70]:
+              - generic [ref=e73]: 然
+          - radio "对话" [ref=e75] [cursor=pointer]:
+            - img [ref=e76]:
+              - generic [ref=e79]: 问
+          - radio "国学" [ref=e81] [cursor=pointer]:
+            - img [ref=e82]:
+              - generic [ref=e85]: 局
+      - generic [ref=e88]:
+        - button "中午吃什么？" [ref=e89] [cursor=pointer]
+        - button "该不该辞职？" [ref=e90] [cursor=pointer]
+        - button "要不要分手？" [ref=e91] [cursor=pointer]
+        - button "这本书留还是扔？" [ref=e92] [cursor=pointer]
+        - button "买房还是租房？" [ref=e93] [cursor=pointer]
+      - generic [ref=e94]:
+        - generic [ref=e95]: 把纠结的事压成一句话…
+        - textbox "决策问题输入框" [ref=e96]:
+          - /placeholder: 把纠结的事压成一句话…
+        - generic [ref=e97]:
+          - button "上传图片" [ref=e99] [cursor=pointer]
+          - generic [ref=e104]:
+            - button "语音输入" [ref=e105] [cursor=pointer]
+            - button "发送" [ref=e109] [cursor=pointer]
+  - dialog [ref=e112]:
+    - generic [ref=e113]:
+      - button [ref=e114] [cursor=pointer]:
+        - generic [ref=e117]: 返回
+      - generic [ref=e118]: 档案
+  - dialog:
+    - document
+  - status

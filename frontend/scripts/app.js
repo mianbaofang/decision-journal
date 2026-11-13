@@ -89,8 +89,7 @@ const App = (() => {
         t.classList.toggle('active', active);
       });
       // 面包屑
-      const crumb = $('crumb');
-      if (crumb) crumb.textContent = I18N.t('nav.chat') + ' / ' + I18N.t('mode.auto');
+      if (Chat.refreshCrumb) Chat.refreshCrumb();
       if (navigator.vibrate) navigator.vibrate(10);
       return;
     }
@@ -141,8 +140,7 @@ const App = (() => {
       t.classList.toggle('active', t.getAttribute('data-tab') === 'chat');
     });
     currentTab = 'chat';
-    const crumb = $('crumb');
-    if (crumb) crumb.textContent = I18N.t('nav.chat') + ' / ' + I18N.t('mode.auto');
+    if (Chat.refreshCrumb) Chat.refreshCrumb();
   }
 
   function bindDrawer() {
@@ -248,6 +246,7 @@ const App = (() => {
         item.addEventListener('click', () => { switchTab('archive'); });
         container.appendChild(item);
       });
+      if (window.Motion) Motion.stagger(container.querySelectorAll('.recent-item'), { step: 35, max: 6 });
     } catch (e) {
       container.innerHTML = '';
     }
@@ -334,8 +333,7 @@ const App = (() => {
     // 加载最近决策到侧栏
     loadSidebarRecent();
     // 初始化面包屑
-    const crumb = $('crumb');
-    if (crumb) crumb.textContent = I18N.t('nav.chat') + ' / ' + I18N.t('mode.auto');
+    if (Chat.refreshCrumb) Chat.refreshCrumb();
   }
 
   return {

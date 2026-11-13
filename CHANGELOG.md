@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Decision brief export: `GET /api/decision/{id}/export?format=md|json` and CLI `--action export`.
+- A restrained motion layer: hero and seal entrances, brief sheen and section stagger, animated score bars, archive stagger, and stat count-ups, all disabled under `prefers-reduced-motion`.
+- A three-step empty state that explains "say it / break it down / keep it" and hides once a conversation starts.
+- `PRIVACY.md` describing local storage, third-party boundaries, and deletion.
+- Package-sync test that fails when the installable Skill drifts from `backend/` and `frontend/`.
+- README FAQ for decision journal, decision log, pros-and-cons templates, wrong choices, and data storage.
+
+### Changed
+
+- README and Pages covers reposition the product as a decision assistant that remembers: decision journal and review come first, not just one-shot advice.
+- Rational mode now returns a checkable score plus a smallest next step; no confidence percentage is shown unless the result actually carries one.
+- Human-readable export renders conclusion, perspectives, risks, next steps, score, and status.
+
+### Fixed
+
+- First-run Skill usage auto-starts the bundled backend and waits for `/api/health`; `--no-autostart` keeps the old manual behavior.
+- Unknown `/api/*` paths now return JSON 404 instead of the SPA HTML, and SPA file serving is confined to `frontend/`.
+- Privacy defaults: auto-speak is off; TTS text is sent in a POST body instead of a URL/query string.
+- Fengshui results only cite locally verifiable pillars, carry a `baziAudit`, and ask for missing birth details instead of inventing a chart.
+- Root `requirements.txt` restores `pip install -r requirements.txt`; the installable package is mirrored by `scripts/sync_skill_package.py`.
+
 ## v0.9.1 - 2026-08-17
 
 ### Changed

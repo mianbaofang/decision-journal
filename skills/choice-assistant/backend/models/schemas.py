@@ -17,7 +17,7 @@ class Brief(BaseModel):
     """决策简报 - AI 返回的结构化决策结果（非 nature 模式）。"""
 
     summary: str = Field(..., description="核心结论")
-    confidence: int = Field(..., ge=0, le=100, description="信心值 0-100")
+    confidence: Optional[int] = Field(default=None, ge=0, le=100, description="信心值 0-100；没有真实依据时为空")
     perspectives: List[str] = Field(default_factory=list, description="多角度分析")
     nextSteps: List[str] = Field(default_factory=list, description="下一步建议")
     risks: List[str] = Field(default_factory=list, description="风险提示")

@@ -45,8 +45,8 @@ def rational(question: str, values: Dict[str, int]) -> str:
         f"{_HUMANIZE}\n\n"
         f"你是决策助手，像个靠谱的朋友帮人分析问题。针对问题：\"{question}\"{value_hint}，输出严格JSON：\n"
         '{"type":"rational","pros":["利1（用大白话说）","利2"],"cons":["弊1","弊2"],'
-        '"conclusion":"一句话建议，像朋友会说的那种"}\n'
-        "利弊各2-4条，结论一句话。别用书面语，用口语。"
+        '"conclusion":"一句话建议，像朋友会说的那种","nextStep":"一个成本最低、可撤回的具体动作"}\n'
+        "利弊各2-4条，结论一句话，nextStep 必须具体到一个今天或本周能做的动作。别用书面语，用口语。"
     )
 
 
@@ -146,40 +146,44 @@ def dialogue(question: str) -> str:
 def fengshui(question: str, bazi: Any = None) -> str:
     """风水玄学模式 prompt。
 
-    强制要求 AI 按 bazi-skill 完整四柱八字流程做决策分析，
-    而非仅凭前端 BaziEngine 的输入摘要。
+    只使用本地引擎能验证的信息（年柱、时辰）；缺失的月柱/日柱明确标注，
+    不要求模型凭空排盘，也不把民俗参考包装成预测。
 
     Args:
         question: 用户的问题。
-        bazi: 前端 BaziEngine 输入摘要（dict 或对象），可为 None。
+        bazi: 本地 BaziEngine 的分析结果（dict 或对象），可为 None。
 
     Returns:
         严格 JSON prompt，输出结构含 needBirth/question/bazi/wuxing/element/
         analysis/suggestion/baziAudit。
     """
-    # 兼容 dict / 对象 / None 三种形式
     if isinstance(bazi, dict):
         audit = bazi.get("audit", "") or ""
-    elif bazi is not None:
-        audit = getattr(bazi, "audit", "") or ""
+        pillars = bazi.get("pillars") if isinstance(bazi.get("pillars"), dict) else {}
+        missing = bazi.get("missing") or []
     else:
         audit = ""
+        pillars = {}
+        missing = []
+    pillar_text = "；".join(f"{key}柱：{value}" for key, value in pillars.items()) or "未提供"
+    missing_text = "、".join(str(item) for item in missing) or "无"
 
     return (
         f"{_HUMANIZE}\n\n"
-        f"你是玄学决策师，必须按 bazi-skill 的完整四柱八字流程做决策分析。"
-        f"针对问题：\"{question}\"，前端 BaziEngine 仅提供输入摘要：{audit or '未提供校验结果'}，不能替代完整排盘。\n"
-        "请按 bazi-skill 原始能力执行：收集/核对出生信息，排年柱、月柱、日柱、时柱，"
-        "判断日主强弱、十神关系、五行平衡、格局、喜用神、大运流年，并把结论转成接地气的决策建议。\n"
-        "如果出生信息不足，needBirth=true 并追问缺失项；如果出生信息足够，needBirth=false 并输出完整分析。\n"
+        f"你是决策参考助手，用传统民俗视角帮人换个角度看问题，但绝不宣称预测或事实。"
+        f"问题：\"{question}\"。\n"
+        f"本地引擎可验证的信息：{pillar_text}。缺失项：{missing_text}。审计：{audit or '未提供'}\n"
+        "约束：只能引用上面给出的柱子，不得自行推算或编造月柱、日柱、大运、十神或喜用神。"
+        "如果缺失关键出生信息，needBirth=true，并在 question 里追问缺少的项；"
+        "如果信息足够，needBirth=false，给出明确标注为「民俗参考」的有限解读，不构成专业建议。\n"
         "输出严格JSON："
         '{"type":"fengshui","needBirth":false,"question":"",'
-        '"bazi":"四柱八字，含年柱/月柱/日柱/时柱",'
-        '"wuxing":"日主强弱、五行平衡、十神关系，用大白话解释",'
-        '"element":"喜用神/忌神",'
-        '"analysis":"结合格局、大运流年和问题的命理解读2-4句",'
-        '"suggestion":"基于完整八字的建议一句话",'
-        '"baziAudit":"说明是否已按 bazi-skill 完整排盘"}'
+        '"bazi":"只列可用柱子，并标注缺失",'
+        '"wuxing":"基于可用信息的有限解读，不编造十神或大运",'
+        '"element":"初步参考，不作为喜用神结论",'
+        '"analysis":"2-4句民俗视角解读，明确标注参考性质",'
+        '"suggestion":"一句可执行的现实建议",'
+        '"baziAudit":"仅年柱与时辰，未做完整排盘"}'
     )
 
 

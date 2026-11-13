@@ -114,6 +114,14 @@ const Voice = (() => {
 
   let edgeUnavailable = false;  // 一次失败后标记，避免反复请求
   let edgeAudio = null;         // 当前 Audio 元素（edge 通道）
+  let edgeBlobUrl = null;       // 当前音频的 object URL
+
+  function releaseEdgeBlob() {
+    if (edgeBlobUrl) {
+      try { URL.revokeObjectURL(edgeBlobUrl); } catch (_) {}
+      edgeBlobUrl = null;
+    }
+  }
 
   function browserTtsSupported() {
     return !!window.speechSynthesis && typeof window.speechSynthesis.speak === 'function';
@@ -123,17 +131,22 @@ const Voice = (() => {
     return true;  // edge 或 browser 总有一个能用（edge 通过后端）
   }
 
-  function edgeTtsUrl(text, opts = {}) {
+  async function edgeTtsBlobUrl(text, opts = {}) {
     const prefs = App.prefs || {};
-    const params = new URLSearchParams();
-    params.set('text', text);
-    const voice = opts.voice || prefs.tts_voice_uri || 'zh-CN-XiaoxiaoNeural';
-    params.set('voice', voice);
-    const rate = (opts.rate != null ? opts.rate : prefs.tts_rate) || 0.95;
-    const pitch = (opts.pitch != null ? opts.pitch : prefs.tts_pitch) || 1.05;
-    params.set('rate', String(rate));
-    params.set('pitch', String(pitch));
-    return '/api/tts/speak?' + params.toString();
+    const payload = {
+      text,
+      voice: opts.voice || prefs.tts_voice_uri || 'zh-CN-XiaoxiaoNeural',
+      rate: (opts.rate != null ? opts.rate : prefs.tts_rate) || 0.95,
+      pitch: (opts.pitch != null ? opts.pitch : prefs.tts_pitch) || 1.05,
+    };
+    const resp = await fetch('/api/tts/speak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) throw new Error('edge tts http ' + resp.status);
+    const blob = await resp.blob();
+    return URL.createObjectURL(blob);
   }
 
   function stop() {
@@ -142,6 +155,7 @@ const Voice = (() => {
       try { edgeAudio.pause(); edgeAudio.src = ''; } catch (_) {}
       edgeAudio = null;
     }
+    releaseEdgeBlob();
     // 停浏览器
     if (browserTtsSupported()) {
       try { window.speechSynthesis.cancel(); } catch (_) {}
@@ -175,7 +189,6 @@ const Voice = (() => {
       if (edgeUnavailable) return reject(new Error('edge unavailable'));
       stop();
       const audio = new Audio();
-      audio.src = edgeTtsUrl(text, opts);
       audio.preload = 'auto';
       let settled = false;
       const done = (err) => {
@@ -192,25 +205,35 @@ const Voice = (() => {
       }, { once: true });
       audio.addEventListener('ended', () => {
         edgeAudio = null;
+        releaseEdgeBlob();
         if (opts.onend) opts.onend();
         done();
       }, { once: true });
       audio.addEventListener('error', (e) => {
         edgeAudio = null;
+        releaseEdgeBlob();
         // 网络/后端异常：标记 edge 不可用，后续降级浏览器
         edgeUnavailable = true;
         done(e.error || new Error('edge tts error'));
       }, { once: true });
       edgeAudio = audio;
-      audio.load();
-      // 5 秒没 canplaythrough 视为失败
+      edgeTtsBlobUrl(text, opts).then(url => {
+        edgeBlobUrl = url;
+        if (settled) { releaseEdgeBlob(); return; }
+        audio.src = url;
+        audio.load();
+      }).catch(err => {
+        edgeUnavailable = true;
+        done(err);
+      });
+      // 15 秒没 canplaythrough 视为失败（TTS 合成 + 传输）
       setTimeout(() => {
         if (!settled && (audio.readyState < 2)) {
           try { audio.pause(); } catch (_) {}
           edgeUnavailable = true;
           done(new Error('edge tts timeout'));
         }
-      }, 5000);
+      }, 15000);
     });
   }
 
@@ -282,6 +305,6 @@ const Voice = (() => {
     makeSpeakButton,
     getEdgeVoices,
     resetEdgeAvailability,
-    edgeTtsUrl,
+    edgeTtsBlobUrl,
   };
 })();

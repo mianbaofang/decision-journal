@@ -1,0 +1,175 @@
+- generic [active] [ref=f1e1]:
+  - main [ref=f1e2]:
+    - generic [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - generic [ref=f1e6]:
+          - img "别纠结" [ref=f1e7]
+          - generic [ref=f1e8]: 别纠结
+        - generic [ref=f1e9]: DECISION BRIEF
+      - generic:
+        - generic:
+          - heading "别纠结" [level=1]
+          - paragraph: 先把问题说清楚
+      - generic:
+        - img "父女一起收拾房间"
+        - generic: 一
+        - generic:
+          - generic: 为什么做它
+          - heading "每一件东西，都要决定留不留。" [level=2]
+          - paragraph: 陪女儿收拾房间时，我发现最累的不是收拾，是一个接一个的小选择。
+      - generic:
+        - img "把混乱的选择写成一句话"
+        - generic: 二
+        - generic:
+          - generic: 从一件小事开始
+          - heading "把理由、风险和下一步分开。" [level=2]
+          - paragraph: 它不替人作决定，只把卡在一起的想法先摊开。
+      - generic:
+        - generic:
+          - generic: 01 / 从一句话开始
+          - heading "把纠结压成一个能回答的问题。" [level=2]
+          - paragraph: 先说清楚自己在选什么，再决定要不要继续往下拆。
+        - generic:
+          - strong: 该不该接受这份工作？
+        - generic:
+          - img "别纠结主页完整桌面界面"
+          - generic: 完整桌面界面
+        - generic:
+          - generic: 自动
+          - generic: 理性
+          - generic: 天意
+          - generic: 自然
+          - generic: 对话
+          - generic: 国学
+      - generic:
+        - generic:
+          - generic: 02 / 理性分析
+          - heading "把「想去」和「不敢去」放在同一张桌上。" [level=2]
+          - generic: 看收益、风险、可逆性和价值匹配，先找一个能试的动作。
+          - generic:
+            - img "理性分析结果完整桌面界面"
+            - generic: 完整结果，不裁切
+          - generic:
+            - generic:
+              - strong: 支持理由
+              - text: 想要的生活，具体写出来。
+            - generic:
+              - strong: 反对理由
+              - text: 担心什么，也具体写出来。
+            - generic:
+              - strong: 下一步
+              - text: 先试一小步，给自己留退路。
+      - generic:
+        - generic:
+          - generic: 03 / 随机决策
+          - heading "小事卡住了，就给自己一个推动。" [level=2]
+          - generic: 指针抽签、抽卡、骰子等玩法，适合成本很低的选择。
+          - generic:
+            - img "随机决策结果完整桌面界面"
+            - generic: 抽签结果
+          - generic:
+            - generic:
+              - strong: 今天吃什么
+              - text: 不用把午饭开成一场会议。
+            - generic:
+              - strong: 先做哪件事
+              - text: 选一个开始，往往比继续比更有用。
+            - generic:
+              - strong: 低成本选择
+              - text: 随机是推一下，不是替你承担后果。
+      - generic:
+        - generic:
+          - generic: 04 / 换个角度
+          - heading "自然和国学，只给一个可参考的视角。" [level=2]
+          - generic: 它们不是结论，也不替代判断。你可以看看，再决定要不要采纳。
+          - generic:
+            - generic:
+              - img "自然启示完整桌面界面"
+              - generic: 自然
+            - generic:
+              - img "国学与对话完整桌面界面"
+              - generic: 国学 / 对话
+          - generic:
+            - generic:
+              - strong: 自然启示
+              - text: 参考天气、季节和环境信号。
+            - generic:
+              - strong: 国学参考
+              - text: 保留为文化参考和娱乐入口。
+      - generic:
+        - generic:
+          - generic: 05 / 对话引导
+          - heading "说不清为什么纠结，就让它接着问。" [level=2]
+          - generic: 从「害怕损失」「想要改变」「还缺什么信息」里，找到真正卡住的点。
+          - generic:
+            - img "对话引导完整桌面界面"
+            - generic: 对话引导
+          - generic:
+            - generic:
+              - strong: 先问损失
+              - text: 最担心失去什么？
+            - generic:
+              - strong: 再问变化
+              - text: 你想让哪一部分变好？
+            - generic:
+              - strong: 补足信息
+              - text: 还缺哪件事，才敢往前走？
+      - generic:
+        - generic:
+          - generic: 06 / 用户自己配置
+          - heading "模型和天气接口，都由使用者自己填。" [level=2]
+          - generic: 支持 OpenAI 兼容接口；没有高德天气 API 时，才使用模拟数据。
+          - generic:
+            - img "设置完整桌面界面"
+            - generic: 设置面板
+          - generic:
+            - generic:
+              - strong: 模型接口
+              - text: Base URL、API Key 和模型名。
+            - generic:
+              - strong: 天气接口
+              - text: 高德 Key、Base URL 和城市编码。
+            - generic:
+              - strong: 个人偏好
+              - text: 语言、默认模式和价值观权重。
+      - generic:
+        - generic:
+          - generic: 07 / 四套皮肤
+          - heading "同一套功能，换成顺手的工作台。" [level=2]
+          - generic: 原来的样子、安静工作台、决策日志和模块化工作台，随时切换。
+          - generic:
+            - img "界面样式选择完整桌面界面"
+          - generic:
+            - generic: 原来的样子
+            - generic: 安静工作台
+            - generic: 决策日志
+            - generic: 模块化工作台
+      - generic:
+        - generic:
+          - generic: 08 / 本地优先
+          - heading "网页、命令行和 Codex，都走同一套判断。" [level=2]
+          - generic: Web 做可视化，CLI 和 Skill 方便嵌进自己的工作流。
+          - generic:
+            - generic:
+              - generic: 入口
+              - strong: WebCLICodex Skill
+              - generic: 从不同地方开始
+            - generic:
+              - generic: 服务
+              - strong: FastAPI
+              - generic: 同一套路由和判断
+            - generic:
+              - generic: 数据
+              - strong: SQLite
+              - generic: 决策记录留在本机
+          - generic: 本地运行。模型和天气服务要不要接、接哪一家，由用户自己决定。
+      - generic:
+        - generic:
+          - heading "别纠结" [level=1]
+          - paragraph: 先把问题说清楚
+          - generic: Web · CLI · Codex Skill
+  - generic "动画预览控制" [ref=f1e11]:
+    - button "暂停" [ref=f1e12] [cursor=pointer]
+    - button "重播" [ref=f1e13] [cursor=pointer]
+    - slider "动画进度" [ref=f1e14]: "0.01"
+    - status [ref=f1e15]: 00.01 / 60.00

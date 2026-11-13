@@ -9,16 +9,23 @@ Skill 版本特有：用户可自配 LLM API Key + 天气 API Key（iOS/MP 版�
 """
 
 import argparse
+import datetime
 import json
 import os
+import subprocess
 import sys
+import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 
 # 后端默认地址
 DEFAULT_BASE_URL = "http://127.0.0.1:8010"
+
+# 自动启动后端的等待时间与日志位置
+BACKEND_START_TIMEOUT = 20.0
+BACKEND_LOG = Path.home() / ".choice" / "backend.log"
 
 # 六种决策模式（与后端 modes_data 保持一致）
 MODES = ["auto", "rational", "random", "nature", "dialogue", "fengshui"]
@@ -43,6 +50,63 @@ REQ_FIELD_MAP = {
 def _print_json(data: Any) -> None:
     """美化打印 JSON。"""
     print(json.dumps(data, ensure_ascii=False, indent=2))
+
+
+def _backend_main() -> Optional[Path]:
+    """返回随包分发的 backend/main.py 路径（Skill 包内）。"""
+    candidate = Path(__file__).resolve().parents[1] / "backend" / "main.py"
+    return candidate if candidate.is_file() else None
+
+
+def _health_ok(base_url: str, timeout: float = 1.0) -> bool:
+    try:
+        response = httpx.get(base_url.rstrip("/") + "/api/health", timeout=timeout)
+        return response.status_code == 200
+    except Exception:
+        return False
+
+
+def ensure_backend(base_url: str, enabled: bool = True, timeout: float = BACKEND_START_TIMEOUT) -> bool:
+    """确保本地后端可用：先探测，再按需自动启动，并等待健康检查通过。
+
+    返回 True 表示可以继续调用 API；False 表示需要用户手动处理后端。
+    """
+    if _health_ok(base_url):
+        return True
+    if not enabled:
+        print(
+            "后端未运行。请先启动 backend/main.py，或去掉 --no-autostart 让 CLI 自动启动。",
+            file=sys.stderr,
+        )
+        return False
+    main_py = _backend_main()
+    if main_py is None:
+        print(
+            "找不到随包分发的 backend/main.py；请从完整 Skill 目录运行，或手动启动后端。",
+            file=sys.stderr,
+        )
+        return False
+    BACKEND_LOG.parent.mkdir(parents=True, exist_ok=True)
+    log = open(BACKEND_LOG, "a", encoding="utf-8")
+    stamp = datetime.datetime.now().isoformat(timespec="seconds")
+    log.write(f"[{stamp}] starting backend: {main_py}\n")
+    log.flush()
+    popen_kwargs = {"cwd": str(main_py.parent), "stdout": log, "stderr": subprocess.STDOUT, "env": {**os.environ, "PYTHONUNBUFFERED": "1"}}
+    if os.name == "nt":
+        popen_kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    else:
+        popen_kwargs["start_new_session"] = True
+    proc = subprocess.Popen([sys.executable, str(main_py)], **popen_kwargs)
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if _health_ok(base_url):
+            print(f"已自动启动本地后端（{base_url}）。", file=sys.stderr)
+            return True
+        if proc.poll() is not None:
+            break
+        time.sleep(0.4)
+    print(f"后端启动失败，详见 {BACKEND_LOG}", file=sys.stderr)
+    return False
 
 
 def _read_config_file() -> dict:
@@ -171,6 +235,20 @@ def cmd_decision(args: argparse.Namespace, client: httpx.Client) -> int:
     return 0
 
 
+def cmd_export(args: argparse.Namespace, client: httpx.Client) -> int:
+    """导出单条决策简报（Markdown 或 JSON）。"""
+    if not args.id:
+        print("错误：export 需要 --id", file=sys.stderr)
+        return 2
+    resp = client.get(f"/api/decision/{args.id}/export", params={"format": args.format})
+    resp.raise_for_status()
+    if args.format == "json":
+        _print_json(resp.json())
+    else:
+        print(resp.text)
+    return 0
+
+
 def cmd_config_api(args: argparse.Namespace, client: httpx.Client) -> int:
     """通过后端 /api/config 接口管理配置（落库到 SQLite）。
 
@@ -291,13 +369,24 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--action", "-a",
         default="chat",
-        choices=["chat", "archive", "stats", "decision", "config-api"],
-        help="执行动作，默认 chat。decision: 查看或删除单条决策（需 --id）；config-api: 通过后端管理 SQLite 配置",
+        choices=["chat", "archive", "stats", "decision", "config-api", "export"],
+        help="执行动作，默认 chat。decision: 查看或删除单条决策（需 --id）；export: 导出决策简报（需 --id）；config-api: 通过后端管理 SQLite 配置",
     )
     parser.add_argument(
         "--base-url",
         default=DEFAULT_BASE_URL,
         help=f"后端 API 地址，默认 {DEFAULT_BASE_URL}",
+    )
+    parser.add_argument(
+        "--no-autostart",
+        action="store_true",
+        help="不自动启动本地后端；后端未运行时直接报错",
+    )
+    parser.add_argument(
+        "--backend-timeout",
+        type=float,
+        default=BACKEND_START_TIMEOUT,
+        help=f"自动启动后端的等待秒数，默认 {BACKEND_START_TIMEOUT:g}",
     )
     parser.add_argument(
         "--save-config",
@@ -318,6 +407,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--list",
         action="store_true",
         help="查看脱敏配置（config-api 动作；默认行为，显式传亦可）",
+    )
+    parser.add_argument(
+        "--format",
+        default="md",
+        choices=["md", "json"],
+        help="export 动作的格式，默认 md",
     )
     parser.add_argument(
         "--save-to-db",
@@ -348,17 +443,28 @@ def main() -> int:
         return cmd_config(args)
 
     args = build_parser().parse_args(argv)
-    with httpx.Client(base_url=args.base_url, timeout=30.0) as client:
-        if args.action == "chat":
-            return cmd_chat(args, client)
-        if args.action == "archive":
-            return cmd_archive(args, client)
-        if args.action == "stats":
-            return cmd_stats(args, client)
-        if args.action == "decision":
-            return cmd_decision(args, client)
-        if args.action == "config-api":
-            return cmd_config_api(args, client)
+    if not ensure_backend(args.base_url, enabled=not args.no_autostart, timeout=args.backend_timeout):
+        return 3
+    try:
+        with httpx.Client(base_url=args.base_url, timeout=30.0) as client:
+            if args.action == "chat":
+                return cmd_chat(args, client)
+            if args.action == "archive":
+                return cmd_archive(args, client)
+            if args.action == "stats":
+                return cmd_stats(args, client)
+            if args.action == "decision":
+                return cmd_decision(args, client)
+            if args.action == "config-api":
+                return cmd_config_api(args, client)
+            if args.action == "export":
+                return cmd_export(args, client)
+    except httpx.ConnectError:
+        print(
+            "无法连接本地后端。请确认 backend/main.py 已启动，或重试让 CLI 自动启动。",
+            file=sys.stderr,
+        )
+        return 3
     return 1
 
 

@@ -1,7 +1,7 @@
 """TTS 路由：edge-tts 免费神经 TTS。
 
 - GET /api/tts/voices  返回推荐音色列表（前端设置页用）
-- GET /api/tts/speak?text=&voice=&rate=&pitch=  流式返回 MP3 音频
+- POST /api/tts/speak {text, voice, rate, pitch}  流式返回 MP3 音频（文本不进入 URL/访问日志）
 
 rate:  如 '+0%'、'+20%'、'-10%'
 pitch: 如 '+0Hz'、'+5Hz'、'-5Hz'
@@ -13,6 +13,7 @@ from typing import Optional
 
 import edge_tts
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel, Field
 from fastapi.responses import StreamingResponse
 
 router = APIRouter()
@@ -91,19 +92,27 @@ async def _audio_generator(text: str, voice: str, rate: str, pitch: str):
             yield chunk["data"]
 
 
-@router.get("/api/tts/speak")
-async def speak(
-    text: str = Query(..., min_length=1, max_length=5000),
-    voice: Optional[str] = None,
-    rate: float = Query(0.95, ge=0.5, le=2.0),
-    pitch: float = Query(1.05, ge=0.5, le=2.0),
-):
+class TtsRequest(BaseModel):
+    """TTS 请求体；文本走 body，避免出现在 URL 与访问日志中。"""
+
+    text: str = Field(..., min_length=1, max_length=5000)
+    voice: Optional[str] = None
+    rate: float = Field(0.95, ge=0.5, le=2.0)
+    pitch: float = Field(1.05, ge=0.5, le=2.0)
+
+
+@router.post("/api/tts/speak")
+async def speak(req: TtsRequest):
     """流式返回 TTS 合成的 MP3 音频。
 
     voice 不指定时默认晓晓（zh-CN-XiaoxiaoNeural）。
     """
+    text = req.text
     if not text.strip():
         raise HTTPException(status_code=400, detail="text 不能为空")
+    voice = req.voice
+    rate = req.rate
+    pitch = req.pitch
     voice_id = voice or DEFAULT_VOICE["zh-CN"]
     # 校验 voice 是否在白名单（edge-tts 自身也会校验，这里加一道防呆）
     if not any(v["id"] == voice_id for v in VOICES):

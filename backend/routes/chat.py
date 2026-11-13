@@ -52,25 +52,24 @@ def _merge_overrides(base: dict, overrides: dict) -> dict:
     return cfg
 
 
-def _try_build_brief(result: Dict[str, Any], mode: str = "auto") -> Optional[Brief]:
+def _try_build_brief(result: Dict[str, Any], mode: str = "auto", question: str = "", values: Optional[Dict[str, int]] = None) -> Optional[Brief]:
     """从 ModeResult 构造 Brief。
 
-    优先读取 result 中的 summary/confidence/perspectives/nextSteps/risks；
-    缺失时从模式字段推导（conclusion/signal/suggestion/pros/cons），
-    confidence 按模式给默认值，确保档案页和统计页有有效数据。
+    只使用结果里真实存在的字段：不为缺失置信度的模式伪造默认值。
+    rational 模式会调用评分引擎补上可核对的六项分数；评分指数不冒充证据强度。
     """
     if not isinstance(result, dict):
         return None
 
-    # 默认值表（与 llm_service._MOCK_BRIEFS 保持一致）
-    default_confidence = {
-        "rational": 78,
-        "random": 55,
-        "nature": 65,
-        "dialogue": 70,
-        "fengshui": 60,
-        "auto": 72,
-    }.get(mode, 60)
+    score: Optional[Dict[str, int]] = None
+    if mode == "rational":
+        try:
+            from services.decision_score import score as score_decision
+
+            score = score_decision(question, result, values or {})
+            result["score"] = score
+        except Exception:
+            score = None
 
     summary = (
         result.get("summary")
@@ -80,12 +79,11 @@ def _try_build_brief(result: Dict[str, Any], mode: str = "auto") -> Optional[Bri
         or ""
     )
     confidence = result.get("confidence")
-    if confidence is None:
-        confidence = default_confidence
-    try:
-        confidence = int(confidence)
-    except (TypeError, ValueError):
-        confidence = default_confidence
+    if confidence is not None:
+        try:
+            confidence = int(confidence)
+        except (TypeError, ValueError):
+            confidence = None
 
     perspectives = list(result.get("perspectives", []) or [])
     next_steps = list(result.get("nextSteps", []) or [])
@@ -99,8 +97,13 @@ def _try_build_brief(result: Dict[str, Any], mode: str = "auto") -> Optional[Bri
             perspectives.append("支持：" + "；".join(str(p) for p in pros[:3]))
         if cons:
             risks.append("风险：" + "；".join(str(c) for c in cons[:3]))
+    next_step = result.get("nextStep") or result.get("next_step")
+    if next_step:
+        next_steps.append(str(next_step))
     if not next_steps and result.get("suggestion"):
         next_steps.append(str(result["suggestion"]))
+    if not next_steps and mode == "rational" and result.get("conclusion"):
+        next_steps.append("先做一次成本最低、可撤回的小尝试，再决定是否推进。")
 
     if not summary:
         return None
@@ -165,7 +168,12 @@ def chat(req: ChatRequest) -> ChatResponse:
             result = call_llm(req.question, effective_mode, merged_config,
                               language=language, allow_mock=allow_mock,
                               image=req.image)
-            brief = _try_build_brief(result, mode=effective_mode)
+            brief = _try_build_brief(
+                result,
+                mode=effective_mode,
+                question=req.question,
+                values=prefs.get("values") if isinstance(prefs.get("values"), dict) else None,
+            )
             summary = result.get("summary") or result.get("conclusion") or ""
             reply = (
                 f"已用「{effective_mode}」模式分析你的问题「{req.question}」。\n"

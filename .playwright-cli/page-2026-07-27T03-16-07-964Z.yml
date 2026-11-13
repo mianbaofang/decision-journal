@@ -1,0 +1,104 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - button "菜单" [ref=e4]
+      - generic [ref=e7]: 决策 / 自动
+      - button "新对话" [ref=e8]
+    - navigation "主导航" [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]: 别纠结
+        - generic [ref=e15]: 让选择不再内耗
+      - navigation [ref=e16]:
+        - button "决策" [ref=e17]
+        - button "档案" [ref=e22]
+        - button "统计" [ref=e27]
+        - button "设置" [ref=e30]
+      - generic [ref=e35]: 最近决策
+      - generic [ref=e36]: 简体中文 v0.9.0
+    - main [ref=e37]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - generic [ref=e40]: DECISION BRIEF
+          - heading "先把问题压成一句话。" [level=1] [ref=e41]
+          - paragraph [ref=e42]: 你说选择，我负责把焦虑拆成可判断的证据、风险和下一步动作。
+        - radiogroup "决策模式选择" [ref=e43]:
+          - radio "自动" [checked] [ref=e44]:
+            - img [ref=e45]:
+              - generic [ref=e48]: 自
+            - text: 自动
+          - radio "理性" [ref=e49]:
+            - img [ref=e50]:
+              - generic [ref=e53]: 理
+            - text: 理性
+          - radio "天意" [ref=e54]:
+            - img [ref=e55]:
+              - generic [ref=e58]: 随
+            - text: 天意
+          - radio "自然" [ref=e59]:
+            - img [ref=e60]:
+              - generic [ref=e63]: 然
+            - text: 自然
+          - radio "对话" [ref=e64]:
+            - img [ref=e65]:
+              - generic [ref=e68]: 问
+            - text: 对话
+          - radio "国学" [ref=e69]:
+            - img [ref=e70]:
+              - generic [ref=e73]: 局
+            - text: 国学
+      - generic [ref=e74]:
+        - button "中午吃什么？" [ref=e75]
+        - button "该不该辞职？" [ref=e76]
+        - button "要不要分手？" [ref=e77]
+        - button "这本书留还是扔？" [ref=e78]
+        - button "买房还是租房？" [ref=e79]
+      - generic [ref=e80]:
+        - text: 决策问题输入框
+        - textbox "决策问题输入框" [ref=e81]
+        - generic [ref=e82]:
+          - button "上传图片" [ref=e84]
+          - generic [ref=e89]:
+            - button "语音输入" [ref=e90]
+            - button "发送" [ref=e94]
+  - dialog [ref=e97]:
+    - generic [ref=e98]:
+      - button [ref=e99]: 返回
+      - generic [ref=e102]: 档案
+    - generic [ref=e103]:
+      - generic [ref=e106]:
+        - button [ref=e107]: 返回
+        - generic [ref=e110]: 详情
+      - generic [ref=e112]:
+        - generic [ref=e113]:
+          - generic [ref=e114]: 游
+          - generic [ref=e115]:
+            - generic [ref=e116]: 别纠结
+            - generic [ref=e117]: 让选择不再内耗
+        - generic [ref=e118]: 用户偏好
+        - generic [ref=e119]:
+          - button [ref=e120]:
+            - generic [ref=e125]: 界面语言简体中文
+          - button [ref=e128]:
+            - generic [ref=e132]: 主题模式跟随系统
+          - button [ref=e135]:
+            - generic [ref=e142]: 界面样式原来的样子
+          - button [ref=e145]:
+            - generic [ref=e150]: 默认决策模式自动
+          - button [ref=e153]:
+            - generic [ref=e157]: 价值观权重默认
+        - generic [ref=e160]: AI 配置
+        - generic [ref=e161]:
+          - button [ref=e162]:
+            - generic [ref=e167]: AI 配置API Key
+          - button [ref=e170]:
+            - generic [ref=e174]: 自然天气配置如果没有配置高德天气 API，会使用模拟数据
+        - generic [ref=e177]: 语音朗读
+        - button [ref=e179]:
+          - generic [ref=e185]: 语音朗读晓晓
+        - generic [ref=e188]: 关于
+        - generic [ref=e189]:
+          - button [ref=e190]:
+            - generic [ref=e191]: 关于别纠结
+          - generic [ref=e194]: 版本0.9.0 · Desktop
+        - generic [ref=e196]: 别纠结 · Desktop Edition
+  - status

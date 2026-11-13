@@ -4,27 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#f4f5ef">
-<title>别纠结 · Decision Brief — 把纠结的事压成一句话</title>
-<meta name="description" content="别纠结是一个本地优先的 AI 决策辅助工具：用文字、语音或图片开始，把纠结拆成证据、风险和下一步动作。">
-<meta name="keywords" content="AI 决策助手,decision support,选择困难,决策简报,本地优先,Codex Skill">
-<link rel="canonical" href="https://mianbaofang.github.io/decision-brief/">
-<link rel="alternate" hreflang="zh-CN" href="https://mianbaofang.github.io/decision-brief/">
-<link rel="alternate" hreflang="en" href="https://mianbaofang.github.io/decision-brief/index-en.html">
-<link rel="alternate" hreflang="x-default" href="https://mianbaofang.github.io/decision-brief/">
+<title>别纠结 · Decision Brief — 会记得的决策助手</title>
+<meta name="description" content="别纠结是一个本地优先的 AI 决策辅助工具：用文字、语音或图片开始，拆出证据、风险和下一步，把每次选择存进可复盘的本地决策日志，并导出 .brief.md。">
+<meta name="keywords" content="AI 决策助手,decision journal,决策日志,决策复盘,选择困难,决策简报,pros and cons,本地优先,可安装 Skill">
+<link rel="canonical" href="https://mianbaofang.github.io/decision-journal/">
+<link rel="alternate" hreflang="zh-CN" href="https://mianbaofang.github.io/decision-journal/">
+<link rel="alternate" hreflang="en" href="https://mianbaofang.github.io/decision-journal/index-en.html">
+<link rel="alternate" hreflang="x-default" href="https://mianbaofang.github.io/decision-journal/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Decision Brief">
-<meta property="og:title" content="别纠结 · Decision Brief">
-<meta property="og:description" content="把纠结拆成证据、风险和下一步动作，不替用户做决定。">
-<meta property="og:url" content="https://mianbaofang.github.io/decision-brief/">
-<meta property="og:image" content="https://mianbaofang.github.io/decision-brief/images/logo-nav.png">
+<meta property="og:title" content="别纠结 · Decision Brief — 会记得的决策助手">
+<meta property="og:description" content="拆出证据、风险和下一步，把每次选择存进可复盘的本地决策日志。">
+<meta property="og:url" content="https://mianbaofang.github.io/decision-journal/">
+<meta property="og:image" content="https://mianbaofang.github.io/decision-journal/images/logo-nav.png">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="别纠结 · Decision Brief">
-<meta name="twitter:description" content="文字、语音或图片输入，生成可检查的决策简报。">
-<meta name="twitter:image" content="https://mianbaofang.github.io/decision-brief/images/logo-nav.png">
+<meta name="twitter:title" content="别纠结 · Decision Brief — 会记得的决策助手">
+<meta name="twitter:description" content="文字、语音或图片输入，生成可检查、可复盘、可导出的决策简报。">
+<meta name="twitter:image" content="https://mianbaofang.github.io/decision-journal/images/logo-nav.png">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Decision Brief","alternateName":"别纠结","description":"本地优先的 AI 决策辅助工具。","url":"https://mianbaofang.github.io/decision-brief/","codeRepository":"https://github.com/mianbaofang/decision-brief","programmingLanguage":"Python","license":"https://github.com/mianbaofang/decision-brief/blob/master/LICENSE","version":"0.9.1","author":{"@type":"Person","name":"mianbaofang","url":"https://github.com/mianbaofang"},"keywords":["AI 决策助手","decision support","决策简报"]}
+{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Decision Brief","alternateName":"别纠结","description":"会记得的本地优先决策助手：拆出证据、风险和下一步，并保存为可复盘的决策日志。","url":"https://mianbaofang.github.io/decision-journal/","codeRepository":"https://github.com/mianbaofang/decision-journal","programmingLanguage":"Python","license":"https://github.com/mianbaofang/decision-journal/blob/master/LICENSE","version":"0.9.1","author":{"@type":"Person","name":"mianbaofang","url":"https://github.com/mianbaofang"},"keywords":["AI 决策助手","decision journal","决策日志","决策复盘","decision support","决策简报"]}
 </script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -385,8 +385,8 @@ html,body{
           <div class="cover-seal"><img class="brand-logo-img" src="images/logo-nav.png" alt="别纠结 Logo"></div>
           <div class="cover-title">别纠结 · Decision Brief</div>
         </div>
-        <h1 class="cover-h1">先把问题压成一句话。</h1>
-        <p class="cover-sub">写一句话、说一段语音，或者放一张图片。它会把纠结拆成证据、风险和下一步。</p>
+        <h1 class="cover-h1">你负责做选择，它负责记住。</h1>
+        <p class="cover-sub">写一句话、说一段语音，或者放一张图片。拆出证据、风险和下一步；每次选择自动存进本地决策日志，事后能复盘、能导出。</p>
         <div class="cover-seals">
           <div class="cover-seal-item cs-1" style="transition-delay:.1s"><div class="c">自</div><div class="l">自动</div></div>
           <div class="cover-seal-item cs-2" style="transition-delay:.2s"><div class="c">理</div><div class="l">理性</div></div>
@@ -506,7 +506,7 @@ html,body{
             <div class="shot-point"><span class="dot" style="background:var(--rational)"></span><span>收益清单 vs 风险清单</span></div>
             <div class="shot-point"><span class="dot" style="background:var(--rational)"></span><span>可逆性评估</span></div>
             <div class="shot-point"><span class="dot" style="background:var(--rational)"></span><span>最小可行下一步</span></div>
-            <div class="shot-point"><span class="dot" style="background:var(--rational)"></span><span>信心分数环</span></div>
+            <div class="shot-point"><span class="dot" style="background:var(--rational)"></span><span>收益 / 风险 / 可逆 / 契合评分</span></div>
           </div>
         </div>
       </div>

@@ -180,7 +180,7 @@ DEFAULT_PREFS: Dict[str, Any] = {
     "theme": "auto",
     "skin": "heritage",
     "logo": "tree1",
-    "auto_speak": True,
+    "auto_speak": False,  # 隐私默认：不自动把决策内容发往 TTS
     "tts_rate": 0.95,
     "tts_pitch": 1.05,
     "tts_voice_uri": "zh-CN-XiaoxiaoNeural",

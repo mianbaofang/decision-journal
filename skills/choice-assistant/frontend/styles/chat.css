@@ -363,6 +363,14 @@
   background: var(--paper-2);
   border-bottom: 1px solid var(--line);
 }
+.bazi-audit {
+  padding: 7px 14px 8px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--line);
+}
 
 /* ============ 理性模式：利弊清单 ============ */
 .rational-detail {

@@ -171,7 +171,12 @@ def analyze(text: str) -> Dict[str, Any]:
     """
     info = parse(text)
     if info["missing"]:
-        return {"complete": False, "info": info, "missing": info["missing"]}
+        return {
+            "complete": False,
+            "info": info,
+            "missing": info["missing"],
+            "audit": "未做排盘：缺少" + "、".join(info["missing"]) + "；仅完成信息完整性校验。",
+        }
 
     yp = year_pillar(info["year"], info["month"], info["day"])
     # year_pillar 形如 "庚午年"，去掉"年"后取第 2 个字符即地支
@@ -195,7 +200,7 @@ def analyze(text: str) -> Dict[str, Any]:
         ),
         "element": f"初步参考{base_element}气，不作为完整喜用神结论",
         "audit": (
-            "前端已完成信息完整性校验、年柱和时辰识别；"
+            "已通过本地引擎完成信息完整性校验、年柱和时辰识别；"
             "完整四柱、大运流年、十神格局需接入 bazi-skill 或万年历排盘。"
         ),
     }

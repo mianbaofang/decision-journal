@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-`v0.8.x` receives security fixes while this project is actively maintained.
+`v0.9.x` receives security fixes while this project is actively maintained.
 
 ## Reporting a vulnerability
 

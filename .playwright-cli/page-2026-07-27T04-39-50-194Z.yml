@@ -1,0 +1,123 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]: 决策 / 设置
+      - button "新对话" [ref=e5] [cursor=pointer]
+    - navigation "主导航" [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: 别纠结
+        - generic [ref=e14]: 让选择不再内耗
+      - navigation [ref=e15]:
+        - button "决策" [ref=e16] [cursor=pointer]
+        - button "档案" [ref=e22] [cursor=pointer]
+        - button "统计" [ref=e28] [cursor=pointer]
+        - button "设置" [active] [ref=e32] [cursor=pointer]
+      - generic [ref=e38]: 最近决策
+      - generic [ref=e39]:
+        - generic [ref=e120] [cursor=pointer]: 我说不清自己为什么不想答应
+        - generic [ref=e123] [cursor=pointer]: 周末适合出去走走吗？
+        - generic [ref=e126] [cursor=pointer]: 要不要接受这份新工作？
+        - generic [ref=e129] [cursor=pointer]: 今晚做意面还是炒饭？
+        - generic [ref=e132] [cursor=pointer]: Is this a good year to move to a new city?
+        - generic [ref=e135] [cursor=pointer]: 今年适不适合换一座城市生活？
+      - generic [ref=e40]:
+        - generic [ref=e41]: 简体中文
+        - generic [ref=e42]: v0.9.0
+    - main [ref=e43]:
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e46]: DECISION BRIEF
+          - heading "先把问题压成一句话。" [level=1] [ref=e48]
+          - paragraph [ref=e49]: 你说选择，我负责把焦虑拆成可判断的证据、风险和下一步动作。
+        - radiogroup "决策模式选择" [ref=e50]:
+          - radio "自动" [checked] [ref=e51] [cursor=pointer]:
+            - img [ref=e52]:
+              - generic [ref=e55]: 自
+          - radio "理性" [ref=e57] [cursor=pointer]:
+            - img [ref=e58]:
+              - generic [ref=e61]: 理
+          - radio "天意" [ref=e63] [cursor=pointer]:
+            - img [ref=e64]:
+              - generic [ref=e67]: 随
+          - radio "自然" [ref=e69] [cursor=pointer]:
+            - img [ref=e70]:
+              - generic [ref=e73]: 然
+          - radio "对话" [ref=e75] [cursor=pointer]:
+            - img [ref=e76]:
+              - generic [ref=e79]: 问
+          - radio "国学" [ref=e81] [cursor=pointer]:
+            - img [ref=e82]:
+              - generic [ref=e85]: 局
+      - generic [ref=e88]:
+        - button "中午吃什么？" [ref=e89] [cursor=pointer]
+        - button "该不该辞职？" [ref=e90] [cursor=pointer]
+        - button "要不要分手？" [ref=e91] [cursor=pointer]
+        - button "这本书留还是扔？" [ref=e92] [cursor=pointer]
+        - button "买房还是租房？" [ref=e93] [cursor=pointer]
+      - generic [ref=e94]:
+        - generic [ref=e95]: 把纠结的事压成一句话…
+        - textbox "决策问题输入框" [ref=e96]:
+          - /placeholder: 把纠结的事压成一句话…
+        - generic [ref=e97]:
+          - button "上传图片" [ref=e99] [cursor=pointer]
+          - generic [ref=e104]:
+            - button "语音输入" [ref=e105] [cursor=pointer]
+            - button "发送" [ref=e109] [cursor=pointer]
+  - dialog "抽屉" [ref=e458]:
+    - generic [ref=e113]:
+      - button "关闭抽屉" [ref=e459] [cursor=pointer]:
+        - generic [ref=e117]: 返回
+      - generic [ref=e118]: 设置
+    - generic [ref=e461]:
+      - generic [ref=e462]:
+        - generic [ref=e463]: 游
+        - generic [ref=e464]:
+          - generic [ref=e465]: 别纠结
+          - generic [ref=e466]: 让选择不再内耗
+      - generic [ref=e467]: 用户偏好
+      - generic [ref=e468]:
+        - button "界面语言 简体中文" [ref=e469] [cursor=pointer]:
+          - generic [ref=e474]:
+            - generic [ref=e475]: 界面语言
+            - generic [ref=e476]: 简体中文
+        - button "主题模式 浅色" [ref=e479] [cursor=pointer]:
+          - generic [ref=e483]:
+            - generic [ref=e484]: 主题模式
+            - generic [ref=e485]: 浅色
+        - button "界面样式 决策日志" [ref=e488] [cursor=pointer]:
+          - generic [ref=e495]:
+            - generic [ref=e496]: 界面样式
+            - generic [ref=e497]: 决策日志
+        - button "默认决策模式 自动" [ref=e500] [cursor=pointer]:
+          - generic [ref=e505]:
+            - generic [ref=e506]: 默认决策模式
+            - generic [ref=e507]: 自动
+        - button "价值观权重 60 / 50 / 70 / 55" [ref=e510] [cursor=pointer]:
+          - generic [ref=e514]:
+            - generic [ref=e515]: 价值观权重
+            - generic [ref=e516]: 60 / 50 / 70 / 55
+      - generic [ref=e519]: AI 配置
+      - generic [ref=e520]:
+        - button "AI 配置 API Key" [ref=e521] [cursor=pointer]:
+          - generic [ref=e526]:
+            - generic [ref=e527]: AI 配置
+            - generic [ref=e528]: API Key
+        - button "天气配置（高德） 如果没有配置高德天气 API，会使用模拟数据" [ref=e531] [cursor=pointer]:
+          - generic [ref=e535]:
+            - generic [ref=e536]: 天气配置（高德）
+            - generic [ref=e537]: 如果没有配置高德天气 API，会使用模拟数据
+      - generic [ref=e540]: 语音朗读
+      - button "语音朗读 晓晓" [ref=e542] [cursor=pointer]:
+        - generic [ref=e548]:
+          - generic [ref=e549]: 语音朗读
+          - generic [ref=e550]: 晓晓
+      - generic [ref=e553]: 关于
+      - generic [ref=e554]:
+        - button "关于别纠结" [ref=e555] [cursor=pointer]
+        - generic [ref=e561] [cursor=pointer]:
+          - generic [ref=e562]: 版本
+          - generic [ref=e563]: 0.9.0 · Desktop
+      - generic [ref=e564]: 别纠结 · Desktop Edition
+  - dialog:
+    - document
+  - status

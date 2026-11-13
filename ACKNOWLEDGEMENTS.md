@@ -17,7 +17,7 @@
 - [op7418/humanizer-zh](https://github.com/op7418/humanizer-zh): Chinese anti-AI-writing style reference.
 - Browser Web Speech API: speech input support.
 - Amap Open Platform: weather context service used by the Nature lens.
-- OpenAI-compatible LLM ecosystem: optional user-configured decision-brief generation.
+- OpenAI-compatible LLM ecosystem: optional user-configured decision-journal generation.
 
 ## 中文说明
 

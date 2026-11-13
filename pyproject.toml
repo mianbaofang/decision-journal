@@ -1,12 +1,12 @@
 [project]
 name = "choice-skill"
 version = "0.9.1"
-description = "Local-first AI decision assistant with Web, CLI, and Codex Skill interfaces"
+description = "Local-first AI decision assistant with Web, CLI, and installable Skill interfaces"
 license = { text = "MIT" }
 requires-python = ">=3.9"
 authors = [{ name = "Choice Skill Contributors" }]
 readme = "README.md"
-keywords = ["decision-making", "decision-support", "ai-assistant", "local-first", "fastapi", "sqlite", "openai-compatible", "codex-skill"]
+keywords = ["decision-making", "decision-support", "ai-assistant", "local-first", "fastapi", "sqlite", "openai-compatible", "decision-journal", "decision-log"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",

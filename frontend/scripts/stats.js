@@ -41,6 +41,7 @@ const Stats = (() => {
     grid.appendChild(statCard('regret', pct(data.regretRate), I18N.t('stats.regretRate'), '%'));
     grid.appendChild(statCard('confidence', Math.round(data.avgConfidence || 0), I18N.t('stats.avgConfidence'), '%'));
     scroll.appendChild(grid);
+    if (window.Motion) Motion.stagger(grid.querySelectorAll('.stat'), { step: 55, max: 4 });
 
     // 模式分布
     if (modeDist && Object.keys(modeDist).length) {
@@ -113,6 +114,7 @@ const Stats = (() => {
       chart.appendChild(tc);
       scroll.appendChild(chart);
     }
+    if (window.Motion) Motion.chartsIn(scroll);
   }
 
   function statCard(accent, value, label, unit) {
@@ -120,7 +122,17 @@ const Stats = (() => {
     c.className = 'stat';
     c.setAttribute('data-accent', accent);
     const b = document.createElement('b');
-    b.innerHTML = Brief.esc(value) + (unit ? '<span class="unit">' + unit + '</span>' : '');
+    const num = document.createElement('span');
+    num.className = 'stat-num';
+    num.textContent = '0';
+    b.appendChild(num);
+    if (unit) {
+      const u = document.createElement('span');
+      u.className = 'unit';
+      u.textContent = unit;
+      b.appendChild(u);
+    }
+    if (window.Motion) Motion.countUp(num, value);
     const s = document.createElement('span');
     s.textContent = label;
     c.appendChild(b);
@@ -137,8 +149,16 @@ const Stats = (() => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     if (isNaN(d)) return '';
-    const labels = ['日', '一', '二', '三', '四', '五', '六'];
-    return labels[d.getDay()] || '';
+    const lang = I18N.getLang ? I18N.getLang() : 'zh-CN';
+    if (lang === 'zh-CN' || lang === 'zh-HK') {
+      const labels = ['日', '一', '二', '三', '四', '五', '六'];
+      return labels[d.getDay()] || '';
+    }
+    try {
+      return new Intl.DateTimeFormat(I18N.getLocale(), { weekday: 'short' }).format(d);
+    } catch (e) {
+      return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()] || '';
+    }
   }
 
   return { init, load };

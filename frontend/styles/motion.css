@@ -1,0 +1,430 @@
+/* ============================================================
+   motion.css — 动效层与现代感修正
+   原则：纸感的快速、克制、有阻尼；不做滚动淡入，不做视差。
+   所有动画在 prefers-reduced-motion 下静止。
+   ============================================================ */
+
+:root {
+  --motion-fast: 160ms;
+  --motion-base: 300ms;
+  --motion-slow: 560ms;
+  --motion-ease: cubic-bezier(.22, .8, .22, 1);
+  --motion-ease-out: cubic-bezier(.16, 1, .3, 1);
+  --motion-ease-spring: cubic-bezier(.34, 1.16, .64, 1);
+}
+
+/* ---------- 关键帧 ---------- */
+@keyframes m-rise {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes m-rise-soft {
+  from { opacity: 0; transform: translate3d(0, 6px, 0) scale(.992); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes m-seal-in {
+  0%   { opacity: 0; transform: scale(.72) rotate(-5deg); }
+  70%  { opacity: 1; transform: scale(1.04) rotate(.6deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes m-sheen {
+  from { transform: translateX(-130%) skewX(-18deg); }
+  to   { transform: translateX(230%) skewX(-18deg); }
+}
+@keyframes m-bar-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(var(--v, 1)); }
+}
+@keyframes m-col-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes m-draw-y {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes m-draw-x {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes m-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes m-breathe {
+  0%, 100% { transform: scale(1); opacity: .55; }
+  50%      { transform: scale(1.35); opacity: .15; }
+}
+@keyframes m-page-in {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes m-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* ---------- 首屏入场（只播一次） ---------- */
+.hero-label { animation: m-rise-soft var(--motion-slow) var(--motion-ease-out) backwards; }
+.hero-title { animation: m-rise var(--motion-slow) var(--motion-ease-out) .06s backwards; }
+.hero-sub   { animation: m-rise var(--motion-slow) var(--motion-ease-out) .12s backwards; }
+.mode-grid .mode-card {
+  animation: m-seal-in 520ms var(--motion-ease-spring) backwards;
+}
+.mode-grid .mode-card:nth-child(1) { animation-delay: .16s; }
+.mode-grid .mode-card:nth-child(2) { animation-delay: .20s; }
+.mode-grid .mode-card:nth-child(3) { animation-delay: .24s; }
+.mode-grid .mode-card:nth-child(4) { animation-delay: .28s; }
+.mode-grid .mode-card:nth-child(5) { animation-delay: .32s; }
+.mode-grid .mode-card:nth-child(6) { animation-delay: .36s; }
+
+/* 首屏标题：更明确的字阶与行宽 */
+.hero { max-width: 760px; }
+.hero-title {
+  font-size: clamp(25px, 2.35vw, 36px);
+  line-height: 1.16;
+  letter-spacing: -0.01em;
+}
+.hero-sub {
+  max-width: 600px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.hero-label { font-size: 9px; letter-spacing: .16em; justify-content: flex-start; }
+html[data-skin="journal"] .hero-title { font-size: clamp(27px, 2.4vw, 36px); }
+
+/* 首屏标签下的一小段墨线：进入时拉开 */
+.hero-label::after {
+  content: "";
+  width: 28px;
+  height: 1px;
+  margin-left: 10px;
+  align-self: center;
+  background: currentColor;
+  opacity: .45;
+  transform-origin: left;
+  animation: m-draw-x 700ms var(--motion-ease-out) .3s both;
+}
+
+/* ---------- 模式卡：悬停与选中反馈 ---------- */
+.mode-card {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform var(--motion-base) var(--motion-ease),
+    border-color var(--motion-base) var(--motion-ease),
+    background var(--motion-base) var(--motion-ease),
+    box-shadow var(--motion-base) var(--motion-ease),
+    color var(--motion-base) var(--motion-ease);
+}
+.mode-card .mode-seal {
+  transition: transform 360ms var(--motion-ease-spring);
+  transform-origin: 50% 60%;
+}
+.mode-card::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--mode-color, var(--aqua));
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 380ms var(--motion-ease-out);
+}
+.mode-card[data-mode="auto"]     { --mode-color: var(--aqua); }
+.mode-card[data-mode="rational"] { --mode-color: var(--lapis); }
+.mode-card[data-mode="random"]   { --mode-color: var(--random-ink, var(--brass)); }
+.mode-card[data-mode="nature"]   { --mode-color: var(--moss); }
+.mode-card[data-mode="dialogue"] { --mode-color: var(--plum); }
+.mode-card[data-mode="fengshui"] { --mode-color: var(--cinnabar); }
+.mode-card.active::after { transform: scaleX(1); }
+
+@media (hover: hover) {
+  .mode-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px -14px rgba(25, 26, 22, .45);
+  }
+  .mode-card:hover .mode-seal { transform: rotate(-4deg) scale(1.08); }
+  html[data-skin="journal"] .mode-card:hover { transform: none; box-shadow: none; background: var(--paper-2); }
+}
+.mode-card:active { transform: translateY(0) scale(.975); }
+.mode-card:focus-visible {
+  outline: 2px solid var(--mode-color, var(--aqua));
+  outline-offset: 2px;
+}
+
+/* ---------- 简报卡：一次入场 + 顶部扫光 + 分区错峰 ---------- */
+.brief {
+  padding: 0;
+  transition: transform var(--motion-base) var(--motion-ease), box-shadow var(--motion-base) var(--motion-ease);
+}
+.brief.is-new { animation: m-rise 540ms var(--motion-ease-out) both; }
+.brief.is-new .brief-head { position: relative; overflow: hidden; }
+.brief.is-new .brief-head::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 38%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+  animation: m-sheen 1s var(--motion-ease-out) .28s both;
+  pointer-events: none;
+}
+.brief.is-new .verdict,
+.brief.is-new .brief-columns,
+.brief.is-new .rational-detail,
+.brief.is-new .next-step,
+.brief.is-new .brief-bazi {
+  animation: m-rise-soft 520ms var(--motion-ease-out) both;
+}
+.brief.is-new .verdict { animation-delay: .10s; }
+.brief.is-new .brief-columns { animation-delay: .16s; }
+.brief.is-new .rational-detail { animation-delay: .22s; }
+.brief.is-new .next-step { animation-delay: .30s; }
+.brief.is-new .brief-bazi { animation-delay: .06s; }
+
+@media (hover: hover) {
+  .brief:hover { transform: translateY(-2px); box-shadow: 0 22px 46px -28px rgba(25, 26, 22, .5); }
+}
+
+/* 下一步：左侧墨条自上而下画出 */
+.next-step { position: relative; overflow: hidden; }
+.next-step::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--brief-accent, var(--aqua));
+  transform: scaleY(0);
+  transform-origin: top;
+}
+.brief.is-new .next-step::before { animation: m-draw-y 520ms var(--motion-ease-out) .34s both; }
+.brief[data-tone="rational"] { --brief-accent: var(--lapis); }
+.brief[data-tone="random"]   { --brief-accent: var(--random-ink, var(--brass)); }
+.brief[data-tone="nature"]   { --brief-accent: var(--moss); }
+.brief[data-tone="dialogue"] { --brief-accent: var(--plum); }
+.brief[data-tone="fengshui"] { --brief-accent: var(--cinnabar); }
+
+/* ---------- 理性评分：细条形读数 ---------- */
+.score-bars {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 2px;
+}
+.score-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 26px;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--ink-faint);
+}
+.score-row b {
+  text-align: right;
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.score-track {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--line);
+  overflow: hidden;
+}
+.score-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brief-accent, var(--lapis));
+  transform: scaleX(var(--v, 0));
+  transform-origin: left;
+}
+.score-row:nth-child(1) .score-fill { background: var(--moss); }
+.score-row:nth-child(2) .score-fill { background: var(--cinnabar); }
+.score-row:nth-child(3) .score-fill { background: var(--lapis); }
+.score-row:nth-child(4) .score-fill { background: var(--plum); }
+.brief.is-new .score-fill { animation: m-bar-grow 760ms var(--motion-ease-out) both; }
+.brief.is-new .score-row:nth-child(1) .score-fill { animation-delay: .30s; }
+.brief.is-new .score-row:nth-child(2) .score-fill { animation-delay: .36s; }
+.brief.is-new .score-row:nth-child(3) .score-fill { animation-delay: .42s; }
+.brief.is-new .score-row:nth-child(4) .score-fill { animation-delay: .48s; }
+
+/* ---------- 输入卡：聚焦时轻微抬升 ---------- */
+.composer {
+  transition: border-color var(--motion-base) var(--motion-ease), box-shadow var(--motion-base) var(--motion-ease), transform var(--motion-base) var(--motion-ease);
+}
+.composer:focus-within {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px -26px rgba(25, 26, 22, .55);
+}
+.send-button { position: relative; }
+.send-button::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid transparent;
+  border-top-color: var(--white);
+  opacity: 0;
+  pointer-events: none;
+}
+.send-button.is-loading::after { opacity: .9; animation: m-spin 900ms linear infinite; }
+.send-button.is-loading svg { opacity: .35; }
+
+.tool-button:focus-visible,
+.send-button:focus-visible,
+.btn:focus-visible,
+.nav-item:focus-visible,
+.recent-item:focus-visible {
+  outline: 2px solid var(--aqua);
+  outline-offset: 2px;
+}
+
+/* ---------- 按钮：现代按压感 ---------- */
+.btn {
+  transition: transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease), background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
+}
+@media (hover: hover) {
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -12px rgba(25, 26, 22, .5); }
+}
+.btn:active { transform: translateY(0) scale(.98); box-shadow: none; }
+
+/* ---------- 侧栏：最近决策的滑动反馈 ---------- */
+.recent-item {
+  transition: background var(--motion-base) var(--motion-ease), transform var(--motion-base) var(--motion-ease);
+}
+.recent-dot { transition: transform var(--motion-base) var(--motion-ease-spring); }
+@media (hover: hover) {
+  .recent-item:hover { transform: translateX(3px); }
+  .recent-item:hover .recent-dot { transform: scale(1.35); }
+}
+.nav-item { transition: background var(--motion-base) var(--motion-ease), color var(--motion-base) var(--motion-ease), transform var(--motion-base) var(--motion-ease); }
+@media (hover: hover) {
+  .nav-item:hover { transform: translateX(2px); }
+}
+.nav-item.active::before {
+  animation: m-draw-y 320ms var(--motion-ease-out) both;
+  transform-origin: center;
+}
+
+/* ---------- 抽屉页：进入时轻微上浮 ---------- */
+.drawer-body .page.active { animation: m-page-in 300ms var(--motion-ease-out) both; }
+
+/* ---------- 档案：新卡一次错峰入场 ---------- */
+.archive-card { transition: transform var(--motion-base) var(--motion-ease), box-shadow var(--motion-base) var(--motion-ease), border-color var(--motion-base) var(--motion-ease); }
+.archive-card.m-stagger { animation: m-rise-soft 460ms var(--motion-ease-out) both; animation-delay: var(--m-delay, 0ms); }
+@media (hover: hover) {
+  .archive-card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -22px rgba(25, 26, 22, .45); }
+}
+
+/* ---------- 统计：数字与条形 ---------- */
+.stat.m-stagger { animation: m-rise-soft 460ms var(--motion-ease-out) both; animation-delay: var(--m-delay, 0ms); }
+.stat b { font-variant-numeric: tabular-nums; }
+.mb-fill { transform-origin: left; }
+.chart.motion-in .mb-fill { animation: m-bar-grow 820ms var(--motion-ease-out) both; }
+.chart.motion-in .mode-bar:nth-child(1) .mb-fill { animation-delay: .06s; }
+.chart.motion-in .mode-bar:nth-child(2) .mb-fill { animation-delay: .12s; }
+.chart.motion-in .mode-bar:nth-child(3) .mb-fill { animation-delay: .18s; }
+.chart.motion-in .mode-bar:nth-child(4) .mb-fill { animation-delay: .24s; }
+.chart.motion-in .mode-bar:nth-child(5) .mb-fill { animation-delay: .30s; }
+.chart.motion-in .mode-bar:nth-child(6) .mb-fill { animation-delay: .36s; }
+.tb-col { transform-origin: bottom; }
+.chart.motion-in .tb-col { animation: m-col-grow 760ms var(--motion-ease-out) both; }
+
+/* ---------- 思考中的呼吸点 ---------- */
+.thinking .loading-dots span { animation: m-breathe 1.2s var(--motion-ease) infinite; }
+
+/* ---------- 空状态：三步说明（有对话后隐藏） ---------- */
+.hero-note {
+  max-width: 760px;
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.hn-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 2px 18px 2px 0;
+  animation: m-rise-soft 560ms var(--motion-ease-out) backwards;
+}
+.hn-item:nth-child(1) { animation-delay: .40s; }
+.hn-item:nth-child(2) { animation-delay: .48s; }
+.hn-item:nth-child(3) { animation-delay: .56s; }
+.hn-item + .hn-item { padding-left: 18px; border-left: 1px solid var(--line); }
+.hn-num {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--motion-base) var(--motion-ease), transform var(--motion-base) var(--motion-ease);
+}
+.hn-item b {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: .02em;
+}
+.hn-item em {
+  display: block;
+  margin-top: 3px;
+  font-style: normal;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+@media (hover: hover) {
+  .hn-item:hover .hn-num { color: var(--aqua); transform: translateY(-2px); }
+}
+body.has-thread .hero-note { display: none; }
+body.has-thread .quick-row { display: none; }
+
+/* ---------- 尊重系统减弱动态 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .brief.is-new,
+  .brief.is-new .verdict,
+  .brief.is-new .brief-columns,
+  .brief.is-new .rational-detail,
+  .brief.is-new .next-step,
+  .brief.is-new .score-fill,
+  .archive-card.m-stagger,
+  .stat.m-stagger,
+  .hero-label,
+  .hero-title,
+  .hero-sub,
+  .mode-grid .mode-card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---------- 移动端：更轻的幅度 ---------- */
+@media (max-width: 767px) {
+  .hero-title { font-size: clamp(23px, 6.2vw, 30px); }
+  .hero-sub { font-size: 12px; }
+  .brief.is-new { animation-duration: 420ms; }
+  .mode-card:hover { transform: none; box-shadow: none; }
+  .hero-note { grid-template-columns: 1fr; margin-top: 20px; }
+  .hn-item { padding: 8px 0; }
+  .hn-item + .hn-item { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+}

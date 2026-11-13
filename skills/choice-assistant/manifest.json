@@ -1,6 +1,6 @@
 {
   "name": "choice-assistant",
-  "repository_slug": "decision-brief",
+  "repository_slug": "decision-journal",
   "compatibility_reason": "The public product is Decision Brief, while choice-assistant is the established installable Skill and CLI identifier kept for existing commands and package discovery.",
   "version": "0.9.1",
   "owner": "mianbaofang",

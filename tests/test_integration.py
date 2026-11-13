@@ -187,7 +187,7 @@ def test_config_flow(client):
     r = client.get("/api/config")
     data = r.json()
     assert data["llm"]["hasKey"] is False
-    assert data["weather"]["hasAppid"] is False
+    assert data["weather"]["hasKey"] is False
 
 
 # ============================== 4. 数据持久化全链路 ==============================

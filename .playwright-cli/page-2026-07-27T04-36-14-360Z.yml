@@ -1,0 +1,195 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]: 决策 / 档案
+      - button "新对话" [ref=e5] [cursor=pointer]
+    - navigation "主导航" [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: 别纠结
+        - generic [ref=e14]: 让选择不再内耗
+      - navigation [ref=e15]:
+        - button "决策" [ref=e16] [cursor=pointer]
+        - button "档案" [ref=e22] [cursor=pointer]
+        - button "统计" [ref=e28] [cursor=pointer]
+        - button "设置" [ref=e32] [cursor=pointer]
+      - generic [ref=e38]: 最近决策
+      - generic [ref=e39]:
+        - generic [ref=e120] [cursor=pointer]: 我说不清自己为什么不想答应
+        - generic [ref=e123] [cursor=pointer]: 周末适合出去走走吗？
+        - generic [ref=e126] [cursor=pointer]: 要不要接受这份新工作？
+        - generic [ref=e129] [cursor=pointer]: 今晚做意面还是炒饭？
+        - generic [ref=e132] [cursor=pointer]: Is this a good year to move to a new city?
+        - generic [ref=e135] [cursor=pointer]: 今年适不适合换一座城市生活？
+      - generic [ref=e40]:
+        - generic [ref=e41]: 简体中文
+        - generic [ref=e42]: v0.9.0
+    - main [ref=e43]:
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e46]: DECISION BRIEF
+          - heading "先把问题压成一句话。" [level=1] [ref=e48]
+          - paragraph [ref=e49]: 你说选择，我负责把焦虑拆成可判断的证据、风险和下一步动作。
+        - radiogroup "决策模式选择" [ref=e50]:
+          - radio "自动" [checked] [ref=e51] [cursor=pointer]:
+            - img [ref=e52]:
+              - generic [ref=e55]: 自
+          - radio "理性" [ref=e57] [cursor=pointer]:
+            - img [ref=e58]:
+              - generic [ref=e61]: 理
+          - radio "天意" [ref=e63] [cursor=pointer]:
+            - img [ref=e64]:
+              - generic [ref=e67]: 随
+          - radio "自然" [ref=e69] [cursor=pointer]:
+            - img [ref=e70]:
+              - generic [ref=e73]: 然
+          - radio "对话" [ref=e75] [cursor=pointer]:
+            - img [ref=e76]:
+              - generic [ref=e79]: 问
+          - radio "国学" [ref=e81] [cursor=pointer]:
+            - img [ref=e82]:
+              - generic [ref=e85]: 局
+      - generic [ref=e88]:
+        - button "中午吃什么？" [ref=e89] [cursor=pointer]
+        - button "该不该辞职？" [ref=e90] [cursor=pointer]
+        - button "要不要分手？" [ref=e91] [cursor=pointer]
+        - button "这本书留还是扔？" [ref=e92] [cursor=pointer]
+        - button "买房还是租房？" [ref=e93] [cursor=pointer]
+      - generic [ref=e94]:
+        - generic [ref=e95]: 把纠结的事压成一句话…
+        - textbox "决策问题输入框" [ref=e96]:
+          - /placeholder: 把纠结的事压成一句话…
+        - generic [ref=e97]:
+          - button "上传图片" [ref=e99] [cursor=pointer]
+          - generic [ref=e104]:
+            - button "语音输入" [ref=e105] [cursor=pointer]
+            - button "发送" [ref=e109] [cursor=pointer]
+  - dialog "抽屉" [ref=e139]:
+    - generic [ref=e113]:
+      - button "关闭抽屉" [ref=e140] [cursor=pointer]:
+        - generic [ref=e117]: 返回
+      - generic [ref=e118]: 档案
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - button "我说不清自己为什么不想答应 对话 10 h 0%" [ref=e143] [cursor=pointer]:
+          - generic [ref=e144]:
+            - generic [ref=e145]: 我说不清自己为什么不想答应
+            - generic [ref=e146]:
+              - img [ref=e147]:
+                - generic [ref=e150]: 问
+              - generic [ref=e151]: 对话
+          - generic [ref=e152]:
+            - generic [ref=e153]: 10 h
+            - generic [ref=e154]: 0%
+        - button "周末适合出去走走吗？ 自然 随风飘散的蒲公英 10 h 0%" [ref=e156] [cursor=pointer]:
+          - generic [ref=e157]:
+            - generic [ref=e158]: 周末适合出去走走吗？
+            - generic [ref=e159]:
+              - img [ref=e160]:
+                - generic [ref=e163]: 然
+              - generic [ref=e164]: 自然
+          - generic [ref=e165]: 随风飘散的蒲公英
+          - generic [ref=e166]:
+            - generic [ref=e167]: 10 h
+            - generic [ref=e168]: 0%
+        - button "要不要接受这份新工作？ 理性 依我看，分两步走，先动起来再说，给自己留个退路就行。 10 h 78%" [ref=e170] [cursor=pointer]:
+          - generic [ref=e171]:
+            - generic [ref=e172]: 要不要接受这份新工作？
+            - generic [ref=e173]:
+              - img [ref=e174]:
+                - generic [ref=e177]: 理
+              - generic [ref=e178]: 理性
+          - generic [ref=e179]: 依我看，分两步走，先动起来再说，给自己留个退路就行。
+          - generic [ref=e180]:
+            - generic [ref=e181]: 10 h
+            - generic [ref=e182]: 78%
+        - button "今晚做意面还是炒饭？ 天意 10 h 0%" [active] [ref=e184] [cursor=pointer]:
+          - generic [ref=e185]:
+            - generic [ref=e186]: 今晚做意面还是炒饭？
+            - generic [ref=e187]:
+              - img [ref=e188]:
+                - generic [ref=e191]: 随
+              - generic [ref=e192]: 天意
+          - generic [ref=e193]:
+            - generic [ref=e194]: 10 h
+            - generic [ref=e195]: 0%
+        - button "Is this a good year to move to a new city? 国学 11 h 0%" [ref=e197] [cursor=pointer]:
+          - generic [ref=e198]:
+            - generic [ref=e199]: Is this a good year to move to a new city?
+            - generic [ref=e200]:
+              - img [ref=e201]:
+                - generic [ref=e204]: 局
+              - generic [ref=e205]: 国学
+          - generic [ref=e206]:
+            - generic [ref=e207]: 11 h
+            - generic [ref=e208]: 0%
+        - button "今年适不适合换一座城市生活？ 国学 12 h 0%" [ref=e210] [cursor=pointer]:
+          - generic [ref=e211]:
+            - generic [ref=e212]: 今年适不适合换一座城市生活？
+            - generic [ref=e213]:
+              - img [ref=e214]:
+                - generic [ref=e217]: 局
+              - generic [ref=e218]: 国学
+          - generic [ref=e219]:
+            - generic [ref=e220]: 12 h
+            - generic [ref=e221]: 0%
+        - button "今天午餐吃什么？ 天意 23 h 0%" [ref=e223] [cursor=pointer]:
+          - generic [ref=e224]:
+            - generic [ref=e225]: 今天午餐吃什么？
+            - generic [ref=e226]:
+              - img [ref=e227]:
+                - generic [ref=e230]: 随
+              - generic [ref=e231]: 天意
+          - generic [ref=e232]:
+            - generic [ref=e233]: 23 h
+            - generic [ref=e234]: 0%
+      - generic [ref=e236]:
+        - generic [ref=e237]:
+          - button [ref=e238] [cursor=pointer]:
+            - generic [ref=e241]: 返回
+          - generic [ref=e242]: 详情
+        - generic [ref=e243]:
+          - generic [ref=e368]: 今晚做意面还是炒饭？
+          - generic [ref=e369]: 10 h
+          - article [ref=e370]:
+            - generic [ref=e371]:
+              - img [ref=e373]:
+                - generic [ref=e376]: 随
+              - generic [ref=e378]:
+                - generic [ref=e379]: 天意
+                - generic [ref=e380]: 证据强度 55%
+            - generic [ref=e382]:
+              - generic [ref=e383]:
+                - img [ref=e385]:
+                  - generic [ref=e392]: "1"
+                  - generic [ref=e394]: "2"
+                  - generic [ref=e396]: "3"
+                  - generic [ref=e398]: "4"
+                  - generic [ref=e400]: "5"
+                  - generic [ref=e402]: "6"
+                - generic [ref=e403]:
+                  - generic [ref=e404]:
+                    - generic [ref=e405]: "1"
+                    - generic [ref=e406]: 先这样试试
+                  - generic [ref=e407]:
+                    - generic [ref=e408]: "2"
+                    - generic [ref=e409]: 换个思路
+                  - generic [ref=e410]:
+                    - generic [ref=e411]: "3"
+                    - generic [ref=e412]: 再想想
+                  - generic [ref=e413]:
+                    - generic [ref=e414]: "4"
+                    - generic [ref=e415]: 问朋友
+                  - generic [ref=e416]:
+                    - generic [ref=e417]: "5"
+                    - generic [ref=e418]: 睡一觉再说
+                  - generic [ref=e419]:
+                    - generic [ref=e420]: "6"
+                    - generic [ref=e421]: 抛硬币决定
+              - generic [ref=e422]: 这次抽到：「抛硬币决定」
+          - generic [ref=e423]:
+            - button [ref=e424] [cursor=pointer]: 已执行
+            - button [ref=e425] [cursor=pointer]: 后悔了
+            - button [ref=e426] [cursor=pointer]: 删除
+  - dialog:
+    - document
+  - status

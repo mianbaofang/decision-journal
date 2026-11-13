@@ -387,7 +387,14 @@ def _build_mode_prompt(question: str, mode: str, has_image: bool = False) -> str
     if mode == "dialogue":
         return dialogue_prompt(question) + image_hint
     if mode == "fengshui":
-        return fengshui_prompt(question) + image_hint
+        bazi = None
+        try:
+            from services.bazi_engine import analyze as analyze_bazi
+
+            bazi = analyze_bazi(question)
+        except Exception:
+            bazi = None
+        return fengshui_prompt(question, bazi) + image_hint
     # auto 或未知：用 brief prompt（均衡综合）
     return _build_brief_prompt(question, mode) + image_hint
 
@@ -427,8 +434,7 @@ def _mock_random(question: str, language: str = "zh-CN") -> Dict[str, Any]:
 def _mock_fengshui(question: str, language: str = "zh-CN") -> Dict[str, Any]:
     """fengshui mock：调用 bazi_engine.analyze，缺字段返回 needBirth=true。
 
-    ponytail: bazi_engine 模块尚未实现，ImportError 时直接 needBirth=true。
-    升级路径：实现 services/bazi_engine.py 后自动接入。
+    只展示引擎能验证的年柱与时辰；完整四柱/十神/大运需另接排盘工具。
     """
     is_en = language == "en"
     try:
@@ -517,6 +523,11 @@ def _mock_mode_result(question: str, mode: str, language: str = "zh-CN") -> Dict
                 if is_en else
                 "依我看，分两步走，先动起来再说，给自己留个退路就行。"
             ),
+            "nextStep": (
+                "Spend 30 minutes tonight listing the two worst outcomes and how you would recover from each."
+                if is_en else
+                "今晚花 30 分钟，把最坏的两个结果和各自的补救办法写下来。"
+            ),
             "_source": "mock",
         }
     if mode == "random":
@@ -603,7 +614,8 @@ def sanitize_result(raw: Dict[str, Any], mode: str) -> Dict[str, Any]:
         return done({**base,
                      "pros": ensure_array(raw.get("pros"), ["优势信息不足"], 1, 6),
                      "cons": ensure_array(raw.get("cons"), ["风险信息不足"], 1, 6),
-                     "conclusion": ensure_text(raw.get("conclusion"), "先缓一步，补齐信息后再决定", 220)})
+                     "conclusion": ensure_text(raw.get("conclusion"), "先缓一步，补齐信息后再决定", 220),
+                     "nextStep": _text(raw.get("nextStep") or raw.get("next_step"), 140)})
     if type_ == "random":
         return done({**base,
                      "options": ensure_array(raw.get("options"), list(_RANDOM_FALLBACK["zh-CN"]), 6, 8, 50),
@@ -645,6 +657,44 @@ class NoApiKeyError(Exception):
     pass
 
 
+def _enforce_bazi_audit(data: Dict[str, Any], question: str, language: str = "zh-CN") -> Dict[str, Any]:
+    """用本地引擎校准八字结果：只保留可验证的柱子，信息不足时明确不解读。"""
+    try:
+        from services.bazi_engine import analyze
+
+        bazi = analyze(question)
+    except Exception:
+        return data
+
+    audit = bazi.get("audit") or ""
+    if audit:
+        data["baziAudit"] = audit
+
+    if not bazi.get("complete"):
+        missing = [str(item) for item in (bazi.get("missing") or [])]
+        data["needBirth"] = True
+        data["bazi"] = ""
+        data["wuxing"] = ""
+        data["element"] = ""
+        data["analysis"] = (
+            "Birth details are incomplete, so no chart-based reading is given."
+            if language == "en" else
+            "出生信息不完整，这里不做排盘解读。"
+        )
+        if not data.get("question"):
+            data["question"] = (
+                "To draw a verifiable chart, please add: " + ", ".join(missing) + "."
+                if language == "en" else
+                f"要按八字排盘，还缺：{'、'.join(missing)}。请补充出生年月日时、性别、出生地，并说明阳历或农历。"
+            )
+        return data
+
+    pillars = bazi.get("pillars") if isinstance(bazi.get("pillars"), dict) else {}
+    if pillars:
+        data["bazi"] = "；".join(f"{key}柱：{value}" for key, value in pillars.items())
+    return data
+
+
 def call_llm(question: str, mode: str, config: Optional[Dict[str, Any]] = None,
              language: str = "zh-CN", allow_mock: bool = False,
              image: Optional[str] = None) -> Dict[str, Any]:
@@ -670,7 +720,10 @@ def call_llm(question: str, mode: str, config: Optional[Dict[str, Any]] = None,
             prompt = _build_mode_prompt(question, mode, has_image=has_image)
             raw = call_openai_llm(prompt, config, image=(image if has_image else None))
             raw["_source"] = "real"
-            return sanitize_result(raw, mode)
+            data = sanitize_result(raw, mode)
+            if mode == "fengshui":
+                data = _enforce_bazi_audit(data, question, language)
+            return data
         except Exception as e:
             # 不打印 api_key；仅记录异常类型
             print(f"[llm] 真实调用失败: {type(e).__name__}")

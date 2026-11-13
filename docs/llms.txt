@@ -1,6 +1,6 @@
 # Decision Brief / 别纠结
 
-Decision Brief is a local-first AI decision-support tool with a Web UI, CLI, and installable Agent Skill. It accepts text, voice, and image input, then organizes a choice into evidence, risks, and a next step. It does not make the final decision for the user.
+Decision Brief is a local-first AI decision assistant that remembers: it accepts text, voice, and image input, organizes a choice into evidence, risks, and a next step, and keeps each decision in a local journal for later review and export. It does not make the final decision for the user.
 
 ## Canonical resources
 
@@ -19,7 +19,8 @@ Decision Brief is the public product and repository identity. `choice-assistant`
 - Rational analysis of benefits, risks, reversibility, values, and a smallest next step.
 - Low-stakes random choice with optional visual effects.
 - Nature and Traditional Culture lenses presented as perspective or entertainment, not professional advice.
-- Guided dialogue, automatic lens selection, local SQLite archive, execution/regret tracking, and statistics.
+- Guided dialogue, automatic lens selection, local SQLite decision journal, execution/regret tracking, and statistics.
+- Export a single decision as Markdown or JSON (`.brief.md`) for archives, notes, or tooling.
 - Optional OpenAI-compatible LLM, vision, Amap weather, Edge TTS, and browser speech input.
 
 ## Boundaries

@@ -44,6 +44,7 @@ const Brief = (() => {
    */
   function renderBrief(o) {
     const article = el('article', 'brief');
+    article.setAttribute('data-tone', o.tone || 'auto');
 
     // 头部：印章 + 模式名/证据强度 + 标题
     const head = el('div', 'brief-head');
@@ -55,9 +56,12 @@ const Brief = (() => {
 
     const meta = el('div', 'brief-head-meta');
     const typeBar = el('div', 'brief-type');
-    const percentText = new Intl.NumberFormat(I18N.getLocale(), { style: 'percent', maximumFractionDigits: 0 }).format((o.percent || 0) / 100);
+    const hasPercent = Number.isFinite(o.percent);
     typeBar.appendChild(el('span', '', o.modeName || ''));
-    typeBar.appendChild(el('span', '', I18N.t('brief.confidence') + ' ' + percentText));
+    if (hasPercent) {
+      const percentText = new Intl.NumberFormat(I18N.getLocale(), { style: 'percent', maximumFractionDigits: 0 }).format(o.percent / 100);
+      typeBar.appendChild(el('span', '', I18N.t('brief.confidence') + ' ' + percentText));
+    }
     meta.appendChild(typeBar);
     if (o.title) meta.appendChild(el('div', 'brief-title', o.title));
     head.appendChild(meta);
@@ -68,6 +72,10 @@ const Brief = (() => {
       const bazi = el('div', 'brief-bazi');
       bazi.textContent = (o.baziAudit ? I18N.t('fengshui.bazi') + '（降级）：' : I18N.t('fengshui.bazi') + '：') + o.bazi;
       article.appendChild(bazi);
+    }
+    if (o.baziAudit) {
+      const audit = el('div', 'bazi-audit', o.baziAudit);
+      article.appendChild(audit);
     }
 
     // 主体
@@ -80,7 +88,7 @@ const Brief = (() => {
       verdictLeft.appendChild(el('div', 'verdict-label', I18N.t('brief.verdict')));
       verdictLeft.appendChild(el('div', 'verdict-main', o.verdict));
       verdict.appendChild(verdictLeft);
-      verdict.appendChild(confidenceRing(o.percent || 0));
+      if (hasPercent) verdict.appendChild(confidenceRing(o.percent));
       body.appendChild(verdict);
     }
 
@@ -154,14 +162,31 @@ const Brief = (() => {
     wrap.appendChild(consCol);
     if (o.score) {
       const s = o.score;
-      const line = el('div', 'score-line');
-      const parts = [];
-      if (s.benefit != null)      parts.push('收益 ' + s.benefit);
-      if (s.risk != null)         parts.push('风险 ' + s.risk);
-      if (s.reversibility != null) parts.push('可逆 ' + s.reversibility);
-      if (s.valueFit != null)     parts.push('契合 ' + s.valueFit);
-      line.textContent = I18N.t('rational.score') + '：' + parts.join(' / ');
-      wrap.appendChild(line);
+      const bars = el('div', 'score-bars');
+      bars.setAttribute('role', 'img');
+      const metrics = [
+        ['benefit', 'rational.benefit'],
+        ['risk', 'rational.risk'],
+        ['reversibility', 'rational.reversibility'],
+        ['valueFit', 'rational.valueFit'],
+      ];
+      const spoken = [];
+      metrics.forEach(([key, labelKey]) => {
+        const value = s[key];
+        if (!Number.isFinite(value)) return;
+        spoken.push(I18N.t(labelKey) + ' ' + value);
+        const row = el('div', 'score-row');
+        row.appendChild(el('span', '', I18N.t(labelKey)));
+        const track = el('div', 'score-track');
+        const fill = el('span', 'score-fill');
+        fill.style.setProperty('--v', Math.max(0, Math.min(100, value)) / 100);
+        track.appendChild(fill);
+        row.appendChild(track);
+        row.appendChild(el('b', '', String(value)));
+        bars.appendChild(row);
+      });
+      bars.setAttribute('aria-label', I18N.t('rational.score') + ': ' + spoken.join(', '));
+      if (bars.childElementCount) wrap.appendChild(bars);
     }
     return wrap;
   }
@@ -697,7 +722,7 @@ const Brief = (() => {
    * 前端简报卡期望：{tone,modeName,percent,verdict,keep,drop,next, 6 模式专属字段}
    */
   function fromResponse(resp) {
-    if (!resp) return renderBrief({ tone: 'auto', modeName: '', percent: 0, verdict: '', keep: '', drop: '', next: '' });
+    if (!resp) return renderBrief({ tone: 'auto', modeName: '', percent: null, verdict: '', keep: '', drop: '', next: '' });
     const brief = resp.brief || {};
     const result = resp.result || {};
     const modeId = (resp.autoRecognized && resp.autoRecognized.mode) || resp.mode || 'auto';
@@ -710,7 +735,7 @@ const Brief = (() => {
       tone: m.tone,
       modeName: I18N.t(m.nameKey),
       randomSeed: resp.decisionId || result.randomSeed || result.wheelResult || brief.summary || '',
-      percent: brief.confidence != null ? brief.confidence : 55,
+      percent: brief.confidence != null ? brief.confidence : null,
       title: brief.summary || '',
       verdict: brief.summary || result.conclusion || result.signal || result.suggestion || '',
       keep: perspectives[0] || '',
@@ -744,7 +769,7 @@ const Brief = (() => {
    * decision = { id, question, mode, result, brief, createdAt, executed, regret }
    */
   function fromStored(d) {
-    if (!d) return renderBrief({ tone: 'auto', modeName: '', percent: 0, verdict: '', keep: '', drop: '', next: '' });
+    if (!d) return renderBrief({ tone: 'auto', modeName: '', percent: null, verdict: '', keep: '', drop: '', next: '' });
     const brief = d.brief || {};
     const result = d.result || {};
     const m = MODES.get(d.mode) || MODES.get('auto');
@@ -754,7 +779,7 @@ const Brief = (() => {
       tone: m.tone,
       modeName: I18N.t(m.nameKey),
       randomSeed: d.id || result.randomSeed || result.wheelResult || d.question || '',
-      percent: brief.confidence != null ? brief.confidence : 55,
+      percent: brief.confidence != null ? brief.confidence : null,
       title: brief.summary || '',
       verdict: brief.summary || result.conclusion || result.signal || result.suggestion || '',
       keep: perspectives[0] || '',

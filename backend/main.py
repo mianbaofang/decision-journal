@@ -14,7 +14,7 @@
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -77,12 +77,16 @@ if FRONTEND_DIR.exists():
     @app.get("/{full_path:path}")
     def serve_spa(full_path: str) -> FileResponse:
         """SPA fallback：非 API 路径返回 index.html。"""
-        # 不拦截 /api/ 开头的路径
+        # 不拦截 /api/ 开头的路径：未注册的 API 一律返回 JSON 404
         if full_path.startswith("api/"):
-            return FileResponse(str(FRONTEND_DIR / "index.html"), status_code=404)
-        # 尝试返回静态文件
-        candidate = FRONTEND_DIR / full_path
-        if candidate.is_file():
+            raise HTTPException(status_code=404, detail="Not Found")
+        # 尝试返回静态文件；解析后必须仍位于 frontend/ 内，避免路径穿越
+        frontend_root = FRONTEND_DIR.resolve()
+        try:
+            candidate = (FRONTEND_DIR / full_path).resolve()
+        except (OSError, ValueError):
+            return FileResponse(str(FRONTEND_DIR / "index.html"))
+        if candidate.is_file() and candidate.is_relative_to(frontend_root):
             return FileResponse(str(candidate))
         # fallback 到 index.html
         return FileResponse(str(FRONTEND_DIR / "index.html"))

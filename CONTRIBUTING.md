@@ -7,7 +7,7 @@ Thanks for improving Decision Brief. Keep changes small, practical, and respectf
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 pip install -e ".[dev]"
 ```
 

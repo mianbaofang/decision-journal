@@ -116,14 +116,24 @@ const Chat = (() => {
     });
   }
 
+  function refreshCrumb() {
+    const crumb = $('crumb');
+    if (crumb) crumb.textContent = I18N.t('nav.chat') + ' / ' + I18N.t('mode.' + currentMode);
+  }
+
   function setMode(modeId) {
     if (!MODES.get(modeId)) return;
+    const changed = currentMode !== modeId;
     currentMode = modeId;
     document.querySelectorAll('#modeSelector .mode-card').forEach(c => {
       const active = c.getAttribute('data-mode') === modeId;
       c.classList.toggle('active', active);
       c.setAttribute('aria-checked', active ? 'true' : 'false');
     });
+    refreshCrumb();
+    if (changed && window.Motion) {
+      Motion.sealPop(document.querySelector('#modeSelector .mode-card.active'));
+    }
     if (navigator.vibrate) navigator.vibrate(10);
   }
 
@@ -142,6 +152,7 @@ const Chat = (() => {
     lastQuestion = text || '(图片)';
     const imgToSend = pendingImage;
     $('sendBtn').disabled = true;
+    if (window.Motion) Motion.setLoading($('sendBtn'), true);
     $('inputText').value = '';
     autoGrow($('inputText'));
     clearImage();
@@ -192,6 +203,7 @@ const Chat = (() => {
     } finally {
       busy = false;
       $('sendBtn').disabled = false;
+      if (window.Motion) Motion.setLoading($('sendBtn'), false);
     }
   }
 
@@ -215,6 +227,7 @@ const Chat = (() => {
     }
     wrap.appendChild(bubble);
     getContainer().appendChild(wrap);
+    document.body.classList.add('has-thread');
     scrollBottom();
   }
 
@@ -235,6 +248,7 @@ const Chat = (() => {
     wrap.className = 'message ai';
     wrap.appendChild(node);
     getContainer().appendChild(wrap);
+    if (window.Motion) Motion.briefIn(node);
     scrollBottom();
   }
 
@@ -272,9 +286,10 @@ const Chat = (() => {
 
   function reset() {
     getContainer().innerHTML = '';
+    document.body.classList.remove('has-thread');
     App.currentDecision = null;
     setMode('auto');
   }
 
-  return { init, setMode, getMode, reset };
+  return { init, setMode, getMode, refreshCrumb, reset };
 })();

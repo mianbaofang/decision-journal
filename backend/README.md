@@ -8,6 +8,7 @@
 - uvicorn
 - httpx
 - pydantic
+- edge-tts（可选朗读；缺失时前端降级到浏览器语音）
 
 ## 启动
 
@@ -27,17 +28,29 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8010
 
 - 服务地址：http://127.0.0.1:8010
 - API 文档：http://127.0.0.1:8010/docs
-- 健康检查：http://127.0.0.1:8010/
+- 健康检查：http://127.0.0.1:8010/api/health
 
 ## 接口
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| POST | /api/chat | 接收问题 + 模式，返回 AI 回复（含决策简报 .brief） |
-| GET | /api/modes | 返回六种模式元数据 |
-| POST | /api/decision | 保存一条决策记录 |
+| GET | /api/health | 健康检查，返回名称、状态、版本 |
+| POST | /api/chat | 接收问题 + 模式（可带图片/临时配置），返回决策简报并自动存档 |
+| GET | /api/modes | 返回六种模式元数据和快捷问题 |
 | GET | /api/archive | 获取决策历史列表 |
 | GET | /api/stats | 获取统计数据 |
+| POST | /api/decision | 保存一条决策记录 |
+| GET | /api/decision/{id} | 查看单条决策详情 |
+| PATCH | /api/decision/{id} | 更新单条决策（执行状态、后悔标记等） |
+| DELETE | /api/decision/{id} | 删除单条决策 |
+| GET | /api/decision/{id}/export | 导出单条决策简报（Markdown / JSON） |
+| GET | /api/config | 读取当前配置（Key 脱敏） |
+| POST | /api/config | 写入配置（LLM / 天气 / 朗读等） |
+| DELETE | /api/config | 清除配置 |
+| GET | /api/preferences | 读取偏好设置 |
+| POST | /api/preferences | 写入偏好设置 |
+| GET | /api/tts/voices | 获取可用朗读音色列表 |
+| POST | /api/tts/speak | 生成朗读音频（文本经 POST body 传输） |
 
 ## 目录
 
@@ -66,4 +79,4 @@ backend/
 3. Agent 通过 `python scripts/choice_assistant.py --question "..." --mode auto` 调用
 4. CLI 脚本会向本后端的 `/api/chat` 发送 POST 请求，返回结构化决策简报
 
-详细参数和调用样例见项目根目录的 `SKILL.md`。
+详细参数和调用样例见 `skills/choice-assistant/SKILL.md`（安装包内即 `SKILL.md`）。
