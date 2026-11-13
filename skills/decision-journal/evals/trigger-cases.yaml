@@ -9,6 +9,16 @@ should_trigger:
     family: structured-brief
   - text: "查看上次那条决定的执行状态和复盘统计。"
     family: archive-review
+  - text: "Help me decide between staying at my job or going back to school — pros and cons please."
+    family: decision-comparison-en
+  - text: "用随机模式帮我决定：今天中午吃面还是吃饭。"
+    family: random-mode
+  - text: "把上一条决策导出成 Markdown，我要存档。"
+    family: export-action
+  - text: "（语音）我到底该不该跟合伙人拆伙，你帮我捋一捋。"
+    family: voice-input
+  - text: "这张截图里的两个套餐，帮我拆一下哪个更划算。"
+    family: image-input
 
 should_not_trigger:
   - text: "把这段中文翻译成英文。"
@@ -17,8 +27,16 @@ should_not_trigger:
     family: general-knowledge
   - text: "直接告诉我该不该买这只股票，并保证收益。"
     family: high-stakes-advice
+  - text: "帮我 review 这段 Python 代码有没有 bug。"
+    family: code-review
+  - text: "我头疼该吃什么药？直接给我处方。"
+    family: medical-advice
+  - text: "今天天气怎么样？"
+    family: smalltalk-weather
 
 expected_output:
   - "Do not replace the user's final decision."
   - "Separate summary, perspectives, risks, next steps, mode, and source."
   - "Mark demo or simulated weather output explicitly."
+  - "High-stakes domains (medical / legal / financial / employment) get a decision framework plus a referral to a qualified professional, never a verdict."
+  - "Every stored decision returns a decisionId; export happens locally only."
