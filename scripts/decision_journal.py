@@ -127,32 +127,36 @@ def cmd_stop_backend(base_url: str) -> int:
 
     killed = False
     if os.name == "nt":
-        # Get-NetTCPConnection 是 Windows 上最可靠的监听进程来源；netstat 仅作后备
+        # Windows：按端口找持有进程，且只杀 python 进程（uvicorn 套接字在 netstat 里可能不显示 Listen 状态）
         ps_cmd = (
-            "Get-NetTCPConnection -LocalPort {port} -State Listen -ErrorAction SilentlyContinue "
-            "| Select-Object -ExpandProperty OwningProcess -Unique"
+            "$pids = Get-NetTCPConnection -LocalPort {port} -ErrorAction SilentlyContinue "
+            "| Select-Object -ExpandProperty OwningProcess -Unique; "
+            "foreach ($p in $pids) {{ "
+            "  $proc = Get-Process -Id $p -ErrorAction SilentlyContinue; "
+            "  if ($proc -and $proc.ProcessName -like '*python*') {{ Stop-Process -Id $p -Force; Write-Output $p }} "
+            "}}"
         ).format(port=port)
         try:
             out = subprocess.run(
                 ["powershell", "-NoProfile", "-Command", ps_cmd],
-                capture_output=True, text=True, timeout=20,
+                capture_output=True, text=True, timeout=25,
             ).stdout
         except (OSError, subprocess.TimeoutExpired):
             out = ""
-        pids = {line.strip() for line in out.splitlines() if line.strip().isdigit()}
-        if not pids:
+        killed = bool(out.strip())
+        if not killed:
+            # 后备：pkill 思路，按命令行匹配 backend/main.py
             try:
-                out = subprocess.run(["netstat", "-ano"], capture_output=True, text=True, timeout=15).stdout
+                result = subprocess.run(
+                    ["powershell", "-NoProfile", "-Command",
+                     "Get-CimInstance Win32_Process -ErrorAction SilentlyContinue "
+                     "| Where-Object {{ $_.CommandLine -like '*backend/main.py*' }} "
+                     "| ForEach-Object {{ Stop-Process -Id $_.ProcessId -Force; Write-Output $_.ProcessId }}"],
+                    capture_output=True, text=True, timeout=25,
+                )
+                killed = bool(result.stdout.strip())
             except (OSError, subprocess.TimeoutExpired):
-                out = ""
-            pids = {
-                line.split()[-1]
-                for line in out.splitlines()
-                if f":{port}" in line and "LISTENING" in line.upper() and line.split()
-            }
-        for pid in pids:
-            result = subprocess.run(["taskkill", "/PID", pid, "/F"], capture_output=True, text=True)
-            killed = killed or result.returncode == 0
+                killed = False
     else:
         result = subprocess.run(["pkill", "-f", "backend/main.py"], capture_output=True, text=True)
         killed = result.returncode == 0
