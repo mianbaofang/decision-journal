@@ -9,7 +9,7 @@ import os
 import pytest
 from playwright.sync_api import sync_playwright
 
-BASE_URL = os.environ.get("DECISION_BRIEF_TEST_URL", "http://127.0.0.1:8010")
+BASE_URL = os.environ.get("DECISION_JOURNAL_TEST_URL", "http://127.0.0.1:8010")
 
 
 @pytest.fixture(scope="module")

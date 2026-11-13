@@ -2,7 +2,7 @@
 """Sync the installable Skill package from the repository sources.
 
 The public repository keeps the runnable app at ``backend/`` and ``frontend/``;
-the installable Skill at ``skills/choice-assistant/`` ships a copy.  This script
+the installable Skill at ``skills/decision-journal/`` ships a copy.  This script
 mirrors the source trees into the package so the two cannot drift silently, and
 ``tests/test_package_sync.py`` verifies the result.
 """
@@ -13,10 +13,10 @@ import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = ROOT / "skills" / "choice-assistant"
+PACKAGE = ROOT / "skills" / "decision-journal"
 
 MIRROR_DIRS = ("backend", "frontend")
-COPY_FILES = ("scripts/choice_assistant.py",)
+COPY_FILES = ("scripts/decision_journal.py",)
 
 EXCLUDE_DIRS = {"__pycache__", ".pytest_cache", "node_modules"}
 EXCLUDE_SUFFIXES = (".pyc", ".db", ".db-wal", ".db-shm")

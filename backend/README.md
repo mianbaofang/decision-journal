@@ -1,6 +1,6 @@
 # 别纠结后端 (FastAPI)
 
-独立 FastAPI 后端，为《别纠结》（Decision Brief）Skill 提供聊天、档案、统计和设置等 REST 接口。
+独立 FastAPI 后端，为《别纠结》（Decision Journal）Skill 提供聊天、档案、统计和设置等 REST 接口。
 
 ## 依赖
 
@@ -72,11 +72,11 @@ backend/
 
 ## Agent 集成
 
-本后端为《别纠结》（Decision Brief）Skill 提供 API 服务，Agent 通过 CLI 脚本调用：
+本后端为《别纠结》（Decision Journal）Skill 提供 API 服务，Agent 通过 CLI 脚本调用：
 
 1. 先启动后端（见上方「启动」章节）
 2. Agent 加载 `SKILL.md` 中的 Skill 定义
-3. Agent 通过 `python scripts/choice_assistant.py --question "..." --mode auto` 调用
+3. Agent 通过 `python scripts/decision_journal.py --question "..." --mode auto` 调用
 4. CLI 脚本会向本后端的 `/api/chat` 发送 POST 请求，返回结构化决策简报
 
-详细参数和调用样例见 `skills/choice-assistant/SKILL.md`（安装包内即 `SKILL.md`）。
+详细参数和调用样例见 `skills/decision-journal/SKILL.md`（安装包内即 `SKILL.md`）。

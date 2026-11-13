@@ -1,5 +1,5 @@
 version: 1
-skill: choice-assistant
+skill: decision-journal
 description: Trigger-boundary fixtures for the decision-support Skill.
 
 should_trigger:

@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a reproducible Decision Brief issue
+about: Report a reproducible Decision Journal issue
 title: "[Bug] "
 labels: bug
 assignees: ""

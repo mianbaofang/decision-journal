@@ -3,7 +3,7 @@
 > 项目：`decision-journal-master`  
 > 当前公开版本：`v0.9.0`  
 > 文档基准：2026-08-13，按当前工作区代码和资产整理  
-> 产品名称：别纠结（Decision Brief）
+> 产品名称：别纠结（Decision Journal）
 
 ## 1. 这是什么
 
@@ -16,8 +16,8 @@
 | 入口 | 用途 | 入口文件 |
 | --- | --- | --- |
 | Web 桌面界面 | 日常使用、设置、档案、统计、随机动画 | `frontend/index.html`，由 FastAPI 挂载 |
-| CLI | 终端或 Agent 调用聊天、档案、统计、配置 | `scripts/choice_assistant.py` |
-| Skill 描述 | 告诉 Agent 何时及如何调用 CLI | `skills/choice-assistant/SKILL.md` |
+| CLI | 终端或 Agent 调用聊天、档案、统计、配置 | `scripts/decision_journal.py` |
+| Skill 描述 | 告诉 Agent 何时及如何调用 CLI | `skills/decision-journal/SKILL.md` |
 
 项目不是纯前端页面。Web 和 CLI 最终都请求同一个 FastAPI 服务，并共用同一份 SQLite 数据库。
 
@@ -77,10 +77,10 @@ CLI 假定后端已经运行：
 
 ```powershell
 cd E:\Object\decision-journal-master
-python scripts/choice_assistant.py -q "该不该接受这份新工作" -m rational
-python scripts/choice_assistant.py -q "今晚吃什么" -m random
-python scripts/choice_assistant.py --action archive
-python scripts/choice_assistant.py --action stats
+python scripts/decision_journal.py -q "该不该接受这份新工作" -m rational
+python scripts/decision_journal.py -q "今晚吃什么" -m random
+python scripts/decision_journal.py --action archive
+python scripts/decision_journal.py --action stats
 ```
 
 默认 API 地址为 `http://127.0.0.1:8010`。后端不在默认端口时，用 `--base-url` 指定。
@@ -90,7 +90,7 @@ python scripts/choice_assistant.py --action stats
 ```mermaid
 flowchart LR
     U["用户"] --> W["Web: frontend/index.html"]
-    U --> C["CLI: choice_assistant.py"]
+    U --> C["CLI: decision_journal.py"]
     W --> A["FastAPI"]
     C --> A
     A --> R["routes/chat.py"]
@@ -98,7 +98,7 @@ flowchart LR
     M --> L["LLM 服务"]
     M --> N["自然 / 天气服务"]
     M --> B["国学输入校验"]
-    A --> D["SQLite choice.db"]
+    A --> D["SQLite decision_journal.db"]
     D --> H["档案 / 统计 / 偏好 / 配置"]
     L --> O["用户配置的 OpenAI 兼容接口"]
     N --> T["用户配置的高德天气接口"]
@@ -131,13 +131,13 @@ decision-journal-master/
 │   ├── assets/logo-nav.png     沿用小程序的导航 Logo
 │   ├── vendor/zdog.dist.min.js 立体骰子使用的本地库
 │   └── random-effects-preview.html  六种随机效果的独立预览页
-├── scripts/choice_assistant.py CLI / Skill 入口
+├── scripts/decision_journal.py CLI / Skill 入口
 ├── tests/                      pytest、Playwright 和可选集成测试
 ├── docs/                       GitHub Pages、README 截图、GIF、发布说明
 ├── dist/skill-intro/           60 秒竖版介绍视频、封面和 HyperFrames 源工程
 ├── README.md                   中文 README
 ├── README.en.md                English README
-├── skills/choice-assistant/    唯一可安装 Skill 包与使用说明
+├── skills/decision-journal/    唯一可安装 Skill 包与使用说明
 │   └── SKILL.md
 ├── CHANGELOG.md                版本变更
 ├── DISCLAIMER.md               风险与隐私边界
@@ -249,22 +249,22 @@ decision-journal-master/
 1. `/api/chat` 请求内临时字段，或 CLI flag。
 2. 环境变量。
 3. SQLite `config` 表，由 Web 设置页或 CLI `--action config-api --save-to-db` 写入。
-4. `~/.choice/config.json`，由 CLI `config --save` 或 `--save-config` 写入，保留给旧流程兼容。
+4. `~/.decision-journal/config.json`，由 CLI `config --save` 或 `--save-config` 写入，保留给旧流程兼容。
 
-相关实现：`backend/config.py`、`scripts/choice_assistant.py`。
+相关实现：`backend/config.py`、`scripts/decision_journal.py`。
 
 ### 8.2 环境变量
 
 ```powershell
-$env:CHOICE_LLM_API_KEY = "..."
-$env:CHOICE_LLM_MODEL = "gpt-4o-mini"
-$env:CHOICE_LLM_BASE_URL = "https://api.openai.com/v1"
-$env:CHOICE_WEATHER_KEY = "..."
-$env:CHOICE_WEATHER_BASE_URL = "https://restapi.amap.com/v3/weather/weatherInfo"
-$env:CHOICE_WEATHER_CITY = "北京"
+$env:DECISION_JOURNAL_LLM_API_KEY = "..."
+$env:DECISION_JOURNAL_LLM_MODEL = "gpt-4o-mini"
+$env:DECISION_JOURNAL_LLM_BASE_URL = "https://api.openai.com/v1"
+$env:DECISION_JOURNAL_WEATHER_KEY = "..."
+$env:DECISION_JOURNAL_WEATHER_BASE_URL = "https://restapi.amap.com/v3/weather/weatherInfo"
+$env:DECISION_JOURNAL_WEATHER_CITY = "北京"
 ```
 
-LLM 真实调用必须同时有 Key、模型和 Base URL。天气实时调用必须同时有高德 Key 与 Base URL；城市可空，后端会用北京作为默认查询城市。`CHOICE_WEATHER_APPSECRET` 和 `weather_appsecret` 是旧版兼容字段，会被当作天气 Key 处理，不应再用于新文案或新代码。
+LLM 真实调用必须同时有 Key、模型和 Base URL。天气实时调用必须同时有高德 Key 与 Base URL；城市可空，后端会用北京作为默认查询城市。`DECISION_JOURNAL_WEATHER_APPSECRET` 和 `weather_appsecret` 是旧版兼容字段，会被当作天气 Key 处理，不应再用于新文案或新代码。
 
 ### 8.3 Web 设置与 CLI 配置
 
@@ -273,7 +273,7 @@ Web：设置页分别保存 AI 配置、天气配置和用户偏好。API 回显
 CLI 保存到 SQLite：
 
 ```powershell
-python scripts/choice_assistant.py --action config-api --save-to-db `
+python scripts/decision_journal.py --action config-api --save-to-db `
   --api-key "..." `
   --llm-model "gpt-4o-mini" `
   --llm-base-url "https://api.openai.com/v1" `
@@ -285,13 +285,13 @@ python scripts/choice_assistant.py --action config-api --save-to-db `
 旧式文件配置：
 
 ```powershell
-python scripts/choice_assistant.py config --save `
+python scripts/decision_journal.py config --save `
   --api-key "..." --llm-model "gpt-4o-mini" --llm-base-url "https://api.openai.com/v1"
 ```
 
 ### 8.4 SQLite
 
-数据库位置：`backend/choice.db`。该文件及 WAL/SHM 文件被 `.gitignore` 忽略。
+数据库位置：`backend/decision_journal.db`。该文件及 WAL/SHM 文件被 `.gitignore` 忽略。
 
 | 表 | 内容 |
 | --- | --- |
@@ -300,7 +300,7 @@ python scripts/choice_assistant.py config --save `
 
 数据库使用 WAL 模式。每次获取连接都会开启 `journal_mode=WAL` 与外键检查。
 
-重要安全现实：SQLite 里的 API Key 目前是明文存储。代码会在 API 与 CLI 回显时掩码，但磁盘并未加密。不要把 `choice.db`、`.env`、`~/.choice/config.json`、带私密内容的截图或视频提交到仓库。
+重要安全现实：SQLite 里的 API Key 目前是明文存储。代码会在 API 与 CLI 回显时掩码，但磁盘并未加密。不要把 `decision_journal.db`、`.env`、`~/.decision-journal/config.json`、带私密内容的截图或视频提交到仓库。
 
 ## 9. LLM、Demo、图片与语音
 
@@ -402,7 +402,7 @@ pytest tests/test_desktop_ui.py -q
 集成测试默认 `http://localhost:8765`，可指定目标地址：
 
 ```powershell
-$env:CHOICE_TEST_BASE_URL = "http://127.0.0.1:8010"
+$env:DECISION_JOURNAL_TEST_BASE_URL = "http://127.0.0.1:8010"
 pytest tests/test_integration.py -q
 ```
 
@@ -458,7 +458,7 @@ README 顶部使用：
 
 ## 15. 已知问题与维护风险
 
-1. **（已修复 2026-11-13）README 与包元数据的 Codex Skill 字样已清除**，统一改为“可安装 Skill（choice-assistant）/ installable Skill”；唯一 Skill 入口位于 `skills/choice-assistant/SKILL.md`。对外文案更新时仍需区分“保留 Skill”与“删掉 Codex 这个限定词”。
+1. **（已修复 2026-11-13）README 与包元数据的 Codex Skill 字样已清除**，统一改为“可安装 Skill（decision-journal）/ installable Skill”；唯一 Skill 入口位于 `skills/decision-journal/SKILL.md`。对外文案更新时仍需区分“保留 Skill”与“删掉 Codex 这个限定词”。
 2. **（已修复 2026-11-13）`.env.example` 地址已更新**为实际默认服务 `http://127.0.0.1:8010/`。
 3. **`backend/README.md` 的接口表不完整。** 实际还有单条决策 CRUD、配置、偏好和 TTS 路由。根 README 和本交接文档较完整；后端 README 需要以后同步。
 4. **集成测试含旧字段断言。** `tests/test_integration.py` 有对 `weather.hasAppid` 的旧字段检查，而当前 API 用 `hasKey` / `hasBaseUrl`，并保留 `hasAppsecret` 兼容名。默认服务未启动时该文件被跳过，所以此问题未体现在常规 `87 passed, 15 skipped` 中。要启用集成测试前应先修正。
@@ -479,11 +479,11 @@ README 顶部使用：
 
 ## 17. 关键兼容约定
 
-- CLI 文件名：`scripts/choice_assistant.py`
-- Python 包 / console script：`choice-assistant`
+- CLI 文件名：`scripts/decision_journal.py`
+- Python 包 / console script：`decision-journal`
 - 国学模式内部 id：`fengshui`
-- 旧天气字段：`weather_appsecret`、`CHOICE_WEATHER_APPSECRET`、API 响应中的 `hasAppsecret`
-- 本地兼容配置：`~/.choice/config.json`
+- 旧天气字段：`weather_appsecret`、`DECISION_JOURNAL_WEATHER_APPSECRET`、API 响应中的 `hasAppsecret`
+- 本地兼容配置：`~/.decision-journal/config.json`
 - 默认 Web/API 端口：`8010`
 
 这些标识可能看起来不够统一，但已被 README、CLI、历史数据、测试或旧客户端引用。除非做明确的迁移与兼容层，否则不要一次性改名。
@@ -492,7 +492,7 @@ README 顶部使用：
 
 - `README.md`：中文产品与安装说明
 - `README.en.md`：英文说明
-- `skills/choice-assistant/SKILL.md`：CLI / Skill 参数与返回结构
+- `skills/decision-journal/SKILL.md`：CLI / Skill 参数与返回结构
 - `CHANGELOG.md`：版本变更
 - `docs/releases/v0.9.0.md`：当前版本发布说明
 - `DISCLAIMER.md`：高风险决策、隐私、第三方服务边界

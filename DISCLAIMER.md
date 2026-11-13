@@ -1,10 +1,10 @@
 # Disclaimer / 免责声明
 
-Please read this before using Decision Brief. By using this project, you agree to the boundaries below.
+Please read this before using Decision Journal. By using this project, you agree to the boundaries below.
 
 ## English
 
-Decision Brief is a local-first decision-support application. It helps users structure uncertainty into evidence, risks, options, and next steps. It does not make decisions for users and does not provide legal, medical, mental-health, financial, investment, tax, insurance, immigration, education, employment, family-law, or other professional advice.
+Decision Journal is a local-first decision-support application. It helps users structure uncertainty into evidence, risks, options, and next steps. It does not make decisions for users and does not provide legal, medical, mental-health, financial, investment, tax, insurance, immigration, education, employment, family-law, or other professional advice.
 
 Do not rely on this project as the sole basis for high-stakes decisions. For serious matters, consult qualified professionals, trusted adults, teachers, doctors, lawyers, financial advisers, or relevant authorities.
 
@@ -24,7 +24,7 @@ The maintainers are not liable for legal, medical, psychological, financial, edu
 
 ## 中文
 
-Decision Brief / 别纠结 是一个本地优先的决策辅助应用。它帮助用户把不确定性整理成证据、风险、选项和下一步。本项目不替用户做决定，也不提供法律、医疗、心理健康、金融、投资、税务、保险、移民、升学、就业、家庭法律或其它专业建议。
+Decision Journal / 别纠结 是一个本地优先的决策辅助应用。它帮助用户把不确定性整理成证据、风险、选项和下一步。本项目不替用户做决定，也不提供法律、医疗、心理健康、金融、投资、税务、保险、移民、升学、就业、家庭法律或其它专业建议。
 
 请勿把本项目作为高风险决策的唯一依据。遇到严肃事项，请咨询合格专业人士、可信赖成年人、老师、医生、律师、财务顾问或相关主管机构。
 

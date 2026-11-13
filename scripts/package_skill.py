@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a deterministic installable ZIP for the Choice Assistant Skill."""
+"""Build a deterministic installable ZIP for the Decision Journal Skill."""
 
 from __future__ import annotations
 
@@ -13,8 +13,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = ROOT / "skills" / "choice-assistant"
-PACKAGE_NAME = "choice-assistant"
+PACKAGE = ROOT / "skills" / "decision-journal"
+PACKAGE_NAME = "decision-journal"
 
 
 def validator():
@@ -32,7 +32,7 @@ def excluded(relative: Path) -> bool:
     if parts & {"__pycache__", ".pytest_cache", "tests", "docs", "dist", "mp4", "reports", "evals"}:
         return True
     name = relative.name.casefold()
-    return name.startswith("readme") or name in {".env", "choice.db"} or relative.suffix.casefold() in {".pyc", ".sqlite", ".db"}
+    return name.startswith("readme") or name in {".env", "decision_journal.db"} or relative.suffix.casefold() in {".pyc", ".sqlite", ".db"}
 
 
 def package_files() -> list[tuple[Path, Path]]:
@@ -63,7 +63,7 @@ def build(destination: Path, files: list[tuple[Path, Path]]) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Package the canonical Choice Assistant Skill.")
+    parser = argparse.ArgumentParser(description="Package the canonical Decision Journal Skill.")
     parser.add_argument("--output", type=Path, default=None, help="Output ZIP path")
     args = parser.parse_args()
 

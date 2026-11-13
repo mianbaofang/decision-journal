@@ -1,11 +1,11 @@
 {
-  "name": "choice-assistant",
+  "name": "decision-journal",
   "repository_slug": "decision-journal",
-  "compatibility_reason": "The public product is Decision Brief, while choice-assistant is the established installable Skill and CLI identifier kept for existing commands and package discovery.",
-  "version": "0.9.1",
+  "compatibility_reason": "Unified identity since v0.10.0: the repository, the installable Skill, and the CLI all use the decision-journal name; the user-facing brand remains 别纠结 (Decision Journal).",
+  "version": "0.10.0",
   "owner": "mianbaofang",
   "license": "MIT",
-  "updated_at": "2026-08-17",
+  "updated_at": "2026-11-13",
   "status": "active",
   "maturity_tier": "production",
   "lifecycle_stage": "production",
@@ -17,7 +17,7 @@
     "agent-skills",
     "vscode"
   ],
-  "canonical_path": "skills/choice-assistant",
+  "canonical_path": "skills/decision-journal",
   "package_scope": "The installable boundary contains SKILL.md, the CLI, FastAPI backend, bundled frontend, dependencies, interface metadata, license, and disclaimer. Repository README files, tests, Pages assets, screenshots, animations, reports, local databases, and evaluation evidence remain source-repository materials.",
   "factory_components": [
     "SKILL.md",
@@ -34,8 +34,8 @@
     "source-repo/docs",
     "source-repo/README.md",
     "source-repo/README.en.md",
-    "source-repo/skills/choice-assistant/evals",
-    "source-repo/skills/choice-assistant/reports"
+    "source-repo/skills/decision-journal/evals",
+    "source-repo/skills/decision-journal/reports"
   ],
   "archive_excludes": [
     "README files",
@@ -46,5 +46,5 @@
     "local databases and environment files",
     "Python caches"
   ],
-  "updated": "2026-08-17"
+  "updated": "2026-11-13"
 }

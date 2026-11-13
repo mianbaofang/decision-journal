@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 # SQLite 数据库文件路径（与 backend/ 同级，gitignore 已忽略 *.db）
-DB_PATH = Path(__file__).parent / "choice.db"
+DB_PATH = Path(__file__).parent / "decision_journal.db"
 
 
 def get_conn() -> sqlite3.Connection:

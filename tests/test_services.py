@@ -223,7 +223,7 @@ def test_nature_signal_uses_extended_reference_values():
 def test_llm_service_call_llm_returns_mock_when_no_config(monkeypatch):
     """无 LLM 配置时 call_llm 返回 _source=mock。"""
     # conftest 已隔离 DB，无任何配置；同时清掉环境变量
-    for env in ("CHOICE_LLM_API_KEY", "CHOICE_LLM_BASE_URL", "CHOICE_LLM_MODEL"):
+    for env in ("DECISION_JOURNAL_LLM_API_KEY", "DECISION_JOURNAL_LLM_BASE_URL", "DECISION_JOURNAL_LLM_MODEL"):
         monkeypatch.delenv(env, raising=False)
 
     result = call_llm("要不要换工作", "rational", config={}, allow_mock=True)
@@ -237,7 +237,7 @@ def test_llm_service_call_llm_returns_mock_when_no_config(monkeypatch):
 
 def test_llm_service_call_llm_random_returns_six_options(monkeypatch):
     """random 模式 mock 返回 6 个选项。"""
-    for env in ("CHOICE_LLM_API_KEY", "CHOICE_LLM_BASE_URL", "CHOICE_LLM_MODEL"):
+    for env in ("DECISION_JOURNAL_LLM_API_KEY", "DECISION_JOURNAL_LLM_BASE_URL", "DECISION_JOURNAL_LLM_MODEL"):
         monkeypatch.delenv(env, raising=False)
 
     result = call_llm("今天午餐吃什么", "random", config={}, allow_mock=True)
@@ -248,7 +248,7 @@ def test_llm_service_call_llm_random_returns_six_options(monkeypatch):
 
 def test_llm_service_call_llm_fengshui_returns_need_birth(monkeypatch):
     """fengshui 模式 mock 在缺出生信息时 needBirth=True。"""
-    for env in ("CHOICE_LLM_API_KEY", "CHOICE_LLM_BASE_URL", "CHOICE_LLM_MODEL"):
+    for env in ("DECISION_JOURNAL_LLM_API_KEY", "DECISION_JOURNAL_LLM_BASE_URL", "DECISION_JOURNAL_LLM_MODEL"):
         monkeypatch.delenv(env, raising=False)
 
     result = call_llm("今年运势", "fengshui", config={}, allow_mock=True)

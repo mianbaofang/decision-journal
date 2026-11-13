@@ -1,7 +1,7 @@
 """别纠结决策辅助 - FastAPI 应用入口。
 
 启动流程：
-  1. 初始化 SQLite（choice.db）
+  1. 初始化 SQLite（decision_journal.db）
   2. 注册 6 个 API 路由
   3. 挂载前端静态资源（frontend/）
   4. 监听 8010 端口
@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from db import init_db  # noqa: E402
 from routes import archive, chat, config_api, decision, modes, stats, tts  # noqa: E402
 
-# 前端静态资源目录（choice-skill/frontend/）
+# 前端静态资源目录（decision-journal/frontend/）
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 
 # 启动时初始化数据库

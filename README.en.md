@@ -1,4 +1,4 @@
-# Decision Brief · 别纠结
+# Decision Journal · 别纠结
 
 <p align="center">
   <strong>The decision assistant that remembers.</strong><br>
@@ -12,14 +12,14 @@
 
 <p align="center">
   <a href="https://mianbaofang.github.io/decision-journal/index-en.html">
-    <img src="docs/images/intro-animation-preview-en.gif" alt="Decision Brief English intro animation preview" width="100%">
+    <img src="docs/images/intro-animation-preview-en.gif" alt="Decision Journal English intro animation preview" width="100%">
   </a>
 </p>
 
 <p align="center">
   <a href="README.md">中文</a>
   ·
-  <a href="skills/choice-assistant/SKILL.md">Installable Skill</a>
+  <a href="skills/decision-journal/SKILL.md">Installable Skill</a>
   ·
   <a href="https://mianbaofang.github.io/decision-journal/">Chinese Intro</a>
   ·
@@ -63,7 +63,7 @@ Open <http://127.0.0.1:8010/>. Without an LLM key, explicitly choose Demo mode i
 
 ## Why I Built This
 
-The idea for Decision Brief came from tidying up a room with my daughter.
+The idea for Decision Journal came from tidying up a room with my daughter.
 
 She's in sixth grade. That day we were sorting through her room together — desks, cabinets, drawers full of stuff: old notebooks, little toys, stickers, craft projects, half-used stationery, and a few things she herself couldn't decide whether to keep or not.
 
@@ -81,7 +81,7 @@ So I wanted to build a tool that helps lay choices out first.
 
 It doesn't decide for you — "keep or toss," "do it or don't." It's more like someone sitting beside you asking a few questions: Why do you want to keep it? What happens if you don't? How big is the cost really? Is there a tiny first step you could try?
 
-That's the original intention behind Decision Brief. I want it to solve a very specific scenario: when you're stuck on a pile of small judgments, you have a lightweight tool that helps you articulate the problem, separate the reasons, and make the next step feel less heavy.
+That's the original intention behind Decision Journal. I want it to solve a very specific scenario: when you're stuck on a pile of small judgments, you have a lightweight tool that helps you articulate the problem, separate the reasons, and make the next step feel less heavy.
 
 That's why this demo isn't just a random wheel. Random works for "what should I eat for dinner" — low-stakes calls — but not for every choice. And I didn't make it into a complicated productivity system either, because when you're stuck in overthinking, you usually don't have the patience to fill out forms. One sentence should be enough to start.
 
@@ -89,7 +89,7 @@ The current design offers several entry points: Rational looks at benefits, risk
 
 The boundary I care about most: it can only assist your choice; it cannot bear the choice for you. Especially with life decisions, what really matters isn't whether the answer "looks right," but whether you've thought through why you're choosing it. If it can move someone from "I don't know what to do" to "I know what first step I can take," it has done its job.
 
-**Decision Brief (别纠结)** is a local-first AI decision assistant, decision-support tool, and choice assistant with a Web UI, CLI, and an installable Skill (choice-assistant). It runs on FastAPI + SQLite and connects to OpenAI-compatible APIs. It does not decide for you; it separates a dilemma into evidence, risks, and a next step.
+**Decision Journal (别纠结)** is a local-first AI decision assistant, decision-support tool, and choice assistant with a Web UI, CLI, and an installable Skill (decision-journal). It runs on FastAPI + SQLite and connects to OpenAI-compatible APIs. It does not decide for you; it separates a dilemma into evidence, risks, and a next step.
 
 > Read [Disclaimer](DISCLAIMER.md) before use. This project is decision support only; it is not legal, medical, financial, psychological, or other professional advice.
 
@@ -108,7 +108,7 @@ Type (or speak, or attach a photo), pick one of six lenses (or let "Auto" choose
 
 ## How It's Different From Chatting With an AI
 
-A chatbot gives you an answer, and it's gone when you close the tab. Decision Brief keeps each choice:
+A chatbot gives you an answer, and it's gone when you close the tab. Decision Journal keeps each choice:
 
 - **It persists.** Question, lens, conclusion, risks, next step, and score are written to local SQLite.
 - **It reviews.** Mark executed or regretted, then see execution rate, regret rate, and lens distribution.
@@ -122,8 +122,8 @@ Every analysis is archived automatically — no extra save button. The archive s
 Take one decision with you:
 
 ```bash
-python scripts/choice_assistant.py --action export --id <id> --format md > my-decision.brief.md
-python scripts/choice_assistant.py --action export --id <id> --format json
+python scripts/decision_journal.py --action export --id <id> --format md > my-decision.brief.md
+python scripts/decision_journal.py --action export --id <id> --format json
 ```
 
 The Markdown brief contains the conclusion, supporting perspectives, risks, next steps, score, and status — ready for an archive, a note system, or a teammate. JSON is there for scripts. Export writes a local file only.
@@ -258,18 +258,18 @@ For live weather in Nature mode, open **Settings → Weather (Amap)** and enter 
 Environment variables (highest priority):
 
 ```bash
-export CHOICE_LLM_API_KEY=YOUR_API_KEY
-export CHOICE_LLM_MODEL=gpt-4o-mini          # swap to gpt-4o / qwen-vl for images
-export CHOICE_LLM_BASE_URL=https://api.openai.com/v1
-export CHOICE_WEATHER_KEY=YOUR_AMAP_KEY
-export CHOICE_WEATHER_BASE_URL=https://restapi.amap.com/v3/weather/weatherInfo
-export CHOICE_WEATHER_CITY=Beijing
+export DECISION_JOURNAL_LLM_API_KEY=YOUR_API_KEY
+export DECISION_JOURNAL_LLM_MODEL=gpt-4o-mini          # swap to gpt-4o / qwen-vl for images
+export DECISION_JOURNAL_LLM_BASE_URL=https://api.openai.com/v1
+export DECISION_JOURNAL_WEATHER_KEY=YOUR_AMAP_KEY
+export DECISION_JOURNAL_WEATHER_BASE_URL=https://restapi.amap.com/v3/weather/weatherInfo
+export DECISION_JOURNAL_WEATHER_CITY=Beijing
 ```
 
 Save to SQLite via CLI:
 
 ```bash
-python scripts/choice_assistant.py --action config-api --save-to-db \
+python scripts/decision_journal.py --action config-api --save-to-db \
   --api-key YOUR_API_KEY \
   --llm-model gpt-4o-mini \
   --llm-base-url https://api.openai.com/v1 \
@@ -282,23 +282,23 @@ python scripts/choice_assistant.py --action config-api --save-to-db \
 
 ```bash
 # One-shot decision
-python scripts/choice_assistant.py -q "Should I take the new job offer?"
-python scripts/choice_assistant.py -q "What should I have for dinner?" --mode random
+python scripts/decision_journal.py -q "Should I take the new job offer?"
+python scripts/decision_journal.py -q "What should I have for dinner?" --mode random
 
 # Archive & stats
-python scripts/choice_assistant.py --action archive
-python scripts/choice_assistant.py --action stats
+python scripts/decision_journal.py --action archive
+python scripts/decision_journal.py --action stats
 
 # Manage a single decision
-python scripts/choice_assistant.py --action decision --id <id>
-python scripts/choice_assistant.py --action decision --id <id> --delete
+python scripts/decision_journal.py --action decision --id <id>
+python scripts/decision_journal.py --action decision --id <id> --delete
 
 # Export a decision brief
-python scripts/choice_assistant.py --action export --id <id> --format md
-python scripts/choice_assistant.py --action export --id <id> --format json
+python scripts/decision_journal.py --action export --id <id> --format md
+python scripts/decision_journal.py --action export --id <id> --format json
 ```
 
-See the [installable Skill entry](skills/choice-assistant/SKILL.md) for the full parameter list. The consolidated repository keeps this as the only canonical Skill entry so GitHub discovery does not expose duplicates.
+See the [installable Skill entry](skills/decision-journal/SKILL.md) for the full parameter list. The consolidated repository keeps this as the only canonical Skill entry so GitHub discovery does not expose duplicates.
 
 ## Tech Stack
 
@@ -392,7 +392,7 @@ decision-journal/
 │       ├── settings.css            # Settings and modals
 │       └── random-preview.css      # Random effect preview page
 ├── scripts/
-│   └── choice_assistant.py         # CLI / Skill entrypoint using the same API and database
+│   └── decision_journal.py         # CLI / Skill entrypoint using the same API and database
 ├── tests/
 │   ├── test_config.py              # Config priority, masking, weather completeness
 │   ├── test_db.py                  # SQLite behavior
@@ -401,7 +401,7 @@ decision-journal/
 │   ├── test_desktop_ui.py          # Playwright desktop interactions and effect checks
 │   └── test_integration.py         # Optional running-service integration tests
 ├── docs/                            # GitHub Pages, screenshots, demos, and release notes
-├── skills/choice-assistant/         # Canonical installable Skill package
+├── skills/decision-journal/         # Canonical installable Skill package
 │   └── SKILL.md                     # Skill parameters, response shapes, and examples
 ├── CHANGELOG.md                     # Version history
 ├── PRIVACY.md                       # Data boundary and deletion
@@ -409,7 +409,7 @@ decision-journal/
 └── README.en.md                     # This file
 ```
 
-The browser starts at `frontend/index.html`; the command-line entry is `scripts/choice_assistant.py`. Both call the same FastAPI routes. `routes/chat.py` delegates each request to the matching service, `services/` performs calculations and external calls, and `db.py` stores the result. On the frontend, `brief.js` renders results but does not make backend decisions.
+The browser starts at `frontend/index.html`; the command-line entry is `scripts/decision_journal.py`. Both call the same FastAPI routes. `routes/chat.py` delegates each request to the matching service, `services/` performs calculations and external calls, and `db.py` stores the result. On the frontend, `brief.js` renders results but does not make backend decisions.
 
 ## FAQ
 
@@ -419,7 +419,7 @@ No, and it shouldn't. It separates the choice into benefits, risks, cost, revers
 
 ### How do I keep a decision journal?
 
-A useful entry records the question, the options, the expected outcome, the reasoning, your confidence at the time, and a review date. Decision Brief saves the first four plus the score automatically; later you only mark executed / regretted, which gradually calibrates your judgment.
+A useful entry records the question, the options, the expected outcome, the reasoning, your confidence at the time, and a review date. Decision Journal saves the first four plus the score automatically; later you only mark executed / regretted, which gradually calibrates your judgment.
 
 ### What's the difference between a decision log and a diary?
 
@@ -443,7 +443,7 @@ You can explicitly enable Demo mode to explore the full UI with sample results, 
 
 ## Status
 
-Current version: [`v0.9.1`](docs/releases/v0.9.1.md). The public product is **Decision Brief (别纠结)**; `choice-assistant` is the retained identifier for existing CLI commands and Skill installation discovery. This patch keeps one installable Skill at `skills/choice-assistant/`, removes the duplicate root entry, and publishes a versioned Skill ZIP with a SHA-256 checksum; product behavior and safety boundaries are unchanged.
+Current version: [`v0.9.1`](docs/releases/v0.9.1.md). The public product is **Decision Journal (别纠结)**; `decision-journal` is the retained identifier for existing CLI commands and Skill installation discovery. This patch keeps one installable Skill at `skills/decision-journal/`, removes the duplicate root entry, and publishes a versioned Skill ZIP with a SHA-256 checksum; product behavior and safety boundaries are unchanged.
 
 ## Author And Contact
 

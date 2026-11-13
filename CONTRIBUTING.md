@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for improving Decision Brief. Keep changes small, practical, and respectful of the project's local-first privacy boundary.
+Thanks for improving Decision Journal. Keep changes small, practical, and respectful of the project's local-first privacy boundary.
 
 ## Local setup
 

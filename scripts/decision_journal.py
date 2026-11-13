@@ -5,7 +5,7 @@
 
 Skill 版本特有：用户可自配 LLM API Key + 天气 API Key（iOS/MP 版本由
 服务器端管理，用户不接触）。配置来源优先级（与后端 config.py 对齐）：
-  环境变量 > SQLite > ~/.choice/config.json
+  环境变量 > SQLite > ~/.decision-journal/config.json
 """
 
 import argparse
@@ -25,13 +25,13 @@ DEFAULT_BASE_URL = "http://127.0.0.1:8010"
 
 # 自动启动后端的等待时间与日志位置
 BACKEND_START_TIMEOUT = 20.0
-BACKEND_LOG = Path.home() / ".choice" / "backend.log"
+BACKEND_LOG = Path.home() / ".decision-journal" / "backend.log"
 
 # 六种决策模式（与后端 modes_data 保持一致）
 MODES = ["auto", "rational", "random", "nature", "dialogue", "fengshui"]
 
 # 配置文件路径（与后端 services/config.py 保持一致）
-CONFIG_PATH = Path.home() / ".choice" / "config.json"
+CONFIG_PATH = Path.home() / ".decision-journal" / "config.json"
 
 # CLI flag -> 请求体字段名（与后端 ChatRequest 字段对齐）
 # 键名与 _collect_cli_config 返回的 config 键名一致
@@ -121,7 +121,7 @@ def _read_config_file() -> dict:
 
 
 def _save_config_file(partial: dict) -> dict:
-    """合并并写入 ~/.choice/config.json（权限 0600）。"""
+    """合并并写入 ~/.decision-journal/config.json（权限 0600）。"""
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
     merged = dict(_read_config_file())
     for k, v in partial.items():
@@ -165,7 +165,7 @@ def cmd_chat(args: argparse.Namespace, client: httpx.Client) -> int:
         print("错误：chat 动作需要 --question 参数", file=sys.stderr)
         return 2
 
-    # --save-config：先把 CLI 配置持久化到 ~/.choice/config.json
+    # --save-config：先把 CLI 配置持久化到 ~/.decision-journal/config.json
     if getattr(args, "save_config", False):
         cli_cfg = _collect_cli_config(args)
         if any(cli_cfg.values()):
@@ -291,13 +291,13 @@ def cmd_config(args: argparse.Namespace) -> int:
     if not getattr(args, "save", False):
         current = dict(_read_config_file())
         for k, env in (
-            ("llm_api_key", "CHOICE_LLM_API_KEY"),
-            ("llm_model", "CHOICE_LLM_MODEL"),
-            ("llm_base_url", "CHOICE_LLM_BASE_URL"),
-            ("weather_key", "CHOICE_WEATHER_KEY"),
-            ("weather_base_url", "CHOICE_WEATHER_BASE_URL"),
-            ("weather_appsecret", "CHOICE_WEATHER_APPSECRET"),  # 兼容旧版
-            ("weather_city", "CHOICE_WEATHER_CITY"),
+            ("llm_api_key", "DECISION_JOURNAL_LLM_API_KEY"),
+            ("llm_model", "DECISION_JOURNAL_LLM_MODEL"),
+            ("llm_base_url", "DECISION_JOURNAL_LLM_BASE_URL"),
+            ("weather_key", "DECISION_JOURNAL_WEATHER_KEY"),
+            ("weather_base_url", "DECISION_JOURNAL_WEATHER_BASE_URL"),
+            ("weather_appsecret", "DECISION_JOURNAL_WEATHER_APPSECRET"),  # 兼容旧版
+            ("weather_city", "DECISION_JOURNAL_WEATHER_CITY"),
         ):
             env_val = os.environ.get(env)
             if env_val:
@@ -356,7 +356,7 @@ def _add_config_flags(parser: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     """构造主参数解析器（chat / archive / stats / decision / config-api）。"""
     parser = argparse.ArgumentParser(
-        prog="choice_assistant",
+        prog="decision_journal",
         description="别纠结决策辅助 CLI - 辅助人做选择，不替代人做决定",
     )
     parser.add_argument("--question", "-q", help="决策问题（chat 动作必填）")
@@ -391,7 +391,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--save-config",
         action="store_true",
-        help="把本次 CLI 提供的配置持久化到 ~/.choice/config.json",
+        help="把本次 CLI 提供的配置持久化到 ~/.decision-journal/config.json",
     )
     parser.add_argument(
         "--id",
@@ -426,8 +426,8 @@ def build_parser() -> argparse.ArgumentParser:
 def build_config_parser() -> argparse.ArgumentParser:
     """构造 config 子命令解析器。"""
     parser = argparse.ArgumentParser(
-        prog="choice_assistant config",
-        description="查看或保存用户自配 API Key（写入 ~/.choice/config.json，权限 0600）",
+        prog="decision_journal config",
+        description="查看或保存用户自配 API Key（写入 ~/.decision-journal/config.json，权限 0600）",
     )
     parser.add_argument("--save", action="store_true", help="保存到配置文件")
     _add_config_flags(parser)
@@ -437,7 +437,7 @@ def build_config_parser() -> argparse.ArgumentParser:
 def main() -> int:
     """入口。支持 config 子命令与默认 chat/archive/stats 流程。"""
     argv = sys.argv[1:]
-    # config 子命令：python choice_assistant.py config --api-key sk-xxx --save
+    # config 子命令：python decision_journal.py config --api-key sk-xxx --save
     if argv and argv[0] == "config":
         args = build_config_parser().parse_args(argv[1:])
         return cmd_config(args)

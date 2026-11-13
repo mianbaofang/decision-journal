@@ -31,7 +31,7 @@ ENV/
 *.db
 *.sqlite
 *.sqlite3
-choice.db
+decision_journal.db
 *.db-wal
 *.db-shm
 
@@ -65,7 +65,7 @@ trace.zip
 
 # Config (用户本地配置，不入库)
 config.json
-!.choice/config.json.example
+!.decision-journal/config.json.example
 
 # Frontend
 node_modules/

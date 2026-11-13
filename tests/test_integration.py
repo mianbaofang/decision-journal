@@ -18,7 +18,7 @@ import pytest
 # 把 backend 加入 sys.path 以便复用 schemas
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
-BASE_URL = os.environ.get("CHOICE_TEST_BASE_URL", "http://localhost:8765")
+BASE_URL = os.environ.get("DECISION_JOURNAL_TEST_BASE_URL", "http://localhost:8765")
 
 
 @pytest.fixture(scope="module")

@@ -23,7 +23,7 @@ def test_get_effective_config_layer_priority_env_over_db_over_file(monkeypatch):
     db.set_config_value("llm_model", "gpt-db")
 
     # 层 1：环境变量
-    monkeypatch.setenv("CHOICE_LLM_API_KEY", "from-env")
+    monkeypatch.setenv("DECISION_JOURNAL_LLM_API_KEY", "from-env")
 
     cfg = config_mod.get_effective_config()
     assert cfg["llm_api_key"] == "from-env"  # 环境变量胜出
@@ -33,7 +33,7 @@ def test_get_effective_config_layer_priority_env_over_db_over_file(monkeypatch):
 def test_get_effective_config_db_over_file(monkeypatch):
     """无环境变量时，SQLite 覆盖 config.json。"""
     # 清理可能的环境变量
-    for env in ("CHOICE_LLM_API_KEY", "CHOICE_LLM_MODEL", "CHOICE_LLM_BASE_URL"):
+    for env in ("DECISION_JOURNAL_LLM_API_KEY", "DECISION_JOURNAL_LLM_MODEL", "DECISION_JOURNAL_LLM_BASE_URL"):
         monkeypatch.delenv(env, raising=False)
 
     config_mod._save_config_file({"llm_api_key": "from-file"})
@@ -45,7 +45,7 @@ def test_get_effective_config_db_over_file(monkeypatch):
 
 def test_get_effective_config_file_fallback(monkeypatch):
     """无环境变量、无 SQLite 时，回落到 config.json。"""
-    for env in ("CHOICE_LLM_API_KEY", "CHOICE_LLM_MODEL", "CHOICE_LLM_BASE_URL"):
+    for env in ("DECISION_JOURNAL_LLM_API_KEY", "DECISION_JOURNAL_LLM_MODEL", "DECISION_JOURNAL_LLM_BASE_URL"):
         monkeypatch.delenv(env, raising=False)
 
     config_mod._save_config_file({"llm_api_key": "from-file-only"})
@@ -140,9 +140,9 @@ def test_has_llm_config_env_overrides(monkeypatch):
     """环境变量也参与判定。"""
     for env in list(config_mod.ENV_KEY_MAP.values()):
         monkeypatch.delenv(env, raising=False)
-    monkeypatch.setenv("CHOICE_LLM_API_KEY", "env-key")
-    monkeypatch.setenv("CHOICE_LLM_BASE_URL", "https://api.openai.com/v1")
-    monkeypatch.setenv("CHOICE_LLM_MODEL", "gpt-4o-mini")
+    monkeypatch.setenv("DECISION_JOURNAL_LLM_API_KEY", "env-key")
+    monkeypatch.setenv("DECISION_JOURNAL_LLM_BASE_URL", "https://api.openai.com/v1")
+    monkeypatch.setenv("DECISION_JOURNAL_LLM_MODEL", "gpt-4o-mini")
 
     assert config_mod.has_llm_config() is True
 

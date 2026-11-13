@@ -1,4 +1,4 @@
-# 别纠结 · Decision Brief
+# 别纠结 · Decision Journal
 
 <p align="center">
   <strong>会记得的决策助手。</strong><br>
@@ -19,7 +19,7 @@
 <p align="center">
   <a href="README.en.md">English</a>
   ·
-  <a href="skills/choice-assistant/SKILL.md">可安装 Skill</a>
+  <a href="skills/decision-journal/SKILL.md">可安装 Skill</a>
   ·
   <a href="https://mianbaofang.github.io/decision-journal/">中文介绍</a>
   ·
@@ -89,7 +89,7 @@ python main.py
 
 我最在意的边界是：它只能辅助选择，不能替人承担选择。尤其是很多生活里的决定，真正重要的不是"答案看起来对不对"，而是用户有没有想明白自己为什么这样选。如果能让一个人从"我不知道怎么办"变成"我知道可以先做哪一步"，它就有价值了。
 
-**别纠结**是一个本地优先的 AI 决策助手（AI decision assistant / decision support），也可以作为 decision support Skill 或 choice assistant 使用。它提供 Web 桌面界面、CLI 和可安装 Skill（choice-assistant），用 FastAPI + SQLite 运行，可以连接 OpenAI 兼容接口。它不替你做决定，只把纠结拆成证据、风险和下一步。
+**别纠结**是一个本地优先的 AI 决策助手（AI decision assistant / decision support），也可以作为 decision support Skill 或 choice assistant 使用。它提供 Web 桌面界面、CLI 和可安装 Skill（decision-journal），用 FastAPI + SQLite 运行，可以连接 OpenAI 兼容接口。它不替你做决定，只把纠结拆成证据、风险和下一步。
 
 > 使用前请阅读 [免责声明](DISCLAIMER.md)。本项目只提供决策辅助，不替代法律、医疗、金融、心理等专业建议，也不替用户承担最终选择。
 
@@ -122,8 +122,8 @@ python main.py
 把一条决策带走：
 
 ```bash
-python scripts/choice_assistant.py --action export --id <id> --format md > my-decision.brief.md
-python scripts/choice_assistant.py --action export --id <id> --format json
+python scripts/decision_journal.py --action export --id <id> --format md > my-decision.brief.md
+python scripts/decision_journal.py --action export --id <id> --format json
 ```
 
 Markdown 简报包含结论、支持与视角、风险、下一步、评分和状态，适合存档、分享或提交到笔记库；JSON 版本便于脚本处理。导出只在本地生成文件，不会上传。
@@ -258,18 +258,18 @@ python main.py
 也支持环境变量（最高优先级）：
 
 ```bash
-export CHOICE_LLM_API_KEY=YOUR_API_KEY
-export CHOICE_LLM_MODEL=gpt-4o-mini          # 图片输入请换视觉模型如 gpt-4o
-export CHOICE_LLM_BASE_URL=https://api.openai.com/v1
-export CHOICE_WEATHER_KEY=YOUR_AMAP_KEY       # 自己申请的高德 Web 服务 Key
-export CHOICE_WEATHER_BASE_URL=https://restapi.amap.com/v3/weather/weatherInfo
-export CHOICE_WEATHER_CITY=北京
+export DECISION_JOURNAL_LLM_API_KEY=YOUR_API_KEY
+export DECISION_JOURNAL_LLM_MODEL=gpt-4o-mini          # 图片输入请换视觉模型如 gpt-4o
+export DECISION_JOURNAL_LLM_BASE_URL=https://api.openai.com/v1
+export DECISION_JOURNAL_WEATHER_KEY=YOUR_AMAP_KEY       # 自己申请的高德 Web 服务 Key
+export DECISION_JOURNAL_WEATHER_BASE_URL=https://restapi.amap.com/v3/weather/weatherInfo
+export DECISION_JOURNAL_WEATHER_CITY=北京
 ```
 
 CLI 写入 SQLite：
 
 ```bash
-python scripts/choice_assistant.py --action config-api --save-to-db \
+python scripts/decision_journal.py --action config-api --save-to-db \
   --api-key YOUR_API_KEY \
   --llm-model gpt-4o-mini \
   --llm-base-url https://api.openai.com/v1 \
@@ -282,23 +282,23 @@ python scripts/choice_assistant.py --action config-api --save-to-db \
 
 ```bash
 # 一句话决策
-python scripts/choice_assistant.py -q "该不该跳槽去新公司"
-python scripts/choice_assistant.py -q "今晚吃什么" --mode random
+python scripts/decision_journal.py -q "该不该跳槽去新公司"
+python scripts/decision_journal.py -q "今晚吃什么" --mode random
 
 # 查看档案与统计
-python scripts/choice_assistant.py --action archive
-python scripts/choice_assistant.py --action stats
+python scripts/decision_journal.py --action archive
+python scripts/decision_journal.py --action stats
 
 # 管理单条决策
-python scripts/choice_assistant.py --action decision --id <id>
-python scripts/choice_assistant.py --action decision --id <id> --delete
+python scripts/decision_journal.py --action decision --id <id>
+python scripts/decision_journal.py --action decision --id <id> --delete
 
 # 导出决策简报
-python scripts/choice_assistant.py --action export --id <id> --format md
-python scripts/choice_assistant.py --action export --id <id> --format json
+python scripts/decision_journal.py --action export --id <id> --format md
+python scripts/decision_journal.py --action export --id <id> --format json
 ```
 
-完整参数见 [可安装 Skill 入口](skills/choice-assistant/SKILL.md)。合并后的仓库只保留这一处 canonical Skill 入口，避免 GitHub 自动发现重复条目。
+完整参数见 [可安装 Skill 入口](skills/decision-journal/SKILL.md)。合并后的仓库只保留这一处 canonical Skill 入口，避免 GitHub 自动发现重复条目。
 
 ## 技术栈
 
@@ -392,7 +392,7 @@ decision-journal/
 │       ├── settings.css            # 设置与弹窗
 │       └── random-preview.css      # 动画预览页
 ├── scripts/
-│   └── choice_assistant.py         # CLI / Skill 入口，与 Web 共用 API 和数据库
+│   └── decision_journal.py         # CLI / Skill 入口，与 Web 共用 API 和数据库
 ├── tests/
 │   ├── test_config.py              # 配置优先级、脱敏和天气完整性
 │   ├── test_db.py                  # SQLite 读写
@@ -401,7 +401,7 @@ decision-journal/
 │   ├── test_desktop_ui.py          # Playwright 桌面交互与动画验收
 │   └── test_integration.py         # 可选的运行中服务集成测试
 ├── docs/                            # GitHub Pages、截图、演示和版本说明
-├── skills/choice-assistant/         # 唯一可安装 Skill 包与规范入口
+├── skills/decision-journal/         # 唯一可安装 Skill 包与规范入口
 │   └── SKILL.md                     # Skill 参数、返回结构和调用示例
 ├── CHANGELOG.md                     # 版本变化记录
 ├── PRIVACY.md                       # 数据边界与删除方式
@@ -409,7 +409,7 @@ decision-journal/
 └── README.en.md                     # English documentation
 ```
 
-几个入口各管一件事：浏览器从 `frontend/index.html` 启动，命令行从 `scripts/choice_assistant.py` 启动，两边最后都调用同一套 FastAPI 路由。`routes/chat.py` 负责把请求交给对应服务，`services/` 负责计算和外部调用，`db.py` 负责保存。前端的 `brief.js` 只处理结果怎么显示，不参与后端判断。
+几个入口各管一件事：浏览器从 `frontend/index.html` 启动，命令行从 `scripts/decision_journal.py` 启动，两边最后都调用同一套 FastAPI 路由。`routes/chat.py` 负责把请求交给对应服务，`services/` 负责计算和外部调用，`db.py` 负责保存。前端的 `brief.js` 只处理结果怎么显示，不参与后端判断。
 
 ## 常见问题
 
@@ -443,7 +443,7 @@ decision-journal/
 
 ## 状态
 
-当前版本：[`v0.9.1`](docs/releases/v0.9.1.md)。仓库产品名是 **Decision Brief（别纠结）**；`choice-assistant` 是为既有 CLI 命令和 Skill 安装发现保留的标识。这一补丁将唯一可安装 Skill 固定到 `skills/choice-assistant/`，移除根目录重复入口，并提供带 SHA-256 的版本化安装 ZIP；产品功能与使用边界保持不变。
+当前版本：[`v0.9.1`](docs/releases/v0.9.1.md)。仓库产品名是 **Decision Journal（别纠结）**；`decision-journal` 是为既有 CLI 命令和 Skill 安装发现保留的标识。这一补丁将唯一可安装 Skill 固定到 `skills/decision-journal/`，移除根目录重复入口，并提供带 SHA-256 的版本化安装 ZIP；产品功能与使用边界保持不变。
 
 ## 作者与联系
 

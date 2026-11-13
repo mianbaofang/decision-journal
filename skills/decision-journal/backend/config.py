@@ -1,10 +1,10 @@
 """配置管理（三层优先级）。
 
 按优先级从高到低：
-  1. 环境变量：CHOICE_LLM_API_KEY / CHOICE_LLM_MODEL / CHOICE_LLM_BASE_URL
-              CHOICE_WEATHER_KEY / CHOICE_WEATHER_BASE_URL / CHOICE_WEATHER_CITY
-  2. SQLite config 表（UI 设置页写入，落盘到 choice.db）
-  3. ~/.choice/config.json（CLI config --save 写入，权限 0600，兼容旧版）
+  1. 环境变量：DECISION_JOURNAL_LLM_API_KEY / DECISION_JOURNAL_LLM_MODEL / DECISION_JOURNAL_LLM_BASE_URL
+              DECISION_JOURNAL_WEATHER_KEY / DECISION_JOURNAL_WEATHER_BASE_URL / DECISION_JOURNAL_WEATHER_CITY
+  2. SQLite config 表（UI 设置页写入，落盘到 decision_journal.db）
+  3. ~/.decision-journal/config.json（CLI config --save 写入，权限 0600，兼容旧版）
 
 约束：
   - API Key 不可写入日志。
@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 # 配置文件路径（与 CLI 共用）
-CONFIG_FILE_PATH = Path.home() / ".choice" / "config.json"
+CONFIG_FILE_PATH = Path.home() / ".decision-journal" / "config.json"
 
 # 配置键名
 CONFIG_KEYS = (
@@ -37,20 +37,20 @@ CONFIG_KEYS = (
 
 # 环境变量映射
 ENV_KEY_MAP = {
-    "llm_api_key": "CHOICE_LLM_API_KEY",
-    "llm_model": "CHOICE_LLM_MODEL",
-    "llm_base_url": "CHOICE_LLM_BASE_URL",
-    "weather_key": "CHOICE_WEATHER_KEY",
-    "weather_base_url": "CHOICE_WEATHER_BASE_URL",
-    "weather_appsecret": "CHOICE_WEATHER_APPSECRET",  # 兼容旧变量名
-    "weather_city": "CHOICE_WEATHER_CITY",
+    "llm_api_key": "DECISION_JOURNAL_LLM_API_KEY",
+    "llm_model": "DECISION_JOURNAL_LLM_MODEL",
+    "llm_base_url": "DECISION_JOURNAL_LLM_BASE_URL",
+    "weather_key": "DECISION_JOURNAL_WEATHER_KEY",
+    "weather_base_url": "DECISION_JOURNAL_WEATHER_BASE_URL",
+    "weather_appsecret": "DECISION_JOURNAL_WEATHER_APPSECRET",  # 兼容旧变量名
+    "weather_city": "DECISION_JOURNAL_WEATHER_CITY",
 }
 
 # 敏感键（回显时脱敏）
 SENSITIVE_KEYS = ("llm_api_key", "weather_key", "weather_appsecret")
 
 def _read_config_file() -> Dict[str, Any]:
-    """从 ~/.choice/config.json 读取（不存在或解析失败返回空 dict）。"""
+    """从 ~/.decision-journal/config.json 读取（不存在或解析失败返回空 dict）。"""
     if not CONFIG_FILE_PATH.exists():
         return {}
     try:
@@ -62,7 +62,7 @@ def _read_config_file() -> Dict[str, Any]:
 
 
 def _save_config_file(partial: Dict[str, Any]) -> Dict[str, Any]:
-    """合并写入 ~/.choice/config.json（权限 0600）。"""
+    """合并写入 ~/.decision-journal/config.json（权限 0600）。"""
     CONFIG_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
     merged = dict(_read_config_file())
     for k, v in partial.items():
@@ -132,7 +132,7 @@ def save_api_keys_to_db(config: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def save_api_keys_to_file(config: Dict[str, Any]) -> Dict[str, Any]:
-    """把 API Key 配置保存到 ~/.choice/config.json（CLI config --save 用）。"""
+    """把 API Key 配置保存到 ~/.decision-journal/config.json（CLI config --save 用）。"""
     partial = {k: v for k, v in config.items() if k in CONFIG_KEYS and v is not None}
     merged = _save_config_file(partial)
     masked = dict(merged)

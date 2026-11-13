@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## v0.10.0 - 2026-11-13
+
+### Breaking changes (identity unification)
+
+- The installable Skill, CLI command, Python project, and package all rename from `choice-assistant` / `choice-skill` to **`decision-journal`**; the user-facing brand stays 别纠结 (Decision Journal). The skill directory is now `skills/decision-journal/`.
+- CLI entry: `python scripts/decision_journal.py` (was `scripts/choice_assistant.py`); installed console script is `decision-journal` (was `choice-assistant`).
+- Environment variables rename `CHOICE_*` → `DECISION_JOURNAL_*` (e.g. `DECISION_JOURNAL_LLM_API_KEY`).
+- Local config paths rename `~/.choice/config.json` → `~/.decision-journal/config.json`, backend log → `~/.decision-journal/backend.log`, SQLite file `choice.db` → `decision_journal.db`. Existing users: re-enter keys once or copy the old config file to the new path.
+- Why: one name everywhere — repo `mianbaofang/decision-journal`, Skill ID, CLI, and docs now match, so search, install, and issue reports all point to the same identity.
 
 ### Added
 

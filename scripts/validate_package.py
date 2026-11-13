@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the canonical installable Choice Assistant Skill package."""
+"""Validate the canonical installable Decision Journal Skill package."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = ROOT / "skills" / "choice-assistant"
+PACKAGE = ROOT / "skills" / "decision-journal"
 PRIVATE_PATH = re.compile(r"(?:[A-Za-z]:[\\/](?:Users|Object)[\\/]|/(?:Users|home)/)", re.IGNORECASE)
 REQUIRED_FILES = (
     "SKILL.md",
@@ -20,7 +20,7 @@ REQUIRED_FILES = (
     "agents/interface.yaml",
     "backend/main.py",
     "frontend/index.html",
-    "scripts/choice_assistant.py",
+    "scripts/decision_journal.py",
 )
 FORBIDDEN_DIRS = {"__pycache__", ".pytest_cache", "tests", "docs", "dist", "mp4", "reports", "evals"}
 REQUIRED_TARGETS = {"openai", "claude", "generic", "agent-skills", "vscode"}
@@ -68,8 +68,8 @@ def validate() -> list[str]:
         text = skill_path.read_text(encoding="utf-8")
         if frontmatter_keys(text) != {"name", "description"}:
             failures.append("SKILL.md frontmatter must contain only name and description")
-        if not re.search(r"^name:\s*choice-assistant\s*$", text, re.MULTILINE):
-            failures.append("SKILL.md name must be choice-assistant")
+        if not re.search(r"^name:\s*decision-journal\s*$", text, re.MULTILINE):
+            failures.append("SKILL.md name must be decision-journal")
         if not re.search(r"^description:\s*\S", text, re.MULTILINE):
             failures.append("SKILL.md description must be non-empty")
 
@@ -80,10 +80,10 @@ def validate() -> list[str]:
         except json.JSONDecodeError as exc:
             failures.append(f"invalid manifest.json: {exc}")
         else:
-            if manifest.get("name") != "choice-assistant":
-                failures.append("manifest name must match choice-assistant")
-            if manifest.get("canonical_path") != "skills/choice-assistant":
-                failures.append("manifest canonical_path must be skills/choice-assistant")
+            if manifest.get("name") != "decision-journal":
+                failures.append("manifest name must match decision-journal")
+            if manifest.get("canonical_path") != "skills/decision-journal":
+                failures.append("manifest canonical_path must be skills/decision-journal")
             targets = manifest.get("target_platforms")
             if not isinstance(targets, list) or set(targets) != REQUIRED_TARGETS:
                 failures.append("manifest target_platforms must declare openai, claude, generic, agent-skills, and vscode")
@@ -102,7 +102,7 @@ def validate() -> list[str]:
     for path in files:
         rel = path.relative_to(PACKAGE)
         name = path.name.casefold()
-        if name.startswith("readme") or name in {".env", "choice.db"} or path.suffix.casefold() in {".pyc", ".sqlite", ".db"}:
+        if name.startswith("readme") or name in {".env", "decision_journal.db"} or path.suffix.casefold() in {".pyc", ".sqlite", ".db"}:
             failures.append(f"forbidden install-package file: {rel.as_posix()}")
         if PRIVATE_PATH.search(rel.as_posix()):
             failures.append(f"private path in package member: {rel.as_posix()}")

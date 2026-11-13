@@ -57,7 +57,7 @@ jobs:
       - name: Validate installable Skill package
         run: |
           python scripts/validate_package.py
-          python scripts/choice_assistant.py --help
+          python scripts/decision_journal.py --help
 
       - name: Start backend
         run: |
