@@ -773,7 +773,11 @@ def _redact_secrets(text: str, secrets: Optional[list] = None) -> str:
         if secret and len(secret) >= 4:
             redacted = redacted.replace(secret, "***")
     redacted = re.sub(r"(?i)(bearer\s+)[A-Za-z0-9._\-]{4,}", r"\1***", redacted)
-    redacted = re.sub(r"(?i)((?:api[_-]?key|token|secret|authorization)\s*[:=]\s*[\"']?)[^\"'\s,}]+", r"\1***", redacted)
+    redacted = re.sub(
+        r"(?i)((?:api[_-]?key|token|secret|authorization)\s*[:=]\s*[\"']?)[^\"'\s,}]+",
+        r"\1***",
+        redacted,
+    )
     redacted = re.sub(r"sk-[A-Za-z0-9._\-]{4,}", "sk-***", redacted)
     return redacted
 

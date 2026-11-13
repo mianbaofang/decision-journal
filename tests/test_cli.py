@@ -57,6 +57,31 @@ def test_command_line_matcher_requires_full_project_path():
     assert not cli._command_line_runs_backend(f'"{target}.bak"', target)
 
 
+def test_health_ok_requires_backend_json_identity(monkeypatch):
+    class Response:
+        def __init__(self, status_code, payload=None):
+            self.status_code = status_code
+            self._payload = payload
+
+        def json(self):
+            if self._payload is None:
+                raise ValueError("not json")
+            return self._payload
+
+    monkeypatch.setattr(
+        cli.httpx,
+        "get",
+        lambda *_args, **_kwargs: Response(200, {"status": "ok", "name": "别纠结 API"}),
+    )
+    assert cli._health_ok("http://127.0.0.1:8123") is True
+
+    monkeypatch.setattr(cli.httpx, "get", lambda *_args, **_kwargs: Response(200, {"status": "ok"}))
+    assert cli._health_ok("http://127.0.0.1:8123") is False
+
+    monkeypatch.setattr(cli.httpx, "get", lambda *_args, **_kwargs: Response(200, None))
+    assert cli._health_ok("http://127.0.0.1:8123") is False
+
+
 def test_ensure_backend_remote_does_not_spawn_local_process(monkeypatch):
     calls = []
     monkeypatch.setattr(cli, "_health_ok", lambda *_args, **_kwargs: False)
@@ -157,6 +182,44 @@ def test_cmd_stop_kills_hung_verified_backend(monkeypatch):
 
     assert cli.cmd_stop_backend("http://127.0.0.1:8123") == 0
     assert killed == [1234]
+
+
+def test_listening_pids_posix_parses_lsof_and_ss(monkeypatch):
+    from types import SimpleNamespace
+
+    def fake_lsof(command, **kwargs):
+        return SimpleNamespace(returncode=0, stdout="123\n456\n", stderr="")
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_lsof)
+    assert cli._listening_pids_posix(8123) == [123, 456]
+
+    def fake_empty(command, **kwargs):
+        return SimpleNamespace(returncode=1, stdout="", stderr="")
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_empty)
+    assert cli._listening_pids_posix(8123) == []
+
+    calls = []
+
+    def fake_ss(command, **kwargs):
+        calls.append(command[0])
+        if command[0] == "lsof":
+            raise FileNotFoundError("lsof")
+        return SimpleNamespace(
+            returncode=0,
+            stdout='LISTEN 0 128 127.0.0.1:8123 0.0.0.0:* users:(("python",pid=789,fd=5))',
+            stderr="",
+        )
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_ss)
+    assert cli._listening_pids_posix(8123) == [789]
+    assert calls[:2] == ["lsof", "ss"]
+
+    def fake_missing(command, **kwargs):
+        raise FileNotFoundError(command[0])
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_missing)
+    assert cli._listening_pids_posix(8123) is None
 
 
 def test_posix_lookup_uses_port_owners_and_exact_path(monkeypatch):

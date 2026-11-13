@@ -69,9 +69,13 @@ def _backend_main() -> Optional[Path]:
 
 
 def _health_ok(base_url: str, timeout: float = 1.0) -> bool:
+    """校验 /api/health 的业务身份，避免把同端口的其他 200 服务当成本后端。"""
     try:
         response = httpx.get(base_url.rstrip("/") + "/api/health", timeout=timeout)
-        return response.status_code == 200
+        if response.status_code != 200:
+            return False
+        data = response.json()
+        return isinstance(data, dict) and data.get("status") == "ok" and bool(data.get("name"))
     except Exception:
         return False
 
@@ -769,7 +773,11 @@ def _redact_secrets(text: str, secrets: Optional[list] = None) -> str:
         if secret and len(secret) >= 4:
             redacted = redacted.replace(secret, "***")
     redacted = re.sub(r"(?i)(bearer\s+)[A-Za-z0-9._\-]{4,}", r"\1***", redacted)
-    redacted = re.sub(r"(?i)((?:api[_-]?key|token|secret|authorization)\s*[:=]\s*[\"']?)[^\"'\s,}]+", r"\1***", redacted)
+    redacted = re.sub(
+        r"(?i)((?:api[_-]?key|token|secret|authorization)\s*[:=]\s*[\"']?)[^\"'\s,}]+",
+        r"\1***",
+        redacted,
+    )
     redacted = re.sub(r"sk-[A-Za-z0-9._\-]{4,}", "sk-***", redacted)
     return redacted
 
