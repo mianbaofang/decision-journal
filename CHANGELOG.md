@@ -2,6 +2,11 @@
 
 ## Unreleased (post-v0.10.0 review, version unchanged)
 
+### Added
+
+- PyPI distribution: `pip install decision-journal` installs the CLI and web UI with the `decision-journal` console command; README and README.en now lead with the three install paths (skills CLI, PyPI, source).
+
+
 ### Fixed
 
 - Legacy database migration now uses the SQLite backup API for a brand-new target and a single `BEGIN IMMEDIATE` merge for an existing one: uncheckpointed WAL rows survive, an already-populated target is never overwritten, `decisions` merge by primary key with `INSERT OR IGNORE`, and `config` only fills keys the new database is missing. A corrupt legacy file, or an unrelated SQLite file without a `decisions` table, is left untouched; concurrent starts serialize; a failed marker rename stays idempotent.

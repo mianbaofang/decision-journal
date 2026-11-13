@@ -6,7 +6,7 @@
   One sentence becomes evidence, risks, and a next step — every choice is saved to a local decision journal you can review and export.
 </p>
 
-<table align="center"><tr><td><a href="https://github.com/mianbaofang/decision-journal/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-journal?style=flat-square&label=release" alt="Latest public release"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-journal/ci.yml?branch=master&style=flat-square&label=tests" alt="Continuous integration test status"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-journal?style=flat-square&label=license" alt="MIT license"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/stargazers"><img src="https://img.shields.io/github/stars/mianbaofang/decision-journal?style=flat-square&label=stars" alt="GitHub stars"></a></td><td><a href="https://skills.sh/mianbaofang/decision-journal"><img src="https://skills.sh/b/mianbaofang/decision-journal" alt="skills.sh installs"></a></td></tr></table>
+<table align="center"><tr><td><a href="https://github.com/mianbaofang/decision-journal/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-journal?style=flat-square&label=release" alt="Latest public release"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-journal/ci.yml?branch=master&style=flat-square&label=tests" alt="Continuous integration test status"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-journal?style=flat-square&label=license" alt="MIT license"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/stargazers"><img src="https://img.shields.io/github/stars/mianbaofang/decision-journal?style=flat-square&label=stars" alt="GitHub stars"></a></td><td><a href="https://pypi.org/project/decision-journal/"><img src="https://img.shields.io/pypi/v/decision-journal?style=flat-square&label=pypi" alt="PyPI release"></a></td><td><a href="https://skills.sh/mianbaofang/decision-journal"><img src="https://skills.sh/b/mianbaofang/decision-journal" alt="skills.sh installs"></a></td></tr></table>
 
 <p align="center"><img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square" alt="Python 3.9 or newer"> <img src="https://img.shields.io/badge/FastAPI-API-009688?style=flat-square" alt="FastAPI backend"> <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square" alt="SQLite WAL local storage"> <img src="https://img.shields.io/badge/6%20languages-i18n-6A5ACD?style=flat-square" alt="Six interface languages"> <img src="https://img.shields.io/badge/multimodal-text%20voice%20image-C05A7A?style=flat-square" alt="Text, voice, and image input"></p>
 
@@ -53,24 +53,33 @@
 
 ## Quick Start
 
-One line to install the Skill into your agent (Claude Code / Codex / OpenClaw, etc.):
+Three ways to install — pick one:
+
+**1) One line to install the Skill into your agent** (Claude Code / Codex / OpenClaw, etc.):
 
 ```bash
 npx skills add mianbaofang/decision-journal
+```
+
+**2) PyPI install for the CLI + Web UI** (adds a `decision-journal` command that auto-starts the local backend):
+
+```bash
+pip install decision-journal
+decision-journal -q "Should I take the new job?" --demo
+```
+
+**3) Development install from source**:
+
+```bash
+pip install -e ".[dev]"
+cd backend
+python main.py
 ```
 
 Then say to your agent:
 
 ```text
 Use decision-journal to break down this choice: should I take the new job? Give me evidence, risks, and one next step I can take today.
-```
-
-To run the Web app / CLI locally:
-
-```bash
-pip install -e ".[dev]"
-cd backend
-python main.py
 ```
 
 Open <http://127.0.0.1:8010/>. Without an LLM key, explicitly choose Demo mode in the UI first. Real analysis and image understanding require your own OpenAI-compatible endpoint and vision model.
