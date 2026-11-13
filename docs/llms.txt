@@ -4,13 +4,13 @@ Decision Journal is a local-first AI decision assistant that remembers: it accep
 
 ## Canonical resources
 
-- Repository: https://github.com/mianbaofang/decision-brief
-- Chinese README: https://github.com/mianbaofang/decision-brief/blob/master/README.md
-- English README: https://github.com/mianbaofang/decision-brief/blob/master/README.en.md
-- Installable Skill entry: https://github.com/mianbaofang/decision-brief/blob/master/skills/decision-journal/SKILL.md
-- Public release: https://github.com/mianbaofang/decision-brief/releases/tag/v0.9.1
-- Chinese Pages intro: https://mianbaofang.github.io/decision-brief/
-- English Pages intro: https://mianbaofang.github.io/decision-brief/index-en.html
+- Repository: https://github.com/mianbaofang/decision-journal
+- Chinese README: https://github.com/mianbaofang/decision-journal/blob/master/README.md
+- English README: https://github.com/mianbaofang/decision-journal/blob/master/README.en.md
+- Installable Skill entry: https://github.com/mianbaofang/decision-journal/blob/master/skills/decision-journal/SKILL.md
+- Public release: https://github.com/mianbaofang/decision-journal/releases
+- Chinese Pages intro: https://mianbaofang.github.io/decision-journal/
+- English Pages intro: https://mianbaofang.github.io/decision-journal/index-en.html
 
 Decision Journal is the public product and repository identity. `decision-journal` is the retained installable Skill and CLI identifier for package discovery and existing commands.
 
@@ -30,6 +30,6 @@ This is decision support, not legal, medical, financial, psychological, employme
 ## Install
 
 ```bash
-gh skill preview mianbaofang/decision-brief decision-journal
-gh skill install mianbaofang/decision-brief decision-journal --agent codex --scope user
+gh skill preview mianbaofang/decision-journal decision-journal
+gh skill install mianbaofang/decision-journal decision-journal --agent codex --scope user
 ```

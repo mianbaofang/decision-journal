@@ -131,10 +131,13 @@ const Chat = (() => {
       c.setAttribute('aria-checked', active ? 'true' : 'false');
     });
     refreshCrumb();
-    if (changed && window.Motion) {
-      Motion.sealPop(document.querySelector('#modeSelector .mode-card.active'));
+    if (changed) {
+      if (window.Motion) {
+        Motion.sealPop(document.querySelector('#modeSelector .mode-card.active'));
+      }
+      // 仅在用户主动切换时震动；页面自动初始化不触发（避免无手势 vibrate 被浏览器拦截报错）
+      if (navigator.vibrate) navigator.vibrate(10);
     }
-    if (navigator.vibrate) navigator.vibrate(10);
   }
 
   function getMode() { return currentMode; }
