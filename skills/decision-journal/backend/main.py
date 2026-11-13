@@ -27,14 +27,20 @@ from routes import archive, chat, config_api, decision, modes, stats, tts  # noq
 # 前端静态资源目录（decision-journal/frontend/）
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 
-# 启动时初始化数据库
-init_db()
-
 app = FastAPI(
     title="别纠结决策辅助 API",
     description="辅助人做选择，不替代人做决定",
     version="0.10.0",
 )
+
+
+@app.on_event("startup")
+def _startup_init_db() -> None:
+    """启动时初始化数据库（含旧 choice.db 迁移）。
+
+    放在 startup 而不是模块导入阶段：测试导入本模块时不会触碰真实数据库。
+    """
+    init_db()
 
 # ─── API 路由 ───────────────────────────────────────────────────
 app.include_router(chat.router)

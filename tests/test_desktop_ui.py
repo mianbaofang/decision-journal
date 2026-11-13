@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from pathlib import Path
@@ -28,32 +29,42 @@ def _health_ok(url: str, timeout: float = 1.0) -> bool:
 
 @pytest.fixture(scope="module")
 def page():
-    # 后端未运行时自动拉起一个临时实例（等价于手动启动），结束后关闭
+    # 后端未运行时自动拉起一个临时实例（独立临时 DB，不碰真实数据），结束后关闭；
+    # setup 任一步失败也会在 finally 里回收子进程
     backend = None
-    if not _health_ok(BASE_URL):
-        backend = subprocess.Popen(
-            [sys.executable, "backend/main.py"],
-            cwd=str(REPO_ROOT),
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        for _ in range(50):
-            if _health_ok(BASE_URL):
-                break
-            time.sleep(0.4)
-    p = sync_playwright().start()
-    b = p.chromium.launch()
-    pg = b.new_page(viewport={"width": 1280, "height": 800})
-    yield pg
-    pg.close()
-    b.close()
-    p.stop()
-    if backend is not None:
-        backend.terminate()
-        try:
-            backend.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            backend.kill()
+    pg = b = p = None
+    try:
+        if not _health_ok(BASE_URL):
+            db_file = Path(tempfile.mkstemp(suffix=".db")[1])
+            env = {**os.environ, "DECISION_JOURNAL_DB_PATH": str(db_file)}
+            backend = subprocess.Popen(
+                [sys.executable, "backend/main.py"],
+                cwd=str(REPO_ROOT),
+                env=env,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            for _ in range(50):
+                if _health_ok(BASE_URL):
+                    break
+                time.sleep(0.4)
+        p = sync_playwright().start()
+        b = p.chromium.launch()
+        pg = b.new_page(viewport={"width": 1280, "height": 800})
+        yield pg
+    finally:
+        if pg is not None:
+            pg.close()
+        if b is not None:
+            b.close()
+        if p is not None:
+            p.stop()
+        if backend is not None:
+            backend.terminate()
+            try:
+                backend.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                backend.kill()
 
 
 def test_app_shell_two_pane_layout(page):
