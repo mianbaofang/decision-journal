@@ -84,7 +84,14 @@ def _brief_markdown(decision: Dict[str, Any]) -> str:
     score = result.get("score") if isinstance(result, dict) else None
     if isinstance(score, dict):
         lines += ["", "## 评分", ""]
-        for key, label in (("benefit", "收益"), ("risk", "风险"), ("cost", "成本"), ("reversibility", "可逆性"), ("valueFit", "价值匹配")):
+        for key, label in (
+            ("benefit", "收益"),
+            ("risk", "风险"),
+            ("cost", "成本"),
+            ("reversibility", "可逆性"),
+            ("valueFit", "价值匹配"),
+            ("confidence", "评分信心"),
+        ):
             if isinstance(score.get(key), int):
                 lines.append(f"- {label}：{score[key]}")
     lines += ["", "## 状态", ""]

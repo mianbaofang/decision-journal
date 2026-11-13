@@ -120,8 +120,9 @@ def test_chat_auto_recognizes_random_mode(client):
     assert body["autoRecognized"]["mode"] == "random"
     assert "reason" in body["autoRecognized"]
     assert "confidence" in body["autoRecognized"]
-    # mock 数据源
+    # mock 数据源（random 没有 summary，brief 为 None，来源在 result._source）
     assert body["result"]["_source"] == "mock"
+    assert body["brief"] is None
     # 已落库
     assert body["decisionId"]
 
@@ -152,10 +153,49 @@ def test_chat_rational_returns_pros_and_cons(client):
     assert result["type"] == "rational"
     assert isinstance(result["pros"], list) and len(result["pros"]) >= 1
     assert isinstance(result["cons"], list) and len(result["cons"]) >= 1
-    # rational mock 含 conclusion 字段
+    # rational mock 含 conclusion 字段与六项评分
     assert result.get("conclusion")
+    assert set(result["score"]) == {
+        "benefit", "risk", "cost", "reversibility", "valueFit", "confidence"
+    }
+    assert body["brief"]["source"] == "mock"
     # 已落库
     assert body["decisionId"]
+
+
+def test_chat_without_key_and_without_demo_is_402(client):
+    """默认 demo_mode=False 且无 Key：不得伪造结果，返回 402。"""
+    config_mod.save_preferences({"demo_mode": False})
+    resp = client.post("/api/chat", json={"question": "要不要换工作", "mode": "rational"})
+    assert resp.status_code == 402
+    assert resp.json()["detail"]
+
+
+def test_chat_request_demo_mode_is_opt_in_and_not_persisted(client):
+    """demoMode=true 只影响本次请求；偏好仍保持 False。"""
+    config_mod.save_preferences({"demo_mode": False})
+    resp = client.post(
+        "/api/chat",
+        json={"question": "今晚吃什么", "mode": "random", "demoMode": True},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["result"]["_source"] == "mock"
+    assert config_mod.get_preferences()["demo_mode"] is False
+
+
+def test_chat_validation_error_does_not_echo_secret_input(client):
+    """422 响应不得回显 apiKey 等请求体原文。"""
+    resp = client.post(
+        "/api/chat",
+        json={
+            "question": "x",
+            "mode": "auto",
+            "apiKey": {"secret": "sk-leak-me-please"},
+        },
+    )
+    assert resp.status_code == 422
+    assert "sk-leak-me-please" not in resp.text
+    assert "input" not in resp.text
 
 
 def test_chat_nature_returns_nature_brief(client):
@@ -229,6 +269,35 @@ def test_decision_crud_full_cycle(client):
     # 5. 删除后再 GET 应 404
     resp = client.get(f"/api/decision/{decision_id}")
     assert resp.status_code == 404
+
+
+def test_export_markdown_includes_all_six_scores(client):
+    """导出 Markdown 应包含六项评分（含评分信心）与来源。"""
+    payload = {
+        "question": "要不要换工作",
+        "mode": "rational",
+        "result": {
+            "type": "rational",
+            "conclusion": "先做小尝试。",
+            "score": {
+                "benefit": 84,
+                "risk": 72,
+                "cost": 62,
+                "reversibility": 46,
+                "valueFit": 59,
+                "confidence": 57,
+            },
+        },
+        "brief": {"summary": "先做小尝试。", "source": "mock"},
+    }
+    created = client.post("/api/decision", json=payload).json()
+
+    resp = client.get(f"/api/decision/{created['id']}/export?format=md")
+    assert resp.status_code == 200
+    text = resp.text
+    for label in ("收益", "风险", "成本", "可逆性", "价值匹配", "评分信心"):
+        assert label in text
+    assert "结果来源：mock" in text
 
 
 def test_decision_get_returns_404_for_missing(client):

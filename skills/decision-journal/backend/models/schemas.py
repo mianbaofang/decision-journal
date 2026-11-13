@@ -115,6 +115,8 @@ class ChatRequest(BaseModel):
     weatherCity: Optional[str] = Field(default=None)
     # 用户价值观（rational 模式用）
     values: Optional[Dict[str, int]] = Field(default=None)
+    # 本次请求是否允许 mock 演示数据；None 表示沿用用户偏好 demo_mode
+    demoMode: Optional[bool] = Field(default=None, description="仅本次请求启用 Demo/mock 降级")
     # 多模态图片（base64 data URL，可选）
     image: Optional[str] = Field(default=None, description="用户上传的图片，base64 data URL")
 

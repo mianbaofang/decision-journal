@@ -132,10 +132,12 @@ def chat(req: ChatRequest) -> ChatResponse:
     """
     merged_config = _merge_overrides(get_effective_config(), _request_overrides(req))
 
-    # 用户语言偏好，用于无 Key 时的 mock 数据语言；demo_mode 决定是否允许 mock 降级
+    # 用户语言偏好，用于无 Key 时的 mock 数据语言；
+    # demoMode 只影响本次请求，缺省时才沿用持久化偏好 demo_mode（默认 False）。
     prefs = get_preferences()
     language = prefs.get("language", "zh-CN")
-    allow_mock = bool(prefs.get("demo_mode", False))
+    allow_mock = req.demoMode if req.demoMode is not None else bool(prefs.get("demo_mode", False))
+    values = req.values if isinstance(req.values, dict) else prefs.get("values")
 
     # 1. auto 模式识别
     auto_recognized: Optional[Dict[str, Any]] = None
@@ -172,7 +174,7 @@ def chat(req: ChatRequest) -> ChatResponse:
                 result,
                 mode=effective_mode,
                 question=req.question,
-                values=prefs.get("values") if isinstance(prefs.get("values"), dict) else None,
+                values=values if isinstance(values, dict) else None,
             )
             summary = result.get("summary") or result.get("conclusion") or ""
             reply = (
@@ -181,6 +183,10 @@ def chat(req: ChatRequest) -> ChatResponse:
             )
     except NoApiKeyError:
         raise HTTPException(status_code=402, detail="需要配置 LLM API Key 才能使用。可点击「体验 Demo」查看演示效果。")
+    except Exception as exc:
+        # 不把上游异常原文（可能含 URL/凭据）返回给客户端或写进日志。
+        print(f"[chat] 处理失败: {type(exc).__name__}")
+        raise HTTPException(status_code=502, detail="决策服务暂时不可用；请检查配置或稍后重试。")
 
     # 3. 自动落库
     decision_id: Optional[str] = None

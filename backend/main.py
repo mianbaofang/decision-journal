@@ -11,11 +11,14 @@
     或 uvicorn main:app --reload --port 8010
 """
 
+import argparse
+import os
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 # 确保 backend/ 在 sys.path 中（用于 routes/services 的相对导入）
@@ -41,6 +44,16 @@ def _startup_init_db() -> None:
     放在 startup 而不是模块导入阶段：测试导入本模块时不会触碰真实数据库。
     """
     init_db()
+
+
+@app.exception_handler(RequestValidationError)
+async def _validation_exception_handler(_request: Request, exc: RequestValidationError) -> JSONResponse:
+    """422 校验错误不回声请求体原文，避免把 apiKey / weatherKey 写进响应或日志。"""
+    errors = [
+        {key: value for key, value in error.items() if key not in ("input", "ctx")}
+        for error in exc.errors()
+    ]
+    return JSONResponse(status_code=422, content={"detail": errors})
 
 # ─── API 路由 ───────────────────────────────────────────────────
 app.include_router(chat.router)
@@ -101,4 +114,17 @@ if FRONTEND_DIR.exists():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8010)
+    parser = argparse.ArgumentParser(description="别纠结决策辅助后端")
+    parser.add_argument(
+        "--host",
+        default=os.environ.get("DECISION_JOURNAL_HOST", "127.0.0.1"),
+        help="监听地址，默认 127.0.0.1",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.environ.get("DECISION_JOURNAL_PORT", "8010")),
+        help="监听端口，默认 8010",
+    )
+    args = parser.parse_args()
+    uvicorn.run(app, host=args.host, port=args.port)

@@ -22,7 +22,11 @@ from pathlib import Path
 from typing import Any, Dict
 
 # 配置文件路径（与 CLI 共用）
-CONFIG_FILE_PATH = Path.home() / ".decision-journal" / "config.json"
+# 可用 DECISION_JOURNAL_CONFIG_FILE 覆盖（测试/便携模式隔离用，避免读取真实用户配置）
+CONFIG_FILE_PATH = Path(
+    os.environ.get("DECISION_JOURNAL_CONFIG_FILE")
+    or (Path.home() / ".decision-journal" / "config.json")
+)
 
 # 配置键名
 CONFIG_KEYS = (
