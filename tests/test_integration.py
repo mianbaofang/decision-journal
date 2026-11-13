@@ -1,11 +1,8 @@
 """端到端集成测试：6 模式全链路 + 配置流程 + 数据持久化。
 
-直接对运行中的后端（默认 http://localhost:8765）做真实 HTTP 调用，
-不走 TestClient，用于验证：
-1. 6 模式（auto/rational/random/nature/dialogue/fengshui）的 /api/chat 全链路
-2. 配置流程：POST /api/config → GET 脱敏 → DELETE 清除
-3. 数据持久化：chat 自动落库 → archive 列表 → decision 查询/更新 → stats 统计
-4. preferences GET/POST
+默认跳过。只有显式设置 DECISION_JOURNAL_TEST_BASE_URL 时才连接一个**专用测试
+后端**（要求独立临时 DB/config），因为这个文件会修改配置、偏好并写入决策记录。
+绝不能指向用户真实的 8010 服务。
 """
 
 import os
@@ -18,7 +15,13 @@ import pytest
 # 把 backend 加入 sys.path 以便复用 schemas
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
-BASE_URL = os.environ.get("DECISION_JOURNAL_TEST_BASE_URL", "http://localhost:8765")
+BASE_URL = os.environ.get("DECISION_JOURNAL_TEST_BASE_URL")
+if not BASE_URL:
+    pytest.skip(
+        "live integration tests are opt-in: set DECISION_JOURNAL_TEST_BASE_URL "
+        "to an isolated test backend (never a real user instance)",
+        allow_module_level=True,
+    )
 
 
 @pytest.fixture(scope="module")

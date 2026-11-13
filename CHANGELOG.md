@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Legacy database migration now uses the SQLite backup API for a brand-new target and a single `BEGIN IMMEDIATE` merge for an existing one: uncheckpointed WAL rows survive, an already-populated target is never overwritten, `decisions` merge by primary key with `INSERT OR IGNORE`, and `config` only fills keys the new database is missing.
+- `--action stop` only touches a loopback backend whose PID command line is this project's `backend/main.py`; a remote or non-loopback `--base-url` never auto-starts a local backend, and stop no longer reports success when nothing was stopped.
+- API keys are no longer echoed back in 422 validation errors, and upstream chat failures return a generic 502 instead of the provider's message.
+- The installable package ships `frontend/` so the console script serves the web UI; `__init__.py` files are tracked again (`/_*.py` is root-anchored), and `scripts/sync_skill_package.py` copies them.
+- `demoMode` can be set per request without mutating the saved preference; CLI `--demo` therefore no longer turns every later decision into mock data.
+- Tests no longer read a real user API key, never default to a live backend, and run the UI suite against an isolated temporary DB.
+- The recent-decisions list uses native buttons, so each entry is Tab-focusable and Enter/Space activates it; the hero sample is localized and hidden below 1100 px, and a `prefers-contrast: more` block strengthens secondary text, lines, and focus rings.
+
 ## v0.10.0 - 2026-11-13
 
 ### Breaking changes (identity unification)

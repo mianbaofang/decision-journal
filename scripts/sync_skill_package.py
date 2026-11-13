@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT / "skills" / "decision-journal"
 
 MIRROR_DIRS = ("backend", "frontend")
-COPY_FILES = ("scripts/decision_journal.py",)
+COPY_FILES = ("scripts/__init__.py", "scripts/decision_journal.py")
 
 EXCLUDE_DIRS = {"__pycache__", ".pytest_cache", "node_modules"}
 EXCLUDE_SUFFIXES = (".pyc", ".db", ".db-wal", ".db-shm")

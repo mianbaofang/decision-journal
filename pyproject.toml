@@ -44,4 +44,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["backend", "backend.models", "backend.routes", "backend.services", "scripts"]
+packages = ["backend", "backend.models", "backend.routes", "backend.services", "frontend", "scripts"]
+
+[tool.setuptools.package-data]
+# 让 pip 安装后的 console script 也能启动带 Web UI 的本地后端。
+frontend = ["*.html", "assets/*", "scripts/*.js", "styles/*.css", "vendor/*"]

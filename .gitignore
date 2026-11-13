@@ -77,9 +77,9 @@ docs/intro-preview.png
 docs/intro-*.gif
 docs/superpowers/
 
-# Dev helper scripts (underscore-prefixed)
-_*.py
-_*.png
+# Dev helper scripts (underscore-prefixed, repository root only)
+/_*.py
+/_*.png
 _diag.png
 _verify/
 _ui_test_outputs/
