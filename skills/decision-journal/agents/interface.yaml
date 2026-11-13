@@ -15,7 +15,8 @@ compatibility:
     paths: []
   execution:
     context: "inline"
-    shell: "powershell"
+    # auto: resolve per platform — PowerShell on Windows, bash/sh on POSIX. Do not hardcode one shell.
+    shell: "auto"
   trust:
     source_tier: "local"
     remote_inline_execution: "forbid"
