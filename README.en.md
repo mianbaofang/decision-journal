@@ -6,9 +6,7 @@
   One sentence becomes evidence, risks, and a next step — every choice is saved to a local decision journal you can review and export.
 </p>
 
-<table align="center"><tr><td><a href="https://github.com/mianbaofang/decision-journal/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-journal?style=flat-square&label=release" alt="Latest public release"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-journal/ci.yml?branch=master&style=flat-square&label=tests" alt="Continuous integration test status"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-journal?style=flat-square&label=license" alt="MIT license"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/stargazers"><img src="https://img.shields.io/github/stars/mianbaofang/decision-journal?style=flat-square&label=stars" alt="GitHub stars"></a></td><td><a href="https://pypi.org/project/decision-journal/"><img src="https://img.shields.io/pypi/v/decision-journal?style=flat-square&label=pypi" alt="PyPI release"></a></td><td><a href="https://skills.sh/mianbaofang/decision-journal"><img src="https://skills.sh/b/mianbaofang/decision-journal" alt="skills.sh installs"></a></td></tr></table>
-
-<p align="center"><img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square" alt="Python 3.9 or newer"> <img src="https://img.shields.io/badge/FastAPI-API-009688?style=flat-square" alt="FastAPI backend"> <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square" alt="SQLite WAL local storage"> <img src="https://img.shields.io/badge/6%20languages-i18n-6A5ACD?style=flat-square" alt="Six interface languages"> <img src="https://img.shields.io/badge/multimodal-text%20voice%20image-C05A7A?style=flat-square" alt="Text, voice, and image input"></p>
+<p align="center"><a href="https://github.com/mianbaofang/decision-journal/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-journal?style=flat-square&label=release" alt="Latest public release"></a> <a href="https://github.com/mianbaofang/decision-journal/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-journal/ci.yml?branch=master&style=flat-square&label=tests" alt="Continuous integration test status"></a> <a href="https://github.com/mianbaofang/decision-journal/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-journal?style=flat-square&label=license" alt="MIT license"></a></p>
 
 <p align="center">
   <a href="https://mianbaofang.github.io/decision-journal/index-en.html">
@@ -84,6 +82,32 @@ Use decision-journal to break down this choice: should I take the new job? Give 
 
 Open <http://127.0.0.1:8010/>. Without an LLM key, explicitly choose Demo mode in the UI first. Real analysis and image understanding require your own OpenAI-compatible endpoint and vision model.
 
+## Use the Skill or open the workbench?
+
+> The following host Agent route is implemented in this source checkout. The published v0.10.1 installer does not yet include record / review; use this checkout or a verified local candidate package.
+
+| Entry | Reasoning | Local tools |
+|---|---|---|
+| Installed Skill (preferred) | Current host Agent's conversation model | `record` analysis, `review` outcomes, export on request |
+| Standalone CLI / Web | Separately configured model, or explicitly selected Demo | Call model, store, browse and review |
+
+[Complete host Agent example →](docs/HOST_AGENT_WORKFLOW.md). No host API-key extraction; recording does not call another model. Review forms, sidebar sync and visible exports are local unreleased improvements; see [Changelog](CHANGELOG.md).
+
+## Data and upgrades (current source)
+
+The default journal now lives at `~/.decision-journal/decision_journal.db`, outside the installation. Legacy adoption preserves originals; replacing existing data requires an explicit option and a safety backup. This is an unreleased local improvement.
+
+```bash
+python scripts/decision_journal.py data status
+python scripts/decision_journal.py data backup
+python scripts/decision_journal.py data restore --help
+```
+
+[Paths, migration, backup and recovery →](docs/DATA_STORAGE.md). These commands run offline without a model key. SQLite backups may contain credentials; separate configuration files and environment variables are excluded.
+
+<details>
+<summary>Why I Built This</summary>
+
 ## Why I Built This
 
 The idea for Decision Journal came from tidying up a room with my daughter.
@@ -115,6 +139,8 @@ The boundary I care about most: it can only assist your choice; it cannot bear t
 **Decision Journal (别纠结)** is a local-first AI decision assistant, decision-support tool, and decision journal with a Web UI, CLI, and an installable Skill (decision-journal). It runs on FastAPI + SQLite and connects to OpenAI-compatible APIs. It does not decide for you; it separates a dilemma into evidence, risks, and a next step.
 
 > Read [Disclaimer](DISCLAIMER.md) before use. This project is decision support only; it is not legal, medical, financial, psychological, or other professional advice.
+
+</details>
 
 ## At A Glance
 
@@ -152,6 +178,9 @@ python scripts/decision_journal.py --action export --id <id> --format json
 The Markdown brief contains the conclusion, supporting perspectives, risks, next steps, score, and status — ready for an archive, a note system, or a teammate. JSON is there for scripts. Export writes a local file only.
 
 The value of a decision journal isn't recording the "right answer". It's comparing today's outcome with the reasoning you had then, and spotting patterns: do you always overestimate risk? Do you skip the reversibility check when you're rushed? Those records beat "I think it'll be fine" next time.
+
+<details>
+<summary>Feature Map</summary>
 
 ## Feature Map
 
@@ -196,6 +225,11 @@ flowchart TD
     DB --> ARCHIVE["Details / executed and regret flags / statistics"]
 ```
 
+</details>
+
+<details>
+<summary>Run Details</summary>
+
 ## Run Details
 
 ```bash
@@ -216,6 +250,8 @@ Open in your browser:
 - Health check: <http://127.0.0.1:8010/api/health>
 
 Without an LLM key, the page asks you to configure one or explicitly start Demo mode. Demo results are examples and do not call an AI service. Real analysis needs your own OpenAI-compatible key; image input also needs a vision model such as GPT-4o, Doubao-vision, or Qwen-VL. Live weather in Nature mode needs your own Amap key, weather Base URL, and city. Without the Amap API, the app uses clearly labeled simulated weather.
+
+</details>
 
 ## Six Lenses
 
@@ -242,6 +278,9 @@ Without an LLM key, the page asks you to configure one or explicitly start Demo 
 
 <table align="center"><tr><td><img src="docs/images/stats-en.png" width="100%" alt="Statistics review interface"></td><td><img src="docs/images/settings-en.png" width="100%" alt="Settings interface"></td></tr></table>
 
+<details>
+<summary>Highlights</summary>
+
 ## Highlights
 
 - **🎴 Seal-style mode picker**: six single-character Chinese seal buttons (自 / 理 / 随 / 然 / 问 / 局) on a paper-textured canvas
@@ -262,6 +301,11 @@ Without an LLM key, the page asks you to configure one or explicitly start Demo 
 - **🔌 CLI + Web dual entry**: both use the same backend and database
 - **🧪 Demo preview**: when no LLM key is set, you can explicitly start Demo mode to view sample results
 
+</details>
+
+<details>
+<summary>The Composer</summary>
+
 ## The Composer
 
 The input area is a large rounded card in the style of modern AI chat apps:
@@ -271,6 +315,8 @@ The input area is a large rounded card in the style of modern AI chat apps:
 - **Right**: microphone for voice input + a teal send button
 
 When a vision model is configured, photos are sent in the standard OpenAI multimodal format, so the model can look at your image and give advice grounded in what it sees.
+
+</details>
 
 ## Configuring LLM And Weather
 
@@ -323,6 +369,9 @@ python scripts/decision_journal.py --action export --id <id> --format json
 
 See the [installable Skill entry](skills/decision-journal/SKILL.md) for the full parameter list. The consolidated repository keeps this as the only canonical Skill entry so GitHub discovery does not expose duplicates.
 
+<details>
+<summary>Tech Stack</summary>
+
 ## Tech Stack
 
 | Layer | Tech |
@@ -335,6 +384,8 @@ See the [installable Skill entry](skills/decision-journal/SKILL.md) for the full
 | STT | Browser-native Web Speech API (free) |
 | Weather | Amap Web API (bring your own key, Base URL, and city; simulated weather when not configured) |
 | Tests | pytest + Playwright (UI automation) |
+
+</details>
 
 ## Safety And Boundaries
 
@@ -360,6 +411,9 @@ Read [DISCLAIMER.md](DISCLAIMER.md) for the full disclaimer and [PRIVACY.md](PRI
   - Weather: Amap Open Platform (bring your own key)
 
 See [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md) for the full attribution list.
+
+<details>
+<summary>Project Structure</summary>
 
 ## Project Structure
 
@@ -434,6 +488,11 @@ decision-journal/
 
 The browser starts at `frontend/index.html`; the command-line entry is `scripts/decision_journal.py`. Both call the same FastAPI routes. `routes/chat.py` delegates each request to the matching service, `services/` performs calculations and external calls, and `db.py` stores the result. On the frontend, `brief.js` renders results but does not make backend decisions.
 
+</details>
+
+<details>
+<summary>FAQ</summary>
+
 ## FAQ
 
 ### Should I quit my job or break up? Can this tool decide for me?
@@ -463,6 +522,8 @@ Decision records stay in local SQLite by default. Only the LLM, weather service,
 ### Can I use it without an API key?
 
 You can explicitly enable Demo mode to explore the full UI with sample results, but Demo never calls a real model and is not real analysis. Real analysis needs your own OpenAI-compatible endpoint.
+
+</details>
 
 ## Status
 

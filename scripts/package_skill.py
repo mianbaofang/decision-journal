@@ -29,10 +29,10 @@ def validator():
 
 def excluded(relative: Path) -> bool:
     parts = {part.casefold() for part in relative.parts}
-    if parts & {"__pycache__", ".pytest_cache", "tests", "docs", "dist", "mp4", "reports", "evals"}:
+    if parts & {"__pycache__", ".pytest_cache", "tests", "docs", "dist", "mp4", "reports", "evals", "backups"}:
         return True
     name = relative.name.casefold()
-    return name.startswith("readme") or name in {".env", "decision_journal.db"} or relative.suffix.casefold() in {".pyc", ".sqlite", ".db"}
+    return name.startswith("readme") or name in {".env", "decision_journal.db"} or name.endswith((".db-wal", ".db-shm", ".db.migrated", ".sqlite3-wal", ".sqlite3-shm")) or relative.suffix.casefold() in {".pyc", ".sqlite", ".sqlite3", ".db"}
 
 
 def package_files() -> list[tuple[Path, Path]]:

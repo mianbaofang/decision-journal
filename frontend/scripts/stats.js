@@ -38,8 +38,8 @@ const Stats = (() => {
     grid.className = 'stats-grid';
     grid.appendChild(statCard('total', total, I18N.t('stats.total'), ''));
     grid.appendChild(statCard('executed', pct(data.executedRate), I18N.t('stats.executedRate'), '%'));
-    grid.appendChild(statCard('regret', pct(data.regretRate), I18N.t('stats.regretRate'), '%'));
-    grid.appendChild(statCard('confidence', Math.round(data.avgConfidence || 0), I18N.t('stats.avgConfidence'), '%'));
+    grid.appendChild(statCard('regret', data.regretRate == null ? null : pct(data.regretRate), I18N.t('stats.regretRate') + ' · n=' + (data.reviewedCount || 0), data.regretRate == null ? '' : '%'));
+    grid.appendChild(statCard('confidence', data.avgConfidence == null ? null : Math.round(data.avgConfidence), I18N.t('stats.avgConfidence') + ' · n=' + (data.confidenceSampleCount || 0), data.avgConfidence == null ? '' : '%'));
     scroll.appendChild(grid);
     if (window.Motion) Motion.stagger(grid.querySelectorAll('.stat'), { step: 55, max: 4 });
 
@@ -124,7 +124,7 @@ const Stats = (() => {
     const b = document.createElement('b');
     const num = document.createElement('span');
     num.className = 'stat-num';
-    num.textContent = '0';
+    num.textContent = value == null ? '—' : '0';
     b.appendChild(num);
     if (unit) {
       const u = document.createElement('span');
@@ -132,7 +132,7 @@ const Stats = (() => {
       u.textContent = unit;
       b.appendChild(u);
     }
-    if (window.Motion) Motion.countUp(num, value);
+    if (value != null) { if (window.Motion) Motion.countUp(num, value); else num.textContent = String(value); }
     const s = document.createElement('span');
     s.textContent = label;
     c.appendChild(b);

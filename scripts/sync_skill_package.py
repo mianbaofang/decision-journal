@@ -18,8 +18,8 @@ PACKAGE = ROOT / "skills" / "decision-journal"
 MIRROR_DIRS = ("backend", "frontend")
 COPY_FILES = ("scripts/__init__.py", "scripts/decision_journal.py")
 
-EXCLUDE_DIRS = {"__pycache__", ".pytest_cache", "node_modules"}
-EXCLUDE_SUFFIXES = (".pyc", ".db", ".db-wal", ".db-shm")
+EXCLUDE_DIRS = {"__pycache__", ".pytest_cache", "node_modules", "backups"}
+EXCLUDE_SUFFIXES = (".pyc", ".db", ".db-wal", ".db-shm", ".db.migrated", ".sqlite", ".sqlite3", ".sqlite3-wal", ".sqlite3-shm")
 EXCLUDE_NAMES = {("backend", "README.md")}
 
 
@@ -38,6 +38,16 @@ def _ignore(directory: str, names: list[str]) -> set[str]:
 
 def sync() -> list[str]:
     changed: list[str] = []
+    # Preflight every destination before deleting anything. Older installations
+    # may still have a database here; a developer sync must not erase it.
+    data_suffixes = tuple(suffix for suffix in EXCLUDE_SUFFIXES if suffix != ".pyc")
+    for relative in MIRROR_DIRS:
+        destination = PACKAGE / relative
+        if destination.is_dir():
+            for item in destination.rglob("*"):
+                if item.is_file() and (item.name.endswith(data_suffixes) or "backups" in item.parts):
+                    raise SystemExit("Refusing to replace a package directory containing local data; "
+                                     "migrate or back it up outside the package first.")
     for relative in MIRROR_DIRS:
         source = ROOT / relative
         destination = PACKAGE / relative

@@ -71,7 +71,7 @@ app.include_router(tts.router)
 @app.get("/api/health")
 def health() -> dict:
     """健康检查。"""
-    return {"name": "别纠结 API", "status": "ok", "version": "0.10.1"}
+    return {"app_id": "decision-journal", "name": "别纠结 API", "status": "ok", "version": app.version}
 
 
 # ─── 前端静态资源 ──────────────────────────────────────────────

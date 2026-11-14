@@ -189,6 +189,7 @@ const Chat = (() => {
       // 后端已自动落库，记录 decisionId 供后续标记 executed/regret
       if (resp.decisionId) {
         App.currentDecision = { id: resp.decisionId, mode: resp.mode };
+        App.loadSidebarRecent();
       }
 
       // 自动朗读（偏好控制）

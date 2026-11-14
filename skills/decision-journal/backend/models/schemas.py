@@ -4,10 +4,10 @@
 Decision 完整字段（executed/regret/dialogueHistory）、Stats 增强（executedRate/regretRate/weekTrend）。
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # ─── 决策简报 ───────────────────────────────────────────────────
@@ -136,6 +136,24 @@ class ChatResponse(BaseModel):
 # ─── decision 接口 ─────────────────────────────────────────────
 
 
+class JournalEntry(BaseModel):
+    """Optional plan and later review; a plan alone is not a completed review."""
+
+    chosenOption: Optional[str] = Field(None, max_length=2000)
+    expectedOutcome: Optional[str] = Field(None, max_length=5000)
+    reviewDate: Optional[str] = Field(None, pattern=r"^(|\d{4}-\d{2}-\d{2})$")
+    actualOutcome: Optional[str] = Field(None, max_length=5000)
+    reviewNote: Optional[str] = Field(None, max_length=5000)
+    reviewedAt: Optional[str] = None
+
+    @field_validator("reviewDate")
+    @classmethod
+    def valid_review_date(cls, value):
+        if value:
+            date.fromisoformat(value)
+        return value
+
+
 class DecisionSave(BaseModel):
     """POST /api/decision 入参。"""
 
@@ -147,6 +165,7 @@ class DecisionSave(BaseModel):
     executed: bool = False
     regret: bool = False
     dialogueHistory: Optional[List[Dict[str, str]]] = None
+    journal: Optional[JournalEntry] = None
 
 
 class DecisionPatch(BaseModel):
@@ -155,6 +174,7 @@ class DecisionPatch(BaseModel):
     executed: Optional[bool] = None
     regret: Optional[bool] = None
     dialogueHistory: Optional[List[Dict[str, str]]] = None
+    journal: Optional[JournalEntry] = None
 
 
 # ─── stats 接口 ────────────────────────────────────────────────
@@ -165,9 +185,11 @@ class Stats(BaseModel):
 
     totalDecisions: int
     modeDistribution: Dict[str, int] = Field(default_factory=dict)
-    avgConfidence: float = 0.0
+    avgConfidence: Optional[float] = None
+    confidenceSampleCount: int = 0
+    reviewedCount: int = 0
     executedRate: float = 0.0
-    regretRate: float = 0.0
+    regretRate: Optional[float] = None
     weekTrend: List[Dict[str, Any]] = Field(default_factory=list)
 
 

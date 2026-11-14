@@ -934,3 +934,13 @@ html, body {
   min-height: 36px;
   align-items: center;
 }
+
+/* Keep archive detail in a height-bearing container inside the drawer. */
+.drawer-body:has(#page-archive.active) { display: flex; flex-direction: column; overflow: hidden; }
+.drawer-body #page-archive.active { position: relative; flex: 1; min-height: 0; overflow-y: auto; }
+.drawer-body #page-archive .detail-view { min-height: 0; }
+
+@media (max-width: 767px) {
+  .drawer { width: 100vw; max-width: 100%; }
+  .drawer-body .brief { max-width: 100%; }
+}

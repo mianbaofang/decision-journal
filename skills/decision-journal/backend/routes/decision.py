@@ -97,6 +97,15 @@ def _brief_markdown(decision: Dict[str, Any]) -> str:
     lines += ["", "## 状态", ""]
     lines.append(f"- 已执行：{'是' if decision.get('executed') else '否'}")
     lines.append(f"- 标记后悔：{'是' if decision.get('regret') else '否'}")
+    journal = decision.get("journal") or {}
+    lines += ["", "## 决策计划与复盘", ""]
+    for key, label in (("chosenOption", "最终选择"), ("expectedOutcome", "预期结果"),
+                       ("reviewDate", "复盘日期"), ("actualOutcome", "实际结果"),
+                       ("reviewNote", "复盘笔记"), ("reviewedAt", "已复盘时间")):
+        if journal.get(key):
+            lines.append(f"- {label}：{journal[key]}")
+    if not journal.get("reviewedAt") and not decision.get("regret"):
+        lines.append("- 复盘状态：尚未复盘")
     lines += ["", "> 决策由你做出；本简报只整理证据、风险与下一步，不构成专业建议。", ""]
     return "\n".join(lines)
 

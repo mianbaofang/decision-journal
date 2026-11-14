@@ -9,19 +9,19 @@
 """
 
 import json
-import os
 import sqlite3
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Optional
 
-# SQLite 数据库文件路径（与 backend/ 同级，gitignore 已忽略 *.db）
-# 可用环境变量 DECISION_JOURNAL_DB_PATH 覆盖（测试/多实例隔离用）
-DB_PATH = Path(os.environ.get("DECISION_JOURNAL_DB_PATH") or (Path(__file__).parent / "decision_journal.db"))
+from storage import ensure_database_file, prepare_database, resolve_db_path
+
+# Stable user data survives package upgrades. Explicit paths retain isolation.
+DB_PATH = resolve_db_path()
 
 
 def get_conn() -> sqlite3.Connection:
     """获取 SQLite 连接。每次调用创建新连接，避免线程问题。"""
+    ensure_database_file(DB_PATH)
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
@@ -70,6 +70,13 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
         );
         """
     )
+    if "journal" not in _decision_columns(conn):
+        try:
+            conn.execute("ALTER TABLE decisions ADD COLUMN journal TEXT")
+            conn.commit()
+        except sqlite3.OperationalError as exc:
+            if "duplicate column" not in str(exc).lower():
+                raise
 
 
 # 当前 schema 的 decisions 全部列；旧库缺任何一列时不走整体 backup，
@@ -92,7 +99,7 @@ def _legacy_decision_rows(conn: sqlite3.Connection) -> list:
     """读取旧库 decisions 行；兼容缺少可选列的老库，跳过不可用的行。
 
     返回顺序与 decisions 表列顺序一致：
-    (id, question, mode, result, brief, created_at, executed, regret, dialogue_history)
+    (id, question, mode, result, brief, created_at, executed, regret, dialogue_history, journal)
     """
     columns = _decision_columns(conn)
     if not _REQUIRED_DECISION_COLUMNS.issubset(columns):
@@ -114,6 +121,7 @@ def _legacy_decision_rows(conn: sqlite3.Connection) -> list:
                 col("executed", "0"),
                 col("regret", "0"),
                 col("dialogue_history", "NULL"),
+                col("journal", "NULL"),
             )
         )
         + " FROM decisions"
@@ -150,8 +158,8 @@ def _merge_legacy_into_new(legacy_conn: sqlite3.Connection, new_conn: sqlite3.Co
             new_conn.execute(
                 """
                 INSERT OR IGNORE INTO decisions
-                    (id, question, mode, result, brief, created_at, executed, regret, dialogue_history)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (id, question, mode, result, brief, created_at, executed, regret, dialogue_history, journal)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 row,
             )
@@ -176,7 +184,7 @@ def _migrate_legacy_db() -> None:
     安全边界：
     - 旧库不存在、已标记 migrated、不是本项目的库（没有 decisions 表）时不动；
     - 新库已有决策时绝不覆盖、也不打标记，保留旧库供用户手动检查；
-    - 新库文件全新且为空时用 backup API 整体复制（连同 WAL）；
+    - 新库文件全新时先私有快照（含 WAL），再在写事务中重新检查并合并；
     - 新库已存在但为空、或只含配置时，事务内只补 decisions 与缺失的 config 键，
       保留新库已有 Key/偏好与未知表，并让并发启动串行化；
     - 成功后把旧库改名为 choice.db.migrated；改名失败保留旧库，重复调用幂等；
@@ -184,7 +192,7 @@ def _migrate_legacy_db() -> None:
     """
     legacy = DB_PATH.parent / "choice.db"  # 跟随 DB_PATH 所在目录（测试隔离时指向临时目录）
     marker = DB_PATH.parent / "choice.db.migrated"
-    if not legacy.exists() or marker.exists():
+    if legacy.resolve() == DB_PATH.resolve() or not legacy.exists() or marker.exists():
         return
 
     new_existed = DB_PATH.exists()
@@ -204,9 +212,11 @@ def _migrate_legacy_db() -> None:
             return  # 新库已有决策：不覆盖、不标记、不动旧库
         legacy_has_full_schema = _DECISION_COLUMNS.issubset(_decision_columns(legacy_conn))
         if not new_existed and new_config == 0 and legacy_has_full_schema:
-            # 全新数据库且旧 schema 完整：整体复制最完整，backup API 会带上 WAL。
-            _backup_legacy(legacy_conn, new_conn)
-            adopted = True
+            # Never back up over the shared target: another process may have written
+            # since the initial existence check. Snapshot privately, then recheck in the merge.
+            with sqlite3.connect(":memory:") as snapshot:
+                _backup_legacy(legacy_conn, snapshot)
+                adopted = _merge_legacy_into_new(snapshot, new_conn)
         else:
             # 已存在/仅配置/旧 schema 缺列：新建 schema 后幂等合并，保留新库配置。
             adopted = _merge_legacy_into_new(legacy_conn, new_conn)
@@ -230,6 +240,7 @@ def _migrate_legacy_db() -> None:
 
 def init_db() -> None:
     """初始化数据库表。应用启动时调用一次。"""
+    prepare_database(DB_PATH)
     _migrate_legacy_db()
     with get_conn() as conn:
         _ensure_schema(conn)
@@ -248,9 +259,14 @@ def save_decision(dec: dict) -> dict:
     with get_conn() as conn:
         conn.execute(
             """
-            INSERT OR REPLACE INTO decisions
-                (id, question, mode, result, brief, created_at, executed, regret, dialogue_history)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO decisions
+                (id, question, mode, result, brief, created_at, executed, regret, dialogue_history, journal)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET question=excluded.question, mode=excluded.mode,
+                result=excluded.result, brief=excluded.brief, created_at=excluded.created_at,
+                executed=excluded.executed, regret=excluded.regret,
+                dialogue_history=excluded.dialogue_history,
+                journal=COALESCE(excluded.journal, decisions.journal)
             """,
             (
                 dec["id"],
@@ -262,6 +278,7 @@ def save_decision(dec: dict) -> dict:
                 1 if dec.get("executed") else 0,
                 1 if dec.get("regret") else 0,
                 json.dumps(dec.get("dialogueHistory"), ensure_ascii=False) if dec.get("dialogueHistory") else None,
+                json.dumps(dec["journal"], ensure_ascii=False) if dec.get("journal") else None,
             ),
         )
     return dec
@@ -285,8 +302,8 @@ def list_decisions(limit: int = 100, offset: int = 0) -> list[dict]:
 
 
 def update_decision(decision_id: str, patches: dict) -> Optional[dict]:
-    """部分更新决策记录（仅 executed/regret/dialogueHistory 可更新）。"""
-    allowed = {"executed", "regret", "dialogueHistory"}
+    """部分更新执行、后悔、对话与计划/复盘；复盘数据在写事务内合并。"""
+    allowed = {"executed", "regret", "dialogueHistory", "journal"}
     updates = {k: v for k, v in patches.items() if k in allowed}
     if not updates:
         return get_decision(decision_id)
@@ -305,6 +322,17 @@ def update_decision(decision_id: str, patches: dict) -> Optional[dict]:
 
     vals.append(decision_id)
     with get_conn() as conn:
+        # Merge journal fields inside the same write transaction to avoid lost updates.
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute("SELECT journal FROM decisions WHERE id = ?", (decision_id,)).fetchone()
+        journal = json.loads(row[0]) if row and row[0] else {}
+        incoming = updates.get("journal") or {}
+        journal.update(incoming)
+        if "regret" in updates or any(incoming.get(k) for k in ("actualOutcome", "reviewNote")):
+            journal["reviewedAt"] = datetime.now().isoformat()
+        if "journal" in updates or "regret" in updates:
+            sets.append("journal = ?")
+            vals.insert(-1, json.dumps(journal, ensure_ascii=False))
         conn.execute(f"UPDATE decisions SET {', '.join(sets)} WHERE id = ?", vals)
     return get_decision(decision_id)
 
@@ -380,6 +408,8 @@ def _row_to_decision(row: sqlite3.Row) -> dict:
         "executed": bool(row["executed"]),
         "regret": bool(row["regret"]),
     }
+    if "journal" in row.keys() and row["journal"]:
+        out["journal"] = json.loads(row["journal"])
     if row["brief"]:
         out["brief"] = json.loads(row["brief"])
     if row["dialogue_history"]:

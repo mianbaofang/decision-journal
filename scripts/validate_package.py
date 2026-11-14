@@ -22,7 +22,7 @@ REQUIRED_FILES = (
     "frontend/index.html",
     "scripts/decision_journal.py",
 )
-FORBIDDEN_DIRS = {"__pycache__", ".pytest_cache", "tests", "docs", "dist", "mp4", "reports", "evals"}
+FORBIDDEN_DIRS = {"__pycache__", ".pytest_cache", "tests", "docs", "dist", "mp4", "reports", "evals", "backups"}
 REQUIRED_TARGETS = {"openai", "claude", "generic", "agent-skills", "vscode"}
 
 
@@ -102,7 +102,7 @@ def validate() -> list[str]:
     for path in files:
         rel = path.relative_to(PACKAGE)
         name = path.name.casefold()
-        if name.startswith("readme") or name in {".env", "decision_journal.db"} or path.suffix.casefold() in {".pyc", ".sqlite", ".db"}:
+        if name.startswith("readme") or name in {".env", "decision_journal.db"} or name.endswith((".db-wal", ".db-shm", ".db.migrated", ".sqlite3-wal", ".sqlite3-shm")) or path.suffix.casefold() in {".pyc", ".sqlite", ".sqlite3", ".db"}:
             failures.append(f"forbidden install-package file: {rel.as_posix()}")
         if PRIVATE_PATH.search(rel.as_posix()):
             failures.append(f"private path in package member: {rel.as_posix()}")

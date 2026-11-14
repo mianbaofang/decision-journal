@@ -27,6 +27,7 @@ button {
 
 /* ============ 设计 Token ============ */
 :root {
+  --on-accent: #ffffff;
   /* 纸张 / 墨色 */
   --paper: #f4f5ef;
   --paper-2: #e9ece5;

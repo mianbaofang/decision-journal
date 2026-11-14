@@ -81,6 +81,7 @@ const App = (() => {
 
   /* ---------- Tab 切换（桌面端：决策=主区，其他=右侧抽屉） ---------- */
   function switchTab(tab) {
+    if (window.matchMedia('(max-width: 767px)').matches) $('sidebar').classList.remove('open');
     if (tab === 'chat') {
       closeDrawer();
       currentTab = 'chat';
@@ -231,6 +232,10 @@ const App = (() => {
     return sameYear ? md + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) : d.getFullYear() + '-' + md;
   }
 
+  fetch('/api/health').then(r => r.json()).then(data => {
+    if (data.app_id === 'decision-journal') document.querySelectorAll('[data-app-version]').forEach(el => { el.textContent = 'v' + data.version; });
+  }).catch(() => {});
+
   async function loadSidebarRecent() {
     const container = $('sidebarRecent');
     if (!container) return;
@@ -269,7 +274,7 @@ const App = (() => {
           col.appendChild(meta);
         }
         item.appendChild(col);
-        item.addEventListener('click', () => { switchTab('archive'); });
+        item.addEventListener('click', () => { switchTab('archive'); Archive.openDetail(d.id); });
         container.appendChild(item);
       });
       if (window.Motion) Motion.stagger(container.querySelectorAll('.recent-item'), { step: 35, max: 6 });

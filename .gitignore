@@ -34,6 +34,9 @@ ENV/
 decision_journal.db
 *.db-wal
 *.db-shm
+*.db.migrated
+*.sqlite3-wal
+*.sqlite3-shm
 
 # IDE
 .vscode/
@@ -86,3 +89,7 @@ _ui_test_outputs/
 _superpowers/
 _screenshots/
 .superpowers/
+
+# Local release-build artifacts (published via Releases, not source commits)
+/decision-journal-skill-v*.zip
+/decision-journal-skill-v*.zip.sha256

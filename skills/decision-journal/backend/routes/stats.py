@@ -5,10 +5,10 @@
   - modeDistribution: 每个模式各有多少条
   - avgConfidence: brief.confidence 的平均值（brief 为 None 的跳过）
   - executedRate: executed=True 的比例
-  - regretRate: regret=True 的比例
+  - regretRate: 已复盘样本中 regret=True 的比例；未复盘记录不作分母
   - weekTrend: 最近 7 天每天的决策数量 [{date, count}, ...]
 
-无记录时返回全 0 的 Stats（不返回 mock 数据）。
+无记录时计数为零；无有效信心或复盘样本时对应均值 / 比率为空。
 """
 
 from collections import defaultdict
@@ -35,9 +35,9 @@ def get_stats() -> Stats:
         return Stats(
             totalDecisions=0,
             modeDistribution={m.id: 0 for m in MODES},
-            avgConfidence=0.0,
+            avgConfidence=None,
             executedRate=0.0,
-            regretRate=0.0,
+            regretRate=None,
             weekTrend=_empty_week_trend(),
         )
 
@@ -55,16 +55,19 @@ def get_stats() -> Stats:
         brief = d.get("brief")
         if isinstance(brief, dict):
             try:
-                confidences.append(int(brief.get("confidence", 0)))
+                value = brief.get("confidence")
+                if value is not None and not isinstance(value, bool) and 0 <= float(value) <= 100:
+                    confidences.append(int(value))
             except (TypeError, ValueError):
                 pass
-    avg_confidence = round(sum(confidences) / len(confidences), 2) if confidences else 0.0
+    avg_confidence = round(sum(confidences) / len(confidences), 2) if confidences else None
 
     # 执行率 / 后悔率
     executed_n = sum(1 for d in decisions if d.get("executed"))
-    regret_n = sum(1 for d in decisions if d.get("regret"))
+    reviewed = [d for d in decisions if (d.get("journal") or {}).get("reviewedAt") or d.get("regret")]
+    regret_n = sum(1 for d in reviewed if d.get("regret"))
     executed_rate = round(executed_n / total, 4) if total else 0.0
-    regret_rate = round(regret_n / total, 4) if total else 0.0
+    regret_rate = round(regret_n / len(reviewed), 4) if reviewed else None
 
     # 近 7 天趋势（含今天，oldest → newest）
     today = date.today()
@@ -88,6 +91,8 @@ def get_stats() -> Stats:
         totalDecisions=total,
         modeDistribution=distribution,
         avgConfidence=avg_confidence,
+        confidenceSampleCount=len(confidences),
+        reviewedCount=len(reviewed),
         executedRate=executed_rate,
         regretRate=regret_rate,
         weekTrend=week_trend,

@@ -10,8 +10,8 @@ PACKAGE = ROOT / "skills" / "decision-journal"
 
 MIRROR_DIRS = ("backend", "frontend")
 COPY_FILES = ("scripts/__init__.py", "scripts/decision_journal.py")
-EXCLUDE_DIRS = {"__pycache__", ".pytest_cache", "node_modules"}
-EXCLUDE_SUFFIXES = (".pyc", ".db", ".db-wal", ".db-shm")
+EXCLUDE_DIRS = {"__pycache__", ".pytest_cache", "node_modules", "backups"}
+EXCLUDE_SUFFIXES = (".pyc", ".db", ".db-wal", ".db-shm", ".db.migrated", ".sqlite", ".sqlite3", ".sqlite3-wal", ".sqlite3-shm")
 EXCLUDE_NAMES = {("backend", "README.md")}
 
 

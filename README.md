@@ -6,9 +6,7 @@
   一句话拆出证据、风险和下一步；每次选择自动存成本地决策日志，事后能复盘、能导出。
 </p>
 
-<table align="center"><tr><td><a href="https://github.com/mianbaofang/decision-journal/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-journal?style=flat-square&label=release" alt="最新公开版本"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-journal/ci.yml?branch=master&style=flat-square&label=tests" alt="持续集成测试状态"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-journal?style=flat-square&label=license" alt="MIT 开源协议"></a></td><td><a href="https://github.com/mianbaofang/decision-journal/stargazers"><img src="https://img.shields.io/github/stars/mianbaofang/decision-journal?style=flat-square&label=stars" alt="GitHub Stars"></a></td><td><a href="https://pypi.org/project/decision-journal/"><img src="https://img.shields.io/pypi/v/decision-journal?style=flat-square&label=pypi" alt="PyPI 版本"></a></td><td><a href="https://skills.sh/mianbaofang/decision-journal"><img src="https://skills.sh/b/mianbaofang/decision-journal" alt="skills.sh 安装计数"></a></td></tr></table>
-
-<p align="center"><img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square" alt="Python 3.9 或更高版本"> <img src="https://img.shields.io/badge/FastAPI-API-009688?style=flat-square" alt="FastAPI 后端"> <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square" alt="SQLite WAL 本地存储"> <img src="https://img.shields.io/badge/6%20languages-i18n-6A5ACD?style=flat-square" alt="支持六种界面语言"> <img src="https://img.shields.io/badge/multimodal-text%20voice%20image-C05A7A?style=flat-square" alt="支持文字语音图片输入"></p>
+<p align="center"><a href="https://github.com/mianbaofang/decision-journal/releases"><img src="https://img.shields.io/github/v/release/mianbaofang/decision-journal?style=flat-square&label=release" alt="最新公开版本"></a> <a href="https://github.com/mianbaofang/decision-journal/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mianbaofang/decision-journal/ci.yml?branch=master&style=flat-square&label=tests" alt="持续集成测试状态"></a> <a href="https://github.com/mianbaofang/decision-journal/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mianbaofang/decision-journal?style=flat-square&label=license" alt="MIT 开源协议"></a></p>
 
 <p align="center">
   <a href="https://mianbaofang.github.io/decision-journal/">
@@ -82,7 +80,33 @@ python main.py
 用 decision-journal 帮我拆一下这个选择：该不该换工作？给我证据、风险和一个可以先做的下一步。
 ```
 
-打开 <http://127.0.0.1:8010/>。没有 LLM Key 时，先在界面中明确选择 Demo 模式；真实分析和图片理解需要你自己的 OpenAI 兼容接口与视觉模型。
+打开 <http://127.0.0.1:8010/>。没有 LLM Key 时，先在界面中明确选择 Demo 模式；独立工作台的真实分析与图片理解使用你配置的兼容接口与视觉模型；宿主 Agent 模式使用当前对话模型。
+
+## 在 Agent 里用，还是打开工作台？
+
+> 当前源码已实现以下宿主 Agent 路径；已发布的 v0.10.1 安装包尚未包含 record / review，请使用当前源码或经验证的本地候选包。
+
+| 入口 | 谁来分析 | 本地工具做什么 |
+|---|---|---|
+| 安装后的 Skill（优先） | 当前宿主 Agent 的对话模型 | `record` 保存分析，`review` 补充复盘，按需导出 |
+| 独立 CLI / Web 工作台 | 你另行配置的模型；或明确选择 Demo | 调用模型、记录结果、浏览与复盘 |
+
+[宿主 Agent 完整示例 →](docs/HOST_AGENT_WORKFLOW.md) · 不需要提取宿主平台密钥；保存结果不会再次调用模型。复盘表单、索引同步和导出入口属于本地未发布改进，见 [Changelog](CHANGELOG.md)。
+
+## 数据与升级（当前源码）
+
+日志默认保存在用户目录 `~/.decision-journal/decision_journal.db`，与程序安装目录分离。旧包数据只在条件明确时迁移并保留原件；恢复覆盖前会自动备份。此项是本地未发布改进。
+
+```bash
+python scripts/decision_journal.py data status
+python scripts/decision_journal.py data backup
+python scripts/decision_journal.py data restore --help
+```
+
+[路径配置、旧库迁移和备份恢复 →](docs/DATA_STORAGE.md)。维护命令离线运行，无需模型 Key；备份可能含 SQLite 中保存的 Key，不包含独立配置文件与环境变量。
+
+<details>
+<summary>为什么做这个工具</summary>
 
 ## 为什么做这个工具
 
@@ -115,6 +139,8 @@ python main.py
 **别纠结**是一个本地优先的 AI 决策助手（AI decision assistant / decision support），也可以作为 decision support Skill 或 decision journal 工具使用。它提供 Web 桌面界面、CLI 和可安装 Skill（decision-journal），用 FastAPI + SQLite 运行，可以连接 OpenAI 兼容接口。它不替你做决定，只把纠结拆成证据、风险和下一步。
 
 > 使用前请阅读 [免责声明](DISCLAIMER.md)。本项目只提供决策辅助，不替代法律、医疗、金融、心理等专业建议，也不替用户承担最终选择。
+
+</details>
 
 ## 一眼看懂
 
@@ -152,6 +178,9 @@ python scripts/decision_journal.py --action export --id <id> --format json
 Markdown 简报包含结论、支持与视角、风险、下一步、评分和状态，适合存档、分享或提交到笔记库；JSON 版本便于脚本处理。导出只在本地生成文件，不会上传。
 
 决策日志（decision journal）的价值不在"记录正确答案"，而在事后能对照当时的理由，发现自己反复出现的偏差：是不是总在高估风险？是不是一被催促就跳过可逆性检查？下次遇到相似选择，这些记录比一句"我觉得行"更有用。
+
+<details>
+<summary>功能图</summary>
 
 ## 功能图
 
@@ -196,6 +225,11 @@ flowchart TD
     DB --> ARCHIVE["档案详情 / 执行与后悔标记 / 统计"]
 ```
 
+</details>
+
+<details>
+<summary>运行细节</summary>
+
 ## 运行细节
 
 ```bash
@@ -216,6 +250,8 @@ python main.py
 - 健康检查：<http://127.0.0.1:8010/api/health>
 
 没有 LLM Key 时，页面会提示你去配置或主动开启 Demo。Demo 只返回示例数据，不会调用真实 AI。真实分析需要自己的 OpenAI 兼容 Key；图片输入还需要支持图片的模型，如 GPT-4o、Doubao-vision 或 Qwen-VL。自然模式读取实时天气时，需要填写自己的高德 Key、天气 Base URL 和城市；没有高德 API 时会使用明确标注的模拟天气。
+
+</details>
 
 ## 六种决策视角
 
@@ -242,6 +278,9 @@ python main.py
 
 <table align="center"><tr><td><img src="docs/images/stats-zh.png" width="100%" alt="统计复盘界面"></td><td><img src="docs/images/settings-zh.png" width="100%" alt="设置界面"></td></tr></table>
 
+<details>
+<summary>核心特性</summary>
+
 ## 核心特性
 
 - **🎴 印章式模式选择**：六个单字印章按钮（自理随然问局），中式纸感设计
@@ -262,6 +301,11 @@ python main.py
 - **🔌 CLI + Web 双入口**：命令行与浏览器共用后端与数据库
 - **🧪 Demo 预览**：没有 LLM Key 时，可在提示中主动开启 Demo，查看示例结果
 
+</details>
+
+<details>
+<summary>输入方式</summary>
+
 ## 输入方式
 
 输入框采用豆包风大圆角卡片设计：
@@ -271,6 +315,8 @@ python main.py
 - **右侧**：麦克风语音输入 + 青色发送按钮
 
 配视觉模型时，图片会以 OpenAI 标准多模态格式发给 LLM，模型可直接看图给出决策建议。
+
+</details>
 
 ## 配置 LLM 和天气
 
@@ -326,6 +372,9 @@ python scripts/decision_journal.py --action stop
 
 完整参数见 [可安装 Skill 入口](skills/decision-journal/SKILL.md)。合并后的仓库只保留这一处 canonical Skill 入口，避免 GitHub 自动发现重复条目。
 
+<details>
+<summary>技术栈</summary>
+
 ## 技术栈
 
 | 层 | 技术 |
@@ -338,6 +387,8 @@ python scripts/decision_journal.py --action stop
 | STT | 浏览器原生 Web Speech API（免 Key） |
 | 天气 | 高德开放平台 Web API（用户自配 Key、Base URL 和城市；未配置时使用模拟天气） |
 | 测试 | pytest + Playwright（UI 自动化） |
+
+</details>
 
 ## 安全和边界
 
@@ -363,6 +414,9 @@ python scripts/decision_journal.py --action stop
   - 天气：高德开放平台（用户自配 Key）
 
 完整引用与感谢清单见 [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md)。
+
+<details>
+<summary>项目结构</summary>
 
 ## 项目结构
 
@@ -437,6 +491,11 @@ decision-journal/
 
 几个入口各管一件事：浏览器从 `frontend/index.html` 启动，命令行从 `scripts/decision_journal.py` 启动，两边最后都调用同一套 FastAPI 路由。`routes/chat.py` 负责把请求交给对应服务，`services/` 负责计算和外部调用，`db.py` 负责保存。前端的 `brief.js` 只处理结果怎么显示，不参与后端判断。
 
+</details>
+
+<details>
+<summary>常见问题</summary>
+
 ## 常见问题
 
 ### 该不该辞职、该不该分手，这个工具能替我决定吗？
@@ -466,6 +525,8 @@ decision-journal/
 ### 没有 API Key 能用吗？
 
 可以主动开启 Demo 查看完整界面和示例结果，但 Demo 不调用真实模型，不能当作真实分析。真实分析需要你自己的 OpenAI 兼容接口。
+
+</details>
 
 ## 状态
 

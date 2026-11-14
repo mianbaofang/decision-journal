@@ -709,3 +709,32 @@ def test_dark_and_high_contrast_tokens(page):
     assert tokens["soft"] == tokens["ink"]
     assert tokens["faint"] == tokens["ink"]
     page.emulate_media(color_scheme="light", contrast="no-preference")
+
+
+def test_mobile_journal_detail_fills_drawer_and_saves_review(page):
+    response = page.request.post(BASE_URL + "/api/decision", data={
+        "question": "UI review regression", "mode": "rational", "result": {"conclusion": "Try A"}
+    })
+    assert response.ok
+    saved_id = response.json()["id"]
+    page.set_viewport_size({"width": 390, "height": 844})
+    try:
+        page.goto(BASE_URL)
+        page.locator("#sidebarRecent .recent-item").filter(has_text="UI review regression").wait_for()
+        page.get_by_role("button", name="菜单", exact=True).click()
+        page.locator("#sidebarRecent .recent-item").filter(has_text="UI review regression").click()
+        page.get_by_label("最终选择", exact=True).fill("A")
+        assert page.locator("#detailView").get_attribute("aria-hidden") == "false"
+        assert "open" not in (page.locator("#sidebar").get_attribute("class") or "")
+        assert page.locator("#drawer").bounding_box()["width"] >= 380
+        page.get_by_role("button", name="保存计划 / 复盘", exact=True).click()
+        page.get_by_label("实际结果", exact=True).fill("Finished the trial")
+        page.get_by_role("button", name="保存计划 / 复盘", exact=True).click()
+        page.locator(".journal-status").filter(has_text="已复盘").wait_for()
+        saved = page.request.get(BASE_URL + "/api/decision/" + saved_id).json()
+        assert saved["journal"]["chosenOption"] == "A"
+        assert saved["journal"]["actualOutcome"] == "Finished the trial"
+        assert saved["journal"]["reviewedAt"]
+        assert page.get_by_role("link", name="导出 MD", exact=True).is_visible()
+    finally:
+        page.set_viewport_size({"width":1280, "height":900})

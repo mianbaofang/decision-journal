@@ -4,8 +4,12 @@
 给定问题、rational 模式的 pros/cons 结果、用户价值观四元组，
 计算出 benefit / risk / cost / reversibility / valueFit / confidence 六项分数。
 
-所有分数为 0-100 整数（confidence 受 clamp 保护）。
+所有分数为启发式参考值，不是实证概率；缺乏上下文时默认值不能证明风险低。
+相同（含大小写、空白、标点）理由去重；不把日期词作为可逆性证据。
 """
+
+import re
+import unicodedata
 
 from typing import Any, Dict, List, Optional
 
@@ -13,7 +17,28 @@ from typing import Any, Dict, List, Optional
 RISK_WORDS: List[str] = ["辞职", "买房", "投资", "分手", "离婚", "创业", "借钱"]
 
 # 触发"高可逆"判定的关键词
-REVERSIBLE_WORDS: List[str] = ["吃", "看", "买小", "今天", "周末"]
+REVERSIBLE_WORDS: List[str] = ["吃什么", "吃哪", "看什么电影", "看哪部电影", "试用", "免费试", "what to eat", "which movie", "free trial"]
+RISK_WORDS += ["quit my job", "quit a job", "resign", "buy a house", "buying a house", "invest", "investment", "investments", "investing", "resigning", "divorce", "start a business", "borrow money", "break up"]
+
+
+def _unique_reasons(items):
+    """Exact/format-normalized duplicates are not additional evidence."""
+    if not isinstance(items, list):
+        return []
+    found = {}
+    for item in items:
+        if not isinstance(item, str):
+            continue
+        key = re.sub(r"[\W_]+", "", unicodedata.normalize("NFKC", item).casefold())
+        if key:
+            found.setdefault(key, item)
+    return list(found.values())
+
+
+def _has_signal(question: str, word: str) -> bool:
+    if word.isascii():
+        return bool(re.search(r"\b" + re.escape(word) + r"\b", question))
+    return word in question
 
 
 def _clamp(low: int, high: int, value: float) -> int:
@@ -35,16 +60,16 @@ def score(
 
     返回：{benefit, risk, cost, reversibility, valueFit, confidence}
     """
-    q = question or ""
-    pros: List[str] = (result or {}).get("pros") or []
-    cons: List[str] = (result or {}).get("cons") or []
+    q = unicodedata.normalize("NFKC", question or "").casefold()
+    pros: List[str] = _unique_reasons((result or {}).get("pros"))
+    cons: List[str] = _unique_reasons((result or {}).get("cons"))
     v = values or {}
 
     # risk：命中高风险词 → 72，否则 42
-    risk = 72 if any(w in q for w in RISK_WORDS) else 42
+    risk = 72 if any(_has_signal(q, w) for w in RISK_WORDS) else 42
 
-    # reversibility：命中高可逆词 → 72，否则 46
-    reversibility = 72 if any(w in q for w in REVERSIBLE_WORDS) else 46
+    # reversibility: specific low-stakes activities only; high-stakes signals take precedence.
+    reversibility = 72 if risk < 72 and any(_has_signal(q, w) for w in REVERSIBLE_WORDS) else 46
 
     # benefit：pros 越多、且重视成长 → 越高，上限 90
     benefit = min(90, 48 + len(pros) * 10 + (6 if v.get("growth", 0) > 60 else 0))
@@ -73,41 +98,3 @@ def score(
         "valueFit": value_fit,
         "confidence": confidence,
     }
-
-
-if __name__ == "__main__":
-    # 自测：高风险 + 高可逆 + 成长导向
-    r1 = score(
-        "要不要辞职创业",
-        {"pros": ["成长快", "收入高", "自由"], "cons": ["风险大", "压力大"]},
-        {"efficiency": 70, "risk": 40, "growth": 80, "relationship": 50},
-    )
-    print("case1（辞职创业）:", r1)
-    assert r1["risk"] == 72, f"risk 应为 72，实际 {r1['risk']}"
-    assert r1["reversibility"] == 46, f"reversibility 应为 46，实际 {r1['reversibility']}"
-    # benefit = min(90, 48 + 3*10 + 6) = min(90, 84) = 84
-    assert r1["benefit"] == 84, f"benefit 应为 84，实际 {r1['benefit']}"
-    # cost = min(90, 38 + 2*12 + 0) = min(90, 62) = 62（risk=40 不 >60）
-    assert r1["cost"] == 62, f"cost 应为 62，实际 {r1['cost']}"
-    # valueFit = round((70 + 80 + (100-72)) / 3) = round(178/3) = 59
-    assert r1["valueFit"] == 59, f"valueFit 应为 59，实际 {r1['valueFit']}"
-    # confidence = clamp(35, 88, round((84 + 46 + 59 + 38)/4)) = round(227/4) = 57
-    assert r1["confidence"] == 57, f"confidence 应为 57，实际 {r1['confidence']}"
-
-    # 自测：低风险 + 高可逆
-    r2 = score(
-        "今天吃什么",
-        {"pros": [], "cons": []},
-        {"efficiency": 50, "risk": 50, "growth": 50, "relationship": 50},
-    )
-    print("case2（今天吃什么）:", r2)
-    assert r2["risk"] == 42
-    assert r2["reversibility"] == 72  # 命中"今天"和"吃"
-
-    # 自测：None 入参不崩
-    r3 = score("", None, None)
-    print("case3（空入参）:", r3)
-    assert r3["benefit"] == 48
-    assert r3["cost"] == 38
-
-    print("\n全部通过")

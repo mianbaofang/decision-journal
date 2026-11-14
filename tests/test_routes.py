@@ -366,9 +366,9 @@ def test_stats_returns_full_shape(client):
     }
     # 至少有一条是 random 模式
     assert body["modeDistribution"]["random"] >= 1
-    assert isinstance(body["avgConfidence"], (int, float))
+    assert body["avgConfidence"] is None or isinstance(body["avgConfidence"], (int, float))
     assert 0.0 <= body["executedRate"] <= 1.0
-    assert 0.0 <= body["regretRate"] <= 1.0
+    assert body["regretRate"] is None or 0.0 <= body["regretRate"] <= 1.0
     # weekTrend 是近 7 天的列表
     assert len(body["weekTrend"]) == 7
     for item in body["weekTrend"]:
@@ -376,14 +376,14 @@ def test_stats_returns_full_shape(client):
 
 
 def test_stats_empty_returns_zeros(client):
-    """无决策记录时 stats 返回全 0。"""
+    """无决策记录时计数为零，没有样本的比率为空。"""
     resp = client.get("/api/stats")
     assert resp.status_code == 200
     body = resp.json()
     assert body["totalDecisions"] == 0
-    assert body["avgConfidence"] == 0.0
+    assert body["avgConfidence"] is None
     assert body["executedRate"] == 0.0
-    assert body["regretRate"] == 0.0
+    assert body["regretRate"] is None
     assert len(body["weekTrend"]) == 7
     assert all(item["count"] == 0 for item in body["weekTrend"])
 

@@ -8,6 +8,8 @@ Skill 版本特有：用户可自配 LLM API Key + 天气 API Key（iOS/MP 版�
   本次请求参数 > 环境变量 > SQLite > ~/.decision-journal/config.json
 """
 
+from __future__ import annotations
+
 import argparse
 import datetime
 import json
@@ -15,13 +17,17 @@ import os
 import re
 import shlex
 import socket
+import sqlite3
 import subprocess
 import sys
 import time
 from pathlib import Path
 from typing import Any, Optional
 
-import httpx
+try:
+    import httpx
+except ImportError:
+    httpx = None  # --help and local configuration remain available before setup.
 
 # 后端默认地址
 DEFAULT_BASE_URL = "http://127.0.0.1:8010"
@@ -75,7 +81,10 @@ def _health_ok(base_url: str, timeout: float = 1.0) -> bool:
         if response.status_code != 200:
             return False
         data = response.json()
-        return isinstance(data, dict) and data.get("status") == "ok" and bool(data.get("name"))
+        return isinstance(data, dict) and data.get("status") == "ok" and (
+            data.get("app_id") == "decision-journal"
+            or ("app_id" not in data and data.get("name") == "别纠结 API")
+        )
     except Exception:
         return False
 
@@ -667,6 +676,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="decision_journal",
         description="别纠结决策辅助 CLI - 辅助人做选择，不替代人做决定",
+        epilog="本地数据维护（无需后端）：data status | data backup | data migrate --help | data restore --help",
     )
     parser.add_argument("--question", "-q", help="决策问题（chat 动作必填）")
     parser.add_argument(
@@ -678,7 +688,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--action", "-a",
         default="chat",
-        choices=["chat", "archive", "stats", "decision", "config-api", "export", "stop"],
+        choices=["chat", "archive", "stats", "decision", "config-api", "export", "stop", "record", "review"],
         help="执行动作，默认 chat。decision: 查看或删除单条决策（需 --id）；export: 导出决策简报（需 --id）；config-api: 通过后端管理 SQLite 配置；stop: 停止本机自动启动的后端",
     )
     parser.add_argument(
@@ -733,6 +743,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="把 CLI 提供的配置保存到 SQLite（config-api 动作，需配合 --api-key 等参数）",
     )
+    parser.add_argument("--input", type=Path, help="record/review: UTF-8 JSON written by the host Agent; never invokes a model")
     _add_config_flags(parser)
     return parser
 
@@ -782,21 +793,87 @@ def _redact_secrets(text: str, secrets: Optional[list] = None) -> str:
     return redacted
 
 
+def cmd_data(argv: list) -> int:
+    """Offline SQLite maintenance; available before HTTP dependencies are installed."""
+    parser = argparse.ArgumentParser(prog="decision_journal data", description="本地数据目录、迁移、SQLite 备份与恢复（不调用模型或 HTTP）")
+    commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("status", help="只读显示数据库路径、记录数和待迁移旧库")
+    backup = commands.add_parser("backup", help="生成一致的 SQLite 备份，默认放在数据库旁的 backups/")
+    backup.add_argument("--output", type=Path)
+    migrate = commands.add_parser("migrate", help="从旧安装导入，保留源库和已有配置")
+    migrate.add_argument("--from", dest="source", type=Path, required=True)
+    migrate.add_argument("--merge", action="store_true", help="明确允许向已有数据库合并；同 ID 不同内容仍拒绝")
+    restore = commands.add_parser("restore", help="从 SQLite 备份恢复记录和 SQLite 设置")
+    restore.add_argument("--from", dest="source", type=Path, required=True)
+    restore.add_argument("--replace", action="store_true", help="明确允许替换已有记录/SQLite 设置；先自动保存恢复前备份")
+    args = parser.parse_args(argv)
+    backend_dir = Path(__file__).resolve().parents[1] / "backend"
+    if str(backend_dir) not in sys.path:
+        sys.path.insert(0, str(backend_dir))
+    import storage
+    try:
+        target = storage.resolve_db_path()
+        if args.command == "status":
+            output = storage.storage_status(target)
+            output["config_file"] = str(CONFIG_PATH)
+        elif args.command == "backup":
+            output = storage.backup_database(target, args.output)
+        else:
+            output = storage.import_database(target, args.source, merge=getattr(args, "merge", False),
+                                             restore=args.command == "restore", replace=getattr(args, "replace", False))
+        _print_json(output)
+        return 0
+    except (storage.StorageError, OSError, sqlite3.Error) as exc:
+        # SQLite errors can echo constraint values: do not forward raw DB errors.
+        message = str(exc) if isinstance(exc, storage.StorageError) else f"Local database operation failed ({type(exc).__name__}); check paths, permissions and concurrent writers."
+        print(message, file=sys.stderr)
+        return 2
+
+
 def main() -> int:
     """入口。支持 config 子命令与默认 chat/archive/stats 流程。"""
     argv = sys.argv[1:]
+    if argv and argv[0] == "data":
+        return cmd_data(argv[1:])
     # config 子命令：python decision_journal.py config --api-key sk-xxx --save
     if argv and argv[0] == "config":
         args = build_config_parser().parse_args(argv[1:])
         return cmd_config(args)
 
     args = build_parser().parse_args(argv)
+    if httpx is None:
+        print("缺少运行依赖。请在 Skill 根目录运行: python -m pip install -r backend/requirements.txt", file=sys.stderr)
+        return 3
+    payload = None
+    if args.action in {"record", "review"}:
+        try:
+            if args.input is None or (args.action == "review" and not args.id):
+                raise ValueError("record 需要 --input；review 需要 --id 和 --input")
+            payload = json.loads(args.input.read_text(encoding="utf-8-sig"))
+            if not isinstance(payload, dict):
+                raise ValueError("JSON 根必须为对象")
+            if args.action == "record":
+                if not str(payload.get("question", "")).strip() or not isinstance(payload.get("result"), dict):
+                    raise ValueError("record 需要 question 和 result 对象")
+                payload.setdefault("mode", "rational")
+                payload["result"]["source"] = "host-agent"
+                if isinstance(payload.get("brief"), dict):
+                    payload["brief"]["source"] = "host-agent"
+        except (OSError, ValueError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
     if args.action == "stop":
         return cmd_stop_backend(args.base_url)
     if not ensure_backend(args.base_url, enabled=not args.no_autostart, timeout=args.backend_timeout):
         return 3
     try:
         with httpx.Client(base_url=args.base_url, timeout=30.0) as client:
+            if args.action in {"record", "review"}:
+                response = (client.post("/api/decision", json=payload) if args.action == "record"
+                            else client.patch("/api/decision/" + args.id, json=payload))
+                response.raise_for_status()
+                _print_json(response.json())
+                return 0
             if args.action == "chat":
                 return cmd_chat(args, client)
             if args.action == "archive":

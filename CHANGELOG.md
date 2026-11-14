@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — 2026-11-14
+
+- Load storage-test repository tools by explicit file path so isolated test runners and unrelated installed `scripts` packages cannot shadow the project helpers.
+
+- Record the maintainer’s standing GitHub synchronization workflow in `AGENTS.md`: validate, commit task files, push the canonical branch, and verify the remote SHA; keep release publication separate.
+
+- Move the default SQLite file to `~/.decision-journal/decision_journal.db`; honor explicit DB/data-directory overrides. Adopt an unambiguous installation-local legacy database only into an empty default destination, preserve originals and migration provenance, and retain journal fields in the older choice-db migration.
+- Add offline standard-library `data status|migrate|backup|restore` commands. Back up existing data before a merge/replacement, refuse conflicting IDs and implicit replacement, snapshot uncheckpointed WAL data, verify imported rows before committing, and keep rollback backups. Configuration-file/environment backups and scheduling are outside scope.
+- Exclude SQLite backups, WAL sidecars and migrated database originals from release packaging/sync; document data locations, credential scope, upgrade behavior and recovery in both READMEs and the packaged reference.
+
+Protect legacy migration from concurrent first-start overwrite using a private snapshot and transactional merge; validate service identity. Add host-Agent record/review actions, optional plan/outcome journal, visible exports, live sidebar sync, sample-aware statistics, dark-theme foreground fixes and full-height archive detail, full-width mobile drawers with menu dismissal, six-language journal copy and accessible detail controls. Deduplicate heuristic reasons and remove date words as reversibility evidence. Document first-run dependencies and native reasoning boundaries.
+
 ## 0.10.1 - 2026-11-14
 
 ### Added

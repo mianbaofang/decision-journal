@@ -89,7 +89,7 @@
   height: fit-content;
   border-radius: 999px;
   padding: 5px 10px;
-  color: var(--white);
+  color: var(--on-accent);
   background: var(--moss);
   font-size: 10px;
   white-space: nowrap;
@@ -254,9 +254,17 @@
   color: var(--text-primary);
   border: 1px solid var(--line);
 }
-.btn-toggle.on.executed { background: var(--moss); color: var(--white); border-color: var(--moss); }
-.btn-toggle.on.regret { background: var(--cinnabar); color: var(--white); border-color: var(--cinnabar); }
+.btn-toggle.on.executed { background: var(--moss); color: var(--on-accent); border-color: var(--moss); }
+.btn-toggle.on.regret { background: var(--cinnabar); color: var(--on-accent); border-color: var(--cinnabar); }
 .detail-delete {
   grid-column: 1 / -1;
   margin-top: 4px;
 }
+
+.journal-form { margin: 20px 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+.journal-form h3 { margin: 0 0 8px; }
+.journal-status { color: var(--ink-soft); font-size: 13px; }
+.journal-form label { display: block; margin: 12px 0; font-size: 13px; }
+.journal-form input, .journal-form textarea { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font: inherit; resize: vertical; }
+.detail-actions { flex-wrap: wrap; }
+.score-method { font-size: 12px; line-height: 1.6; color: var(--ink-soft); }

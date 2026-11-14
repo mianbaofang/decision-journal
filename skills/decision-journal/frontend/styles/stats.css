@@ -49,7 +49,7 @@
   font-size: 30px;
   font-weight: 700;
   line-height: 1;
-  color: var(--text-primary);
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 .stat b .unit {
@@ -78,7 +78,7 @@
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 12px;
-  color: var(--text-primary);
+  color: var(--ink);
 }
 
 /* 模式分布：横向柱状 */
@@ -180,3 +180,5 @@
   color: var(--ink-faint);
   font-size: 13px;
 }
+
+.stat .stat-num { font: inherit; color: inherit; letter-spacing: inherit; }

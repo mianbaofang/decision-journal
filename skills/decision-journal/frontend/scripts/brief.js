@@ -62,6 +62,7 @@ const Brief = (() => {
       const percentText = new Intl.NumberFormat(I18N.getLocale(), { style: 'percent', maximumFractionDigits: 0 }).format(o.percent / 100);
       typeBar.appendChild(el('span', '', I18N.t('brief.confidence') + ' ' + percentText));
     }
+    if (o.source === 'host-agent') typeBar.appendChild(el('span', 'brief-source', I18N.t('journal.hostAgent')));
     if (o.source === 'real' || o.source === 'mock') {
       typeBar.appendChild(el(
         'span',
@@ -70,7 +71,7 @@ const Brief = (() => {
       ));
     }
     meta.appendChild(typeBar);
-    if (o.title) meta.appendChild(el('div', 'brief-title', o.title));
+    if (o.title && o.title !== o.verdict) meta.appendChild(el('div', 'brief-title', o.title));
     head.appendChild(meta);
     article.appendChild(head);
 
@@ -99,6 +100,14 @@ const Brief = (() => {
       body.appendChild(verdict);
     }
 
+    // Suppress only machine-derived summaries that repeat the detailed reasons.
+    const normalized = text => String(text || '').normalize('NFKC').replace(/[\s\p{P}\p{S}]/gu, '').toLowerCase();
+    const repeats = (text, reasons) => Array.isArray(reasons) && reasons.length > 0 &&
+      reasons.slice(0, 3).every(reason => normalized(reason) && normalized(text).includes(normalized(reason)));
+    if (o.tone === 'rational') {
+      if (repeats(o.keep, o.pros)) o.keep = '';
+      if (repeats(o.drop, o.cons)) o.drop = '';
+    }
     // 保留 / 放下 双栏
     if (o.keep || o.drop) {
       const cols = el('div', 'brief-columns' + (!o.keep || !o.drop ? ' is-single' : ''));
@@ -194,6 +203,7 @@ const Brief = (() => {
       });
       bars.setAttribute('aria-label', I18N.t('rational.score') + ': ' + spoken.join(', '));
       if (bars.childElementCount) wrap.appendChild(bars);
+      wrap.appendChild(el('p', 'score-method', I18N.t('journal.scoreMethod')));
     }
     return wrap;
   }

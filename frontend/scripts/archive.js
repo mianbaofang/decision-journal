@@ -169,6 +169,7 @@ const Archive = (() => {
     const body = $('detailBody');
     body.innerHTML = '<div class="thinking"><span>' + I18N.t('common.loading') + '</span><span class="loading-dots"><span></span><span></span><span></span></span></div>';
     $('detailView').classList.add('show');
+    $('detailView').setAttribute('aria-hidden', 'false');
     try {
       const d = await API.getDecision(id);
       App.currentDecision = d;
@@ -198,6 +199,33 @@ const Archive = (() => {
       body.appendChild(Brief.fromStored(d));
     }
 
+    const section = document.createElement('section');
+    section.className = 'journal-form';
+    const heading = document.createElement('h3');
+    heading.textContent = I18N.t('journal.title');
+    section.appendChild(heading);
+    const status = document.createElement('p');
+    status.className = 'journal-status';
+    status.textContent = (d.journal || {}).reviewedAt || d.regret ? I18N.t('journal.reviewed') : I18N.t('journal.notReviewed');
+    section.appendChild(status);
+    const journal = d.journal || {};
+    ['chosenOption', 'expectedOutcome', 'reviewDate', 'actualOutcome', 'reviewNote'].forEach(key => {
+      const label = document.createElement('label');
+      label.textContent = I18N.t('journal.' + key);
+      const input = document.createElement(key === 'reviewDate' ? 'input' : 'textarea');
+      if (key === 'reviewDate') input.type = 'date';
+      else { input.rows = 2; input.maxLength = key === 'chosenOption' ? 2000 : 5000; }
+      input.name = key;
+      input.value = journal[key] || '';
+      label.appendChild(input);
+      section.appendChild(label);
+    });
+    const save = document.createElement('button');
+    save.className = 'btn'; save.dataset.action = 'save-journal';
+    save.textContent = I18N.t('journal.save');
+    section.appendChild(save);
+    body.appendChild(section);
+
     // 操作区
     const actions = document.createElement('div');
     actions.className = 'detail-actions';
@@ -215,8 +243,31 @@ const Archive = (() => {
     delBtn.textContent = I18N.t('archive.delete');
     actions.appendChild(execBtn);
     actions.appendChild(regretBtn);
+    const reviewedBtn = document.createElement('button');
+    reviewedBtn.className = 'btn'; reviewedBtn.dataset.action = 'reviewed';
+    reviewedBtn.textContent = I18N.t('journal.reviewedNoRegret');
+    actions.appendChild(reviewedBtn);
+    ['md', 'json'].forEach(format => {
+      const link = document.createElement('a');
+      link.className = 'btn'; link.textContent = (I18N.t('journal.export') + ' ') + format.toUpperCase();
+      link.href = '/api/decision/' + encodeURIComponent(d.id) + '/export?format=' + format;
+      link.download = 'decision-' + d.id + '.' + format;
+      actions.appendChild(link);
+    });
     actions.appendChild(delBtn);
     body.appendChild(actions);
+  }
+
+  function refreshReviewState(d) {
+    const status = $('detailBody').querySelector('.journal-status');
+    if (status) status.textContent = I18N.t((d.journal || {}).reviewedAt || d.regret ? 'journal.reviewed' : 'journal.notReviewed');
+    ['executed', 'regret'].forEach(action => {
+      const button = $('detailBody').querySelector('[data-action="' + action + '"]');
+      if (button) {
+        button.classList.toggle('on', !!d[action]);
+        button.classList.toggle(action, !!d[action]);
+      }
+    });
   }
 
   async function onDetailClick(e) {
@@ -224,6 +275,21 @@ const Archive = (() => {
     if (!btn) return;
     const action = btn.getAttribute('data-action');
     const id = $('detailBody').getAttribute('data-id');
+    if (action === 'save-journal' || action === 'reviewed') {
+      btn.disabled = true;
+      const patch = action === 'reviewed' ? { regret: false } : { journal: {} };
+      if (patch.journal) $('detailBody').querySelectorAll('.journal-form [name]').forEach(input => { patch.journal[input.name] = input.value; });
+      try {
+        const updated = await API.updateDecision(id, patch);
+        if ($('detailBody').getAttribute('data-id') === id) {
+          App.currentDecision = updated;
+          refreshReviewState(updated);
+        }
+        load(true); App.loadSidebarRecent();
+      } catch (err) { App.toast(I18N.t('common.error')); }
+      finally { btn.disabled = false; }
+      return;
+    }
     if (action === 'delete') {
       const ok = await App.confirm(I18N.t('archive.deleteConfirm'));
       if (!ok) return;
@@ -244,11 +310,11 @@ const Archive = (() => {
     const next = !d[action];
     try {
       const patch = {}; patch[action] = next;
-      await API.updateDecision(id, patch);
-      d[action] = next;
-      btn.classList.toggle('on', next);
-      if (action === 'executed') btn.classList.toggle('executed', next);
-      if (action === 'regret') btn.classList.toggle('regret', next);
+      const updated = await API.updateDecision(id, patch);
+      if ($('detailBody').getAttribute('data-id') === id) {
+        App.currentDecision = updated;
+        refreshReviewState(updated);
+      }
       load(true);
       App.loadSidebarRecent();
     } catch (err) {
@@ -258,6 +324,7 @@ const Archive = (() => {
 
   function closeDetail() {
     $('detailView').classList.remove('show');
+    $('detailView').setAttribute('aria-hidden', 'true');
     App.currentDecision = null;
   }
 
@@ -273,5 +340,5 @@ const Archive = (() => {
     return y + '-' + m + '-' + day;
   }
 
-  return { init, load };
+  return { init, load, openDetail };
 })();
