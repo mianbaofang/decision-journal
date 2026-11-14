@@ -29,7 +29,7 @@
   ·
   <a href="ACKNOWLEDGEMENTS.md">Acknowledgements</a>
   ·
-  <a href="docs/releases/v0.10.0.md">v0.10.0 Release Notes</a>
+  <a href="docs/releases/v0.10.1.md">v0.10.1 Release Notes</a>
   ·
   <a href="SECURITY.md">Security</a>
   ·
@@ -466,7 +466,7 @@ You can explicitly enable Demo mode to explore the full UI with sample results, 
 
 ## Status
 
-Current version: [`v0.10.0`](docs/releases/v0.10.0.md). The repository, the installable Skill, and the CLI are now unified as **Decision Journal (别纠结)**: skill directory `skills/decision-journal/`, CLI command `decision-journal`, env vars `DECISION_JOURNAL_*`, local config `~/.decision-journal/`. Behavior and safety boundaries are unchanged; existing local data migrates automatically (see CHANGELOG).
+Current version: [`v0.10.1`](docs/releases/v0.10.1.md). The repository, the installable Skill, and the CLI are now unified as **Decision Journal (别纠结)**: skill directory `skills/decision-journal/`, CLI command `decision-journal`, env vars `DECISION_JOURNAL_*`, local config `~/.decision-journal/`. Behavior and safety boundaries are unchanged; existing local data migrates automatically (see CHANGELOG).
 
 ## Author And Contact
 

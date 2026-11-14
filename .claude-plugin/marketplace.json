@@ -6,7 +6,7 @@
     {
       "name": "decision-journal",
       "description": "别纠结 / Decision Journal — local-first decision support: break a choice into evidence, risks, and a next step, and keep a reviewable decision journal.",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "author": { "name": "mianbaofang", "url": "https://github.com/mianbaofang" },
       "source": "./skills/decision-journal",
       "category": "productivity",

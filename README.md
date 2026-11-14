@@ -29,7 +29,7 @@
   ·
   <a href="ACKNOWLEDGEMENTS.md">致谢</a>
   ·
-  <a href="docs/releases/v0.10.0.md">v0.10.0 发布说明</a>
+  <a href="docs/releases/v0.10.1.md">v0.10.1 发布说明</a>
   ·
   <a href="SECURITY.md">安全报告</a>
   ·
@@ -469,7 +469,7 @@ decision-journal/
 
 ## 状态
 
-当前版本：[`v0.10.0`](docs/releases/v0.10.0.md)。仓库、可安装 Skill 与 CLI 已统一为 **Decision Journal（别纠结）**：Skill 目录 `skills/decision-journal/`、CLI 命令 `decision-journal`、环境变量 `DECISION_JOURNAL_*`、本地配置 `~/.decision-journal/`。功能与使用边界保持不变，旧数据可自动迁移（见 CHANGELOG）。
+当前版本：[`v0.10.1`](docs/releases/v0.10.1.md)。仓库、可安装 Skill 与 CLI 已统一为 **Decision Journal（别纠结）**：Skill 目录 `skills/decision-journal/`、CLI 命令 `decision-journal`、环境变量 `DECISION_JOURNAL_*`、本地配置 `~/.decision-journal/`。功能与使用边界保持不变，旧数据可自动迁移（见 CHANGELOG）。
 
 ## 作者与联系
 

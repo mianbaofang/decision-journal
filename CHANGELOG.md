@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (post-v0.10.0 review, version unchanged)
+## 0.10.1 - 2026-11-14
 
 ### Added
 
